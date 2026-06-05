@@ -8,9 +8,10 @@ type Props = {
   matches: MatchEntry[];
   selectedGroup: WmGroup;
   onSelectGroup: (g: WmGroup) => void;
+  onMatchClick: (m: MatchEntry) => void;
 };
 
-export default function GroupScreen({ matches, selectedGroup, onSelectGroup }: Props) {
+export default function GroupScreen({ matches, selectedGroup, onSelectGroup, onMatchClick }: Props) {
   const groupMatches = useMemo(
     () => matches
       .filter(m => m.stage === 'GROUP_STAGE' && m.group === selectedGroup)
@@ -43,7 +44,7 @@ export default function GroupScreen({ matches, selectedGroup, onSelectGroup }: P
           <p className={styles.empty}>Keine Spiele gefunden.</p>
         )}
         {groupMatches.map(m => (
-          <MatchCard key={m.id} match={m} />
+          <MatchCard key={m.id} match={m} onClick={() => onMatchClick(m)} />
         ))}
       </div>
     </div>

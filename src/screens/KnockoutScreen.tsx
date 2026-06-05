@@ -6,6 +6,7 @@ import styles from './KnockoutScreen.module.css';
 
 type Props = {
   matches: MatchEntry[];
+  onMatchClick: (m: MatchEntry) => void;
 };
 
 const STAGE_ORDER: WmStage[] = [
@@ -14,15 +15,15 @@ const STAGE_ORDER: WmStage[] = [
 
 const STAGE_LABELS: Record<WmStage, string> = {
   GROUP_STAGE:    'Gruppenphase',
-  ROUND_OF_32:   'Achtelfinale',
-  ROUND_OF_16:   'Viertelfinale',
+  ROUND_OF_32:   'Runde der letzten 32',
+  ROUND_OF_16:   'Achtelfinale',
   QUARTER_FINALS: 'Viertelfinale',
   SEMI_FINALS:   'Halbfinale',
   THIRD_PLACE:   'Spiel um Platz 3',
   FINAL:         'Finale',
 };
 
-export default function KnockoutScreen({ matches }: Props) {
+export default function KnockoutScreen({ matches, onMatchClick }: Props) {
   const byStage = useMemo(() => {
     const ko = matches.filter(m => m.stage !== 'GROUP_STAGE');
     const map = new Map<WmStage, MatchEntry[]>();
@@ -53,7 +54,7 @@ export default function KnockoutScreen({ matches }: Props) {
           <section key={stage} className={styles.section}>
             <h2 className={styles.sectionTitle}>{STAGE_LABELS[stage]}</h2>
             <div className={styles.list}>
-              {list.map(m => <MatchCard key={m.id} match={m} />)}
+              {list.map(m => <MatchCard key={m.id} match={m} onClick={() => onMatchClick(m)} />)}
             </div>
           </section>
         );

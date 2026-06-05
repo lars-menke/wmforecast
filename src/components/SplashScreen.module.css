@@ -1,0 +1,37 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg-page);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  transition: opacity 0.4s ease;
+}
+
+.fadeOut {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.iconWrap {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--size-title-1);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.sub {
+  margin: 0;
+  font-size: var(--size-body);
+  color: var(--text-secondary);
+}
