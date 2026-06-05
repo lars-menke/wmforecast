@@ -1,0 +1,9 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-logo);
+  line-height: 1;
+  user-select: none;
+  flex-shrink: 0;
+}

@@ -1,0 +1,43 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 0 var(--space-2);
+}
+
+.label {
+  font-size: var(--size-caption-1);
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.label:first-child { text-align: left; }
+.label:nth-child(3) { text-align: right; }
+
+.track {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--bg-fill);
+  display: flex;
+}
+
+.seg {
+  height: 100%;
+  min-width: 0;
+  transition: width 0.3s ease;
+}
+
+.home { background: var(--system-green); }
+.draw { background: var(--system-neutral); }
+.away { background: var(--system-orange); }
+
+.drawLabel {
+  grid-column: 2;
+  grid-row: 2;
+  text-align: center;
+  font-size: var(--size-caption-2);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
