@@ -1,0 +1,59 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-page);
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-size: var(--size-body);
+}
+
+/* Tab-Bar */
+.tabbar {
+  display: flex;
+  background: var(--bg-tabbar);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: var(--hairline) solid var(--separator-opaque);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) 0 var(--space-2);
+  color: var(--text-secondary);
+  transition: color 0.15s;
+}
+
+.tabActive {
+  color: var(--system-blue);
+}
+
+.tabIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabLabel {
+  font-size: var(--size-caption-1);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+}
