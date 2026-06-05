@@ -1,61 +1,60 @@
-import { useState } from 'react';
+import { useMatches } from './lib/useMatches';
+import GroupScreen from './screens/GroupScreen';
+import KnockoutScreen from './screens/KnockoutScreen';
 import styles from './App.module.css';
 
-type Tab = 'group' | 'knockout';
-
 export default function App() {
-  const [tab, setTab] = useState<Tab>('group');
+  const state = useMatches();
+  const { tab, setTab, selectedGroup, setSelectedGroup, matches, loading, error } = state;
 
   return (
     <div className={styles.root}>
+
+      {/* Navigation Header */}
+      <header className={styles.header}>
+        <h1 className={styles.title}>WM 2026</h1>
+        <div className={styles.segmented}>
+          <button
+            className={`${styles.seg}${tab === 'group' ? ` ${styles.segActive}` : ''}`}
+            onClick={() => setTab('group')}
+            type="button"
+          >
+            Gruppen
+          </button>
+          <button
+            className={`${styles.seg}${tab === 'knockout' ? ` ${styles.segActive}` : ''}`}
+            onClick={() => setTab('knockout')}
+            type="button"
+          >
+            K.o.-Runde
+          </button>
+        </div>
+      </header>
+
+      {/* Inhalt */}
       <main className={styles.main}>
-        {tab === 'group' && (
-          <div className={styles.placeholder}>
-            <p>Gruppenphase kommt bald</p>
+        {loading && (
+          <div className={styles.center}>
+            <span className={styles.spinner} aria-label="Laedt" />
           </div>
         )}
-        {tab === 'knockout' && (
-          <div className={styles.placeholder}>
-            <p>K.o.-Runde kommt bald</p>
+        {error && !loading && (
+          <div className={styles.center}>
+            <p className={styles.errorText}>{error}</p>
           </div>
+        )}
+        {!loading && !error && tab === 'group' && (
+          <GroupScreen
+            matches={matches}
+            selectedGroup={selectedGroup}
+            onSelectGroup={setSelectedGroup}
+          />
+        )}
+        {!loading && !error && tab === 'knockout' && (
+          <KnockoutScreen matches={matches} />
         )}
       </main>
 
-      <nav className={styles.tabbar}>
-        <button
-          className={`${styles.tab}${tab === 'group' ? ` ${styles.tabActive}` : ''}`}
-          onClick={() => setTab('group')}
-        >
-          <span className={styles.tabIcon}>
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-              <rect x="2" y="2" width="8" height="8" rx="2" fill="currentColor" opacity={tab === 'group' ? 1 : 0.4} />
-              <rect x="12" y="2" width="8" height="8" rx="2" fill="currentColor" opacity={tab === 'group' ? 1 : 0.4} />
-              <rect x="2" y="12" width="8" height="8" rx="2" fill="currentColor" opacity={tab === 'group' ? 1 : 0.4} />
-              <rect x="12" y="12" width="8" height="8" rx="2" fill="currentColor" opacity={tab === 'group' ? 1 : 0.4} />
-            </svg>
-          </span>
-          <span className={styles.tabLabel}>Gruppen</span>
-        </button>
-
-        <button
-          className={`${styles.tab}${tab === 'knockout' ? ` ${styles.tabActive}` : ''}`}
-          onClick={() => setTab('knockout')}
-        >
-          <span className={styles.tabIcon}>
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-              <path
-                d="M2 11h5M7 11l4-4M7 11l4 4M11 7h4M11 15h4M15 7l4 4M15 15l4-4M15 11h2"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity={tab === 'knockout' ? 1 : 0.4}
-              />
-            </svg>
-          </span>
-          <span className={styles.tabLabel}>K.o.-Runde</span>
-        </button>
-      </nav>
     </div>
   );
 }
