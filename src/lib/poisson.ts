@@ -194,9 +194,15 @@ export function calcMatch(
   pH /= sum; pD /= sum; pA /= sum;
 
   const srt = topResults(mat);
-  const naturalTipp = srt[0][0];
   const fp = Math.max(pH, pD, pA);
   const wo: Outcome = pH >= pD && pH >= pA ? 'H' : pD >= pA ? 'D' : 'A';
+  const filteredSrt = srt.filter(([score]) => {
+    const [g1, g2] = score.split(':').map(Number);
+    if (wo === 'H') return g1 > g2;
+    if (wo === 'A') return g1 < g2;
+    return g1 === g2;
+  });
+  const naturalTipp = filteredSrt.length > 0 ? filteredSrt[0][0] : srt[0][0];
   const lambdaDiff = lH - lA;
 
   return {

@@ -1,7 +1,6 @@
 // WM 2026 Spielplan
-// Gruppen und Kickoff-Zeiten sind Naeherungswerte und muessen gegen
-// den offiziellen FIFA-Spielplan und die football-data.org apiIds verifiziert werden.
-// apiId = 0 bedeutet: Platzhalter, muss vor Deployment befuellt werden.
+// Gruppen gemaess offiziellem FIFA-Draw vom 05.12.2025
+// Kickoff-Zeiten sind Naeherungswerte (UTC). apiId = 0 = Platzhalter.
 
 export type WmStage =
   | 'GROUP_STAGE'
@@ -22,112 +21,106 @@ export type WmMatch = {
   kickoff: string; // ISO-8601 UTC
 };
 
-// ---------------------------------------------------------------------------
-// Gruppenphase: 12 Gruppen (A-L), je 4 Teams, je 6 Spiele = 72 Spiele
-// Spielplan: 11. Juni - 2. Juli 2026
-// ---------------------------------------------------------------------------
-
 export const WM_SCHEDULE: WmMatch[] = [
 
-  // ===== GRUPPE A: USA, PAR, EGY, SVN =====
-  { id: 'USA-PAR-A1', apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'USA', away: 'PAR', kickoff: '2026-06-11T20:00:00Z' },
-  { id: 'EGY-SVN-A2', apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'EGY', away: 'SVN', kickoff: '2026-06-11T23:00:00Z' },
-  { id: 'USA-EGY-A3', apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'USA', away: 'EGY', kickoff: '2026-06-17T20:00:00Z' },
-  { id: 'PAR-SVN-A4', apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'PAR', away: 'SVN', kickoff: '2026-06-17T23:00:00Z' },
-  { id: 'USA-SVN-A5', apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'USA', away: 'SVN', kickoff: '2026-06-26T20:00:00Z' },
-  { id: 'PAR-EGY-A6', apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'PAR', away: 'EGY', kickoff: '2026-06-26T20:00:00Z' },
+  // ===== GRUPPE A: MEX, RSA, KOR, CZE =====
+  { id: 'MEX-RSA-A1',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'MEX', away: 'RSA', kickoff: '2026-06-11T20:00:00Z' },
+  { id: 'KOR-CZE-A2',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'KOR', away: 'CZE', kickoff: '2026-06-11T23:00:00Z' },
+  { id: 'MEX-KOR-A3',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'MEX', away: 'KOR', kickoff: '2026-06-17T20:00:00Z' },
+  { id: 'RSA-CZE-A4',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'RSA', away: 'CZE', kickoff: '2026-06-17T23:00:00Z' },
+  { id: 'MEX-CZE-A5',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'MEX', away: 'CZE', kickoff: '2026-06-26T20:00:00Z' },
+  { id: 'RSA-KOR-A6',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'RSA', away: 'KOR', kickoff: '2026-06-26T20:00:00Z' },
 
-  // ===== GRUPPE B: MEX, COL, CMR, KOR =====
-  { id: 'MEX-COL-B1', apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'MEX', away: 'COL', kickoff: '2026-06-12T17:00:00Z' },
-  { id: 'CMR-KOR-B2', apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'CMR', away: 'KOR', kickoff: '2026-06-12T20:00:00Z' },
-  { id: 'MEX-CMR-B3', apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'MEX', away: 'CMR', kickoff: '2026-06-18T17:00:00Z' },
-  { id: 'COL-KOR-B4', apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'COL', away: 'KOR', kickoff: '2026-06-18T20:00:00Z' },
-  { id: 'MEX-KOR-B5', apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'MEX', away: 'KOR', kickoff: '2026-06-27T20:00:00Z' },
-  { id: 'COL-CMR-B6', apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'COL', away: 'CMR', kickoff: '2026-06-27T20:00:00Z' },
+  // ===== GRUPPE B: CAN, BIH, QAT, SUI =====
+  { id: 'CAN-BIH-B1',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'CAN', away: 'BIH', kickoff: '2026-06-12T17:00:00Z' },
+  { id: 'QAT-SUI-B2',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'QAT', away: 'SUI', kickoff: '2026-06-12T20:00:00Z' },
+  { id: 'CAN-QAT-B3',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'CAN', away: 'QAT', kickoff: '2026-06-18T17:00:00Z' },
+  { id: 'BIH-SUI-B4',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'BIH', away: 'SUI', kickoff: '2026-06-18T20:00:00Z' },
+  { id: 'CAN-SUI-B5',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'CAN', away: 'SUI', kickoff: '2026-06-27T20:00:00Z' },
+  { id: 'BIH-QAT-B6',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'BIH', away: 'QAT', kickoff: '2026-06-27T20:00:00Z' },
 
-  // ===== GRUPPE C: CAN, ECU, TUN, AUS =====
-  { id: 'CAN-ECU-C1', apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'CAN', away: 'ECU', kickoff: '2026-06-13T17:00:00Z' },
-  { id: 'TUN-AUS-C2', apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'TUN', away: 'AUS', kickoff: '2026-06-13T20:00:00Z' },
-  { id: 'CAN-TUN-C3', apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'CAN', away: 'TUN', kickoff: '2026-06-19T17:00:00Z' },
-  { id: 'ECU-AUS-C4', apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'ECU', away: 'AUS', kickoff: '2026-06-19T20:00:00Z' },
-  { id: 'CAN-AUS-C5', apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'CAN', away: 'AUS', kickoff: '2026-06-28T20:00:00Z' },
-  { id: 'ECU-TUN-C6', apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'ECU', away: 'TUN', kickoff: '2026-06-28T20:00:00Z' },
+  // ===== GRUPPE C: BRA, MAR, HAI, SCO =====
+  { id: 'BRA-MAR-C1',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'BRA', away: 'MAR', kickoff: '2026-06-13T17:00:00Z' },
+  { id: 'HAI-SCO-C2',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'HAI', away: 'SCO', kickoff: '2026-06-13T20:00:00Z' },
+  { id: 'BRA-HAI-C3',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'BRA', away: 'HAI', kickoff: '2026-06-19T17:00:00Z' },
+  { id: 'MAR-SCO-C4',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'MAR', away: 'SCO', kickoff: '2026-06-19T20:00:00Z' },
+  { id: 'BRA-SCO-C5',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'BRA', away: 'SCO', kickoff: '2026-06-28T20:00:00Z' },
+  { id: 'MAR-HAI-C6',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'MAR', away: 'HAI', kickoff: '2026-06-28T20:00:00Z' },
 
-  // ===== GRUPPE D: BRA, JAM, GER, SAU =====
-  { id: 'BRA-JAM-D1', apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'BRA', away: 'JAM', kickoff: '2026-06-14T17:00:00Z' },
-  { id: 'GER-SAU-D2', apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'GER', away: 'SAU', kickoff: '2026-06-14T20:00:00Z' },
-  { id: 'BRA-GER-D3', apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'BRA', away: 'GER', kickoff: '2026-06-20T17:00:00Z' },
-  { id: 'JAM-SAU-D4', apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'JAM', away: 'SAU', kickoff: '2026-06-20T20:00:00Z' },
-  { id: 'BRA-SAU-D5', apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'BRA', away: 'SAU', kickoff: '2026-06-29T20:00:00Z' },
-  { id: 'GER-JAM-D6', apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'GER', away: 'JAM', kickoff: '2026-06-29T20:00:00Z' },
+  // ===== GRUPPE D: USA, PAR, AUS, TUR =====
+  { id: 'USA-PAR-D1',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'USA', away: 'PAR', kickoff: '2026-06-14T17:00:00Z' },
+  { id: 'AUS-TUR-D2',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'AUS', away: 'TUR', kickoff: '2026-06-14T20:00:00Z' },
+  { id: 'USA-AUS-D3',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'USA', away: 'AUS', kickoff: '2026-06-20T17:00:00Z' },
+  { id: 'PAR-TUR-D4',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'PAR', away: 'TUR', kickoff: '2026-06-20T20:00:00Z' },
+  { id: 'USA-TUR-D5',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'USA', away: 'TUR', kickoff: '2026-06-29T20:00:00Z' },
+  { id: 'PAR-AUS-D6',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'PAR', away: 'AUS', kickoff: '2026-06-29T20:00:00Z' },
 
-  // ===== GRUPPE E: ARG, HON, FRA, IRN =====
-  { id: 'ARG-HON-E1', apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'ARG', away: 'HON', kickoff: '2026-06-15T17:00:00Z' },
-  { id: 'FRA-IRN-E2', apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'FRA', away: 'IRN', kickoff: '2026-06-15T20:00:00Z' },
-  { id: 'ARG-FRA-E3', apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'ARG', away: 'FRA', kickoff: '2026-06-21T17:00:00Z' },
-  { id: 'HON-IRN-E4', apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'HON', away: 'IRN', kickoff: '2026-06-21T20:00:00Z' },
-  { id: 'ARG-IRN-E5', apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'ARG', away: 'IRN', kickoff: '2026-06-30T20:00:00Z' },
-  { id: 'HON-FRA-E6', apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'HON', away: 'FRA', kickoff: '2026-06-30T20:00:00Z' },
+  // ===== GRUPPE E: GER, CUW, CIV, ECU =====
+  { id: 'GER-CUW-E1',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'GER', away: 'CUW', kickoff: '2026-06-15T17:00:00Z' },
+  { id: 'CIV-ECU-E2',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'CIV', away: 'ECU', kickoff: '2026-06-15T20:00:00Z' },
+  { id: 'GER-CIV-E3',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'GER', away: 'CIV', kickoff: '2026-06-21T17:00:00Z' },
+  { id: 'CUW-ECU-E4',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'CUW', away: 'ECU', kickoff: '2026-06-21T20:00:00Z' },
+  { id: 'GER-ECU-E5',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'GER', away: 'ECU', kickoff: '2026-06-30T20:00:00Z' },
+  { id: 'CUW-CIV-E6',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'CUW', away: 'CIV', kickoff: '2026-06-30T20:00:00Z' },
 
-  // ===== GRUPPE F: URU, PAN, ENG, RSA =====
-  { id: 'URU-PAN-F1', apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'URU', away: 'PAN', kickoff: '2026-06-16T17:00:00Z' },
-  { id: 'ENG-RSA-F2', apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'ENG', away: 'RSA', kickoff: '2026-06-16T20:00:00Z' },
-  { id: 'URU-ENG-F3', apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'URU', away: 'ENG', kickoff: '2026-06-22T17:00:00Z' },
-  { id: 'PAN-RSA-F4', apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'PAN', away: 'RSA', kickoff: '2026-06-22T20:00:00Z' },
-  { id: 'URU-RSA-F5', apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'URU', away: 'RSA', kickoff: '2026-07-01T20:00:00Z' },
-  { id: 'PAN-ENG-F6', apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'PAN', away: 'ENG', kickoff: '2026-07-01T20:00:00Z' },
+  // ===== GRUPPE F: NED, JPN, SWE, TUN =====
+  { id: 'NED-JPN-F1',  apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'NED', away: 'JPN', kickoff: '2026-06-16T17:00:00Z' },
+  { id: 'SWE-TUN-F2',  apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'SWE', away: 'TUN', kickoff: '2026-06-16T20:00:00Z' },
+  { id: 'NED-SWE-F3',  apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'NED', away: 'SWE', kickoff: '2026-06-22T17:00:00Z' },
+  { id: 'JPN-TUN-F4',  apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'JPN', away: 'TUN', kickoff: '2026-06-22T20:00:00Z' },
+  { id: 'NED-TUN-F5',  apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'NED', away: 'TUN', kickoff: '2026-07-01T20:00:00Z' },
+  { id: 'JPN-SWE-F6',  apiId: 0, group: 'F', stage: 'GROUP_STAGE', home: 'JPN', away: 'SWE', kickoff: '2026-07-01T20:00:00Z' },
 
-  // ===== GRUPPE G: ESP, VEN, SEN, JOR =====
-  { id: 'ESP-VEN-G1', apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'ESP', away: 'VEN', kickoff: '2026-06-11T17:00:00Z' },
-  { id: 'SEN-JOR-G2', apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'SEN', away: 'JOR', kickoff: '2026-06-12T23:00:00Z' },
-  { id: 'ESP-SEN-G3', apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'ESP', away: 'SEN', kickoff: '2026-06-17T17:00:00Z' },
-  { id: 'VEN-JOR-G4', apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'VEN', away: 'JOR', kickoff: '2026-06-18T23:00:00Z' },
-  { id: 'ESP-JOR-G5', apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'ESP', away: 'JOR', kickoff: '2026-06-26T23:00:00Z' },
-  { id: 'VEN-SEN-G6', apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'VEN', away: 'SEN', kickoff: '2026-06-26T23:00:00Z' },
+  // ===== GRUPPE G: BEL, EGY, IRN, NZL =====
+  { id: 'BEL-EGY-G1',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'BEL', away: 'EGY', kickoff: '2026-06-11T17:00:00Z' },
+  { id: 'IRN-NZL-G2',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'IRN', away: 'NZL', kickoff: '2026-06-12T23:00:00Z' },
+  { id: 'BEL-IRN-G3',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'BEL', away: 'IRN', kickoff: '2026-06-17T17:00:00Z' },
+  { id: 'EGY-NZL-G4',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'EGY', away: 'NZL', kickoff: '2026-06-18T23:00:00Z' },
+  { id: 'BEL-NZL-G5',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'BEL', away: 'NZL', kickoff: '2026-06-26T23:00:00Z' },
+  { id: 'EGY-IRN-G6',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'EGY', away: 'IRN', kickoff: '2026-06-26T23:00:00Z' },
 
-  // ===== GRUPPE H: POR, NZL, NED, NGA =====
-  { id: 'POR-NZL-H1', apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'POR', away: 'NZL', kickoff: '2026-06-13T23:00:00Z' },
-  { id: 'NED-NGA-H2', apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'NED', away: 'NGA', kickoff: '2026-06-14T23:00:00Z' },
-  { id: 'POR-NED-H3', apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'POR', away: 'NED', kickoff: '2026-06-19T23:00:00Z' },
-  { id: 'NZL-NGA-H4', apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'NZL', away: 'NGA', kickoff: '2026-06-20T23:00:00Z' },
-  { id: 'POR-NGA-H5', apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'POR', away: 'NGA', kickoff: '2026-06-27T23:00:00Z' },
-  { id: 'NZL-NED-H6', apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'NZL', away: 'NED', kickoff: '2026-06-27T23:00:00Z' },
+  // ===== GRUPPE H: ESP, CPV, SAU, URU =====
+  { id: 'ESP-CPV-H1',  apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'ESP', away: 'CPV', kickoff: '2026-06-13T23:00:00Z' },
+  { id: 'SAU-URU-H2',  apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'SAU', away: 'URU', kickoff: '2026-06-14T23:00:00Z' },
+  { id: 'ESP-SAU-H3',  apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'ESP', away: 'SAU', kickoff: '2026-06-19T23:00:00Z' },
+  { id: 'CPV-URU-H4',  apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'CPV', away: 'URU', kickoff: '2026-06-20T23:00:00Z' },
+  { id: 'ESP-URU-H5',  apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'ESP', away: 'URU', kickoff: '2026-06-27T23:00:00Z' },
+  { id: 'CPV-SAU-H6',  apiId: 0, group: 'H', stage: 'GROUP_STAGE', home: 'CPV', away: 'SAU', kickoff: '2026-06-27T23:00:00Z' },
 
-  // ===== GRUPPE I: BEL, UKR, AUT, CIV =====
-  { id: 'BEL-UKR-I1', apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'BEL', away: 'UKR', kickoff: '2026-06-15T23:00:00Z' },
-  { id: 'AUT-CIV-I2', apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'AUT', away: 'CIV', kickoff: '2026-06-16T23:00:00Z' },
-  { id: 'BEL-AUT-I3', apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'BEL', away: 'AUT', kickoff: '2026-06-21T23:00:00Z' },
-  { id: 'UKR-CIV-I4', apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'UKR', away: 'CIV', kickoff: '2026-06-22T23:00:00Z' },
-  { id: 'BEL-CIV-I5', apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'BEL', away: 'CIV', kickoff: '2026-07-01T23:00:00Z' },
-  { id: 'UKR-AUT-I6', apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'UKR', away: 'AUT', kickoff: '2026-07-01T23:00:00Z' },
+  // ===== GRUPPE I: FRA, SEN, IRQ, NOR =====
+  { id: 'FRA-SEN-I1',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'FRA', away: 'SEN', kickoff: '2026-06-15T23:00:00Z' },
+  { id: 'IRQ-NOR-I2',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'IRQ', away: 'NOR', kickoff: '2026-06-16T23:00:00Z' },
+  { id: 'FRA-IRQ-I3',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'FRA', away: 'IRQ', kickoff: '2026-06-21T23:00:00Z' },
+  { id: 'SEN-NOR-I4',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'SEN', away: 'NOR', kickoff: '2026-06-22T23:00:00Z' },
+  { id: 'FRA-NOR-I5',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'FRA', away: 'NOR', kickoff: '2026-07-01T23:00:00Z' },
+  { id: 'SEN-IRQ-I6',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'SEN', away: 'IRQ', kickoff: '2026-07-01T23:00:00Z' },
 
-  // ===== GRUPPE J: CRO, MAR, SUI, IRQ =====
-  { id: 'CRO-MAR-J1', apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'CRO', away: 'MAR', kickoff: '2026-06-11T23:00:00Z' },
-  { id: 'SUI-IRQ-J2', apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'SUI', away: 'IRQ', kickoff: '2026-06-13T17:00:00Z' },
-  { id: 'CRO-SUI-J3', apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'CRO', away: 'SUI', kickoff: '2026-06-17T23:00:00Z' },
-  { id: 'MAR-IRQ-J4', apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'MAR', away: 'IRQ', kickoff: '2026-06-19T17:00:00Z' },
-  { id: 'CRO-IRQ-J5', apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'CRO', away: 'IRQ', kickoff: '2026-06-28T17:00:00Z' },
-  { id: 'MAR-SUI-J6', apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'MAR', away: 'SUI', kickoff: '2026-06-28T17:00:00Z' },
+  // ===== GRUPPE J: ARG, ALG, AUT, JOR =====
+  { id: 'ARG-ALG-J1',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'ARG', away: 'ALG', kickoff: '2026-06-11T23:00:00Z' },
+  { id: 'AUT-JOR-J2',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'AUT', away: 'JOR', kickoff: '2026-06-13T17:00:00Z' },
+  { id: 'ARG-AUT-J3',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'ARG', away: 'AUT', kickoff: '2026-06-17T23:00:00Z' },
+  { id: 'ALG-JOR-J4',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'ALG', away: 'JOR', kickoff: '2026-06-19T17:00:00Z' },
+  { id: 'ARG-JOR-J5',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'ARG', away: 'JOR', kickoff: '2026-06-28T17:00:00Z' },
+  { id: 'ALG-AUT-J6',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'ALG', away: 'AUT', kickoff: '2026-06-28T17:00:00Z' },
 
-  // ===== GRUPPE K: SCO, GHA, DEN, QAT =====
-  { id: 'SCO-GHA-K1', apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'SCO', away: 'GHA', kickoff: '2026-06-14T17:00:00Z' }, // eigentlich Ueberschneidung mit D1 pruefen
-  { id: 'DEN-QAT-K2', apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'DEN', away: 'QAT', kickoff: '2026-06-15T17:00:00Z' },
-  { id: 'SCO-DEN-K3', apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'SCO', away: 'DEN', kickoff: '2026-06-20T23:00:00Z' },
-  { id: 'GHA-QAT-K4', apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'GHA', away: 'QAT', kickoff: '2026-06-21T17:00:00Z' },
-  { id: 'SCO-QAT-K5', apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'SCO', away: 'QAT', kickoff: '2026-06-29T17:00:00Z' },
-  { id: 'GHA-DEN-K6', apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'GHA', away: 'DEN', kickoff: '2026-06-29T17:00:00Z' },
+  // ===== GRUPPE K: POR, COD, UZB, COL =====
+  { id: 'POR-COD-K1',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'POR', away: 'COD', kickoff: '2026-06-14T17:00:00Z' },
+  { id: 'UZB-COL-K2',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'UZB', away: 'COL', kickoff: '2026-06-15T17:00:00Z' },
+  { id: 'POR-UZB-K3',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'POR', away: 'UZB', kickoff: '2026-06-20T23:00:00Z' },
+  { id: 'COD-COL-K4',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'COD', away: 'COL', kickoff: '2026-06-21T17:00:00Z' },
+  { id: 'POR-COL-K5',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'POR', away: 'COL', kickoff: '2026-06-29T17:00:00Z' },
+  { id: 'COD-UZB-K6',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'COD', away: 'UZB', kickoff: '2026-06-29T17:00:00Z' },
 
-  // ===== GRUPPE L: TUR, JPN, POL, SRB =====
-  { id: 'TUR-JPN-L1', apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'TUR', away: 'JPN', kickoff: '2026-06-16T17:00:00Z' },
-  { id: 'POL-SRB-L2', apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'POL', away: 'SRB', kickoff: '2026-06-16T23:00:00Z' },
-  { id: 'TUR-POL-L3', apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'TUR', away: 'POL', kickoff: '2026-06-22T17:00:00Z' },
-  { id: 'JPN-SRB-L4', apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'JPN', away: 'SRB', kickoff: '2026-06-22T23:00:00Z' },
-  { id: 'TUR-SRB-L5', apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'TUR', away: 'SRB', kickoff: '2026-07-02T20:00:00Z' },
-  { id: 'JPN-POL-L6', apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'JPN', away: 'POL', kickoff: '2026-07-02T20:00:00Z' },
+  // ===== GRUPPE L: ENG, CRO, GHA, PAN =====
+  { id: 'ENG-CRO-L1',  apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'ENG', away: 'CRO', kickoff: '2026-06-16T17:00:00Z' },
+  { id: 'GHA-PAN-L2',  apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'GHA', away: 'PAN', kickoff: '2026-06-16T23:00:00Z' },
+  { id: 'ENG-GHA-L3',  apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'ENG', away: 'GHA', kickoff: '2026-06-22T17:00:00Z' },
+  { id: 'CRO-PAN-L4',  apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'CRO', away: 'PAN', kickoff: '2026-06-22T23:00:00Z' },
+  { id: 'ENG-PAN-L5',  apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'ENG', away: 'PAN', kickoff: '2026-07-02T20:00:00Z' },
+  { id: 'CRO-GHA-L6',  apiId: 0, group: 'L', stage: 'GROUP_STAGE', home: 'CRO', away: 'GHA', kickoff: '2026-07-02T20:00:00Z' },
 
   // ---------------------------------------------------------------------------
-  // K.o.-Runde: Achtelfinale (Round of 32) - 16 Spiele
-  // 4. Juli - 7. Juli 2026 (Platzhalter, Teams werden nach Gruppenphase befuellt)
+  // K.o.-Runde: Runde der letzten 32 - 16 Spiele
   // ---------------------------------------------------------------------------
 
   { id: 'R32-M1',  apiId: 0, group: 'R32', stage: 'ROUND_OF_32', home: 'TBD', away: 'TBD', kickoff: '2026-07-04T17:00:00Z' },
@@ -148,8 +141,7 @@ export const WM_SCHEDULE: WmMatch[] = [
   { id: 'R32-M16', apiId: 0, group: 'R32', stage: 'ROUND_OF_32', home: 'TBD', away: 'TBD', kickoff: '2026-07-11T20:00:00Z' },
 
   // ---------------------------------------------------------------------------
-  // Viertelfinale (Round of 16) - 8 Spiele
-  // 13. Juli - 16. Juli 2026
+  // Achtelfinale (Round of 16) - 8 Spiele
   // ---------------------------------------------------------------------------
 
   { id: 'R16-M1', apiId: 0, group: 'R16', stage: 'ROUND_OF_16', home: 'TBD', away: 'TBD', kickoff: '2026-07-13T17:00:00Z' },
@@ -162,8 +154,7 @@ export const WM_SCHEDULE: WmMatch[] = [
   { id: 'R16-M8', apiId: 0, group: 'R16', stage: 'ROUND_OF_16', home: 'TBD', away: 'TBD', kickoff: '2026-07-16T20:00:00Z' },
 
   // ---------------------------------------------------------------------------
-  // Viertelfinale (Quarter-Finals) - 4 Spiele
-  // 18. Juli - 19. Juli 2026
+  // Viertelfinale - 4 Spiele
   // ---------------------------------------------------------------------------
 
   { id: 'QF-M1', apiId: 0, group: 'QF', stage: 'QUARTER_FINALS', home: 'TBD', away: 'TBD', kickoff: '2026-07-18T17:00:00Z' },
@@ -173,7 +164,6 @@ export const WM_SCHEDULE: WmMatch[] = [
 
   // ---------------------------------------------------------------------------
   // Halbfinale - 2 Spiele
-  // 22. Juli - 23. Juli 2026
   // ---------------------------------------------------------------------------
 
   { id: 'SF-M1', apiId: 0, group: 'SF', stage: 'SEMI_FINALS', home: 'TBD', away: 'TBD', kickoff: '2026-07-22T20:00:00Z' },
@@ -183,15 +173,14 @@ export const WM_SCHEDULE: WmMatch[] = [
   // Spiel um Platz 3
   // ---------------------------------------------------------------------------
 
-  { id: '3RD',    apiId: 0, group: '3RD',   stage: 'THIRD_PLACE', home: 'TBD', away: 'TBD', kickoff: '2026-07-25T17:00:00Z' },
+  { id: '3RD',   apiId: 0, group: '3RD', stage: 'THIRD_PLACE', home: 'TBD', away: 'TBD', kickoff: '2026-07-25T17:00:00Z' },
 
   // ---------------------------------------------------------------------------
   // Finale
   // ---------------------------------------------------------------------------
 
-  { id: 'FINAL',  apiId: 0, group: 'F',     stage: 'FINAL',       home: 'TBD', away: 'TBD', kickoff: '2026-07-26T20:00:00Z' },
+  { id: 'FINAL', apiId: 0, group: 'FIN', stage: 'FINAL', home: 'TBD', away: 'TBD', kickoff: '2026-07-26T20:00:00Z' },
 ];
 
-// Alle Gruppen der Gruppenphase
 export const WM_GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'] as const;
 export type WmGroup = (typeof WM_GROUPS)[number];

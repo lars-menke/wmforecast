@@ -65,6 +65,20 @@ export const NATIONS: Record<string, Nation> = {
   RSA: { code: 'RSA', name: 'Suedafrika',    shortName: 'RSA', flag: '🇿🇦', color: '#007A4D', textOnColor: 'light' },
   // OFC
   NZL: { code: 'NZL', name: 'Neuseeland',    shortName: 'NZL', flag: '🇳🇿', color: '#00247D', textOnColor: 'light' },
+  // Weitere UEFA
+  CZE: { code: 'CZE', name: 'Tschechien',    shortName: 'CZE', flag: '🇨🇿', color: '#D7141A', textOnColor: 'light' },
+  BIH: { code: 'BIH', name: 'Bosnien-Herzegowina', shortName: 'BIH', flag: '🇧🇦', color: '#002395', textOnColor: 'light' },
+  SWE: { code: 'SWE', name: 'Schweden',      shortName: 'SWE', flag: '🇸🇪', color: '#006AA7', textOnColor: 'light' },
+  NOR: { code: 'NOR', name: 'Norwegen',      shortName: 'NOR', flag: '🇳🇴', color: '#EF2B2D', textOnColor: 'light' },
+  // Weitere CAF
+  ALG: { code: 'ALG', name: 'Algerien',      shortName: 'ALG', flag: '🇩🇿', color: '#006233', textOnColor: 'light' },
+  CPV: { code: 'CPV', name: 'Kap Verde',     shortName: 'CPV', flag: '🇨🇻', color: '#003893', textOnColor: 'light' },
+  COD: { code: 'COD', name: 'DR Kongo',      shortName: 'COD', flag: '🇨🇩', color: '#007FFF', textOnColor: 'light' },
+  // Weitere AFC
+  UZB: { code: 'UZB', name: 'Usbekistan',    shortName: 'UZB', flag: '🇺🇿', color: '#1EB53A', textOnColor: 'light' },
+  // Weitere CONCACAF
+  HAI: { code: 'HAI', name: 'Haiti',         shortName: 'HAI', flag: '🇭🇹', color: '#00209F', textOnColor: 'light' },
+  CUW: { code: 'CUW', name: 'Curacao',       shortName: 'CUW', flag: '🇨🇼', color: '#002B7F', textOnColor: 'light' },
 };
 
 // Historische Laenderspiel-Statistiken (neutral, hGF = aGF, hGA = aGA)
@@ -119,5 +133,15 @@ export const NATION_STATS: Record<string, TeamStats> = {
   JAM: { rank: 45, hGF: 0.90, hGA: 1.40, aGF: 0.90, aGA: 1.40 },
   JOR: { rank: 46, hGF: 0.90, hGA: 1.30, aGF: 0.90, aGA: 1.30 },
   HON: { rank: 47, hGF: 0.80, hGA: 1.50, aGF: 0.80, aGA: 1.50 },
-  NZL: { rank: 48, hGF: 0.80, hGA: 1.50, aGF: 0.80, aGA: 1.50 },
+  NZL: { rank: 43, hGF: 0.80, hGA: 1.50, aGF: 0.80, aGA: 1.50 },
+  CZE: { rank: 28, hGF: 1.35, hGA: 1.05, aGF: 1.35, aGA: 1.05 },
+  BIH: { rank: 36, hGF: 1.20, hGA: 1.15, aGF: 1.20, aGA: 1.15 },
+  SWE: { rank: 25, hGF: 1.40, hGA: 1.00, aGF: 1.40, aGA: 1.00 },
+  NOR: { rank: 27, hGF: 1.45, hGA: 1.00, aGF: 1.45, aGA: 1.00 },
+  ALG: { rank: 35, hGF: 1.10, hGA: 1.10, aGF: 1.10, aGA: 1.10 },
+  CPV: { rank: 46, hGF: 0.90, hGA: 1.30, aGF: 0.90, aGA: 1.30 },
+  COD: { rank: 40, hGF: 1.00, hGA: 1.20, aGF: 1.00, aGA: 1.20 },
+  UZB: { rank: 44, hGF: 0.95, hGA: 1.25, aGF: 0.95, aGA: 1.25 },
+  HAI: { rank: 48, hGF: 0.80, hGA: 1.50, aGF: 0.80, aGA: 1.50 },
+  CUW: { rank: 47, hGF: 0.85, hGA: 1.45, aGF: 0.85, aGA: 1.45 },
 };

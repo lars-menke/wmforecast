@@ -59,7 +59,7 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
   const { home, away, result, actual, finished, kickoff } = match;
   const homeNation = NATIONS[home];
   const awayNation = NATIONS[away];
-  const { pH, pD, pA, lH, lA, naturalTipp, srt } = result;
+  const { pH, pD, pA, lH, lA, naturalTipp, srt, lambdaDiff, marketApplied, calibrated, drawBlocked } = result;
   const top5 = srt.slice(0, 5);
 
   return (
@@ -123,12 +123,24 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Modell</h3>
           <div className={styles.detailGrid}>
-            <span className={styles.detailKey}>Erwartete Tore (Heim)</span>
+            <span className={styles.detailKey}>xG {homeNation?.shortName ?? home}</span>
             <span className={styles.detailVal} data-numeric>{lH.toFixed(2)}</span>
-            <span className={styles.detailKey}>Erwartete Tore (Gast)</span>
+            <span className={styles.detailKey}>xG {awayNation?.shortName ?? away}</span>
             <span className={styles.detailVal} data-numeric>{lA.toFixed(2)}</span>
+            <span className={styles.detailKey}>Lambda-Differenz</span>
+            <span className={styles.detailVal} data-numeric>{lambdaDiff >= 0 ? '+' : ''}{lambdaDiff.toFixed(2)}</span>
             <span className={styles.detailKey}>Wahrscheinlichstes Ergebnis</span>
             <span className={styles.detailVal} data-numeric>{naturalTipp ?? '-'}</span>
+            <span className={styles.detailKey}>Marktquoten</span>
+            <span className={styles.detailVal}>{marketApplied ? 'angewandt' : 'kein Signal'}</span>
+            <span className={styles.detailKey}>Kalibrierung</span>
+            <span className={styles.detailVal}>{calibrated ? 'Platt' : 'Shrink'}</span>
+            {drawBlocked && (
+              <>
+                <span className={styles.detailKey}>Unentschieden</span>
+                <span className={styles.detailVal}>gesperrt</span>
+              </>
+            )}
           </div>
         </section>
 
