@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { MatchEntry } from '../lib/useMatches';
 import type { WmStage } from '../lib/schedule';
 import MatchCard from '../components/MatchCard';
@@ -54,7 +54,7 @@ export default function KnockoutScreen({ matches, onMatchClick }: Props) {
           <section key={stage} className={styles.section}>
             <h2 className={styles.sectionTitle}>{STAGE_LABELS[stage]}</h2>
             <div className={styles.list}>
-              {list.map(m => <MatchCard key={m.id} match={m} onClick={() => onMatchClick(m)} />)}
+              {list.map((m, i) => <MatchCard key={m.id} match={m} onClick={() => onMatchClick(m)} style={{ '--card-index': i } as React.CSSProperties} />)}
             </div>
           </section>
         );

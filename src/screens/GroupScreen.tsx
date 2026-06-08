@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { MatchEntry } from '../lib/useMatches';
 import { WM_GROUPS, type WmGroup } from '../lib/schedule';
 import MatchCard from '../components/MatchCard';
@@ -43,8 +43,8 @@ export default function GroupScreen({ matches, selectedGroup, onSelectGroup, onM
         {groupMatches.length === 0 && (
           <p className={styles.empty}>Keine Spiele gefunden.</p>
         )}
-        {groupMatches.map(m => (
-          <MatchCard key={m.id} match={m} onClick={() => onMatchClick(m)} />
+        {groupMatches.map((m, i) => (
+          <MatchCard key={m.id} match={m} onClick={() => onMatchClick(m)} style={{ '--card-index': i } as React.CSSProperties} />
         ))}
       </div>
     </div>

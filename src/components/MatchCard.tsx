@@ -1,3 +1,4 @@
+import React from 'react';
 import { NATIONS } from '../lib/nations';
 import type { MatchEntry } from '../lib/useMatches';
 import ProbabilityBar from './ProbabilityBar';
@@ -7,6 +8,7 @@ import styles from './MatchCard.module.css';
 type Props = {
   match: MatchEntry;
   onClick?: () => void;
+  style?: React.CSSProperties;
 };
 
 type Category = {
@@ -33,7 +35,7 @@ function tippScore(match: MatchEntry): string | null {
   return result.naturalTipp;
 }
 
-export default function MatchCard({ match, onClick }: Props) {
+export default function MatchCard({ match, onClick, style }: Props) {
   const { home, away, result, finished } = match;
   const homeNation = NATIONS[home];
   const awayNation = NATIONS[away];
@@ -46,6 +48,7 @@ export default function MatchCard({ match, onClick }: Props) {
     <button
       className={`${styles.card}${topTip ? ` ${styles.cardTop}` : ''}`}
       onClick={onClick}
+      style={style}
       type="button"
     >
       <div className={`${styles.accentStripe} ${styles[cat.stripe]}`} />

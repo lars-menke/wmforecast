@@ -45,8 +45,20 @@ export default function App() {
         {/* Inhalt */}
         <main className={styles.main}>
           {loading && (
-            <div className={styles.center}>
-              <span className={styles.spinner} aria-label="Laedt" />
+            <div className={styles.skeletonList} aria-label="Laedt" aria-busy="true">
+              {[0,1,2,3,4].map(i => (
+                <div key={i} className={styles.skeletonCard}>
+                  <div className={styles.skeletonRow}>
+                    <div className={`${styles.skeletonBar} ${styles.short}`} />
+                    <div className={`${styles.skeletonBar} ${styles.short}`} />
+                  </div>
+                  <div className={styles.skeletonRow}>
+                    <div className={`${styles.skeletonBar} ${styles.circle}`} />
+                    <div className={`${styles.skeletonBar} ${styles.circle}`} />
+                  </div>
+                  <div className={`${styles.skeletonBar} ${styles.full}`} />
+                </div>
+              ))}
             </div>
           )}
           {error && !loading && (
