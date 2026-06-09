@@ -30,7 +30,7 @@ export default function App() {
         <header className={styles.header}>
           {/* Wordmark + Trophy */}
           <div className={styles.wordmark} aria-label="WMForecast">
-            <TrophyIcon size={22} className={styles.wordmarkTrophy} />
+            <TrophyIcon height={34} className={styles.wordmarkTrophy} />
             <span className={styles.wordmarkWm}>WM</span>
             <span className={styles.wordmarkForecast}>Forecast</span>
           </div>

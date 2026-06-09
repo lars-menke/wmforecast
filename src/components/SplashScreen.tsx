@@ -18,7 +18,7 @@ export default function SplashScreen({ onDone }: Props) {
   return (
     <div className={`${styles.root}${fading ? ` ${styles.fadeOut}` : ''}`}>
       <div className={styles.iconWrap}>
-        <TrophyIcon size={90} className={styles.trophy} />
+        <TrophyIcon height={160} className={styles.trophy} />
       </div>
 
       <div className={styles.brand}>
