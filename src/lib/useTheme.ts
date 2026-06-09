@@ -14,21 +14,35 @@ function applyTheme(theme: Theme) {
   }
 }
 
+// Apply stored theme synchronously at module load — prevents flash on page reload
+try {
+  const stored = localStorage.getItem('theme') as Theme | null;
+  if (stored) applyTheme(stored);
+} catch { /* localStorage unavailable (private mode, etc.) */ }
+
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('theme') as Theme | null;
-    return stored ?? getSystemTheme();
+    try {
+      const stored = localStorage.getItem('theme') as Theme | null;
+      return stored ?? getSystemTheme();
+    } catch {
+      return getSystemTheme();
+    }
   });
 
   useEffect(() => {
     applyTheme(theme);
-    localStorage.setItem('theme', theme);
+    try { localStorage.setItem('theme', theme); } catch { /* ignore */ }
   }, [theme]);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = () => {
-      if (!localStorage.getItem('theme')) setTheme(getSystemTheme());
+      try {
+        if (!localStorage.getItem('theme')) setTheme(getSystemTheme());
+      } catch {
+        setTheme(getSystemTheme());
+      }
     };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);

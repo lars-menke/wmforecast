@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useMatches } from './lib/useMatches';
+import { useTheme } from './lib/useTheme';
 import type { MatchEntry } from './lib/useMatches';
 import GroupScreen from './screens/GroupScreen';
 import KnockoutScreen from './screens/KnockoutScreen';
@@ -9,6 +10,7 @@ import MatchDetailSheet from './components/MatchDetailSheet';
 import styles from './App.module.css';
 
 export default function App() {
+  useTheme(); // activates theme persistence at root — must run on every mount
   const [splashDone, setSplashDone]       = useState(false);
   const [activeMatch, setActiveMatch]     = useState<MatchEntry | null>(null);
   const [showSettings, setShowSettings]   = useState(false);
