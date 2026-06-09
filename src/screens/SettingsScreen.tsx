@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTheme } from '../lib/useTheme';
 import styles from './SettingsScreen.module.css';
 
-const VERSION = '1.0.0';
+const VERSION = __APP_VERSION__;
 
 const MODEL_SECTIONS = [
   {
