@@ -25,10 +25,10 @@ export default function App() {
       <div className={styles.root}>
         {/* Navigation Header */}
         <header className={styles.header}>
-          {/* Dekorativer Wordmark */}
-          <div className={styles.wordmark}>
+          {/* Wordmark */}
+          <div className={styles.wordmark} aria-label="WMForecast">
             <span className={styles.wordmarkWm}>WM</span>
-            <span className={styles.wordmarkYear}>2026</span>
+            <span className={styles.wordmarkForecast}>Forecast</span>
           </div>
 
           {/* Segmented Control */}

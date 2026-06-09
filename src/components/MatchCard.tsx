@@ -1,7 +1,6 @@
 import React from 'react';
 import { NATIONS } from '../lib/nations';
 import type { MatchEntry } from '../lib/useMatches';
-import ProbabilityBar from './ProbabilityBar';
 import TeamLogo from './TeamLogo';
 import styles from './MatchCard.module.css';
 
@@ -18,9 +17,9 @@ type Category = {
 };
 
 function getCategory(fp: number): Category {
-  if (fp >= 0.70) return { label: 'Favorit',  badge: 'badgeFav',       stripe: 'stripeGold' };
-  if (fp >= 0.55) return { label: 'Kante',     badge: 'badgeEdge',      stripe: 'stripeBlue' };
-  return             { label: '50/50',      badge: 'badgeFiftyFifty', stripe: 'stripeGray' };
+  if (fp >= 0.70) return { label: 'Favorit', badge: 'badgeFav',        stripe: 'stripeGold' };
+  if (fp >= 0.55) return { label: 'Kante',   badge: 'badgeEdge',       stripe: 'stripeBlue' };
+  return             { label: '50/50',     badge: 'badgeFiftyFifty',  stripe: 'stripeGray' };
 }
 
 function formatKickoff(iso: string): string {
@@ -29,20 +28,20 @@ function formatKickoff(iso: string): string {
     + ', ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
 }
 
-function tippScore(match: MatchEntry): string | null {
-  const { result, finished, actual } = match;
-  if (finished && actual) return `${actual.g1}:${actual.g2}`;
-  return result.naturalTipp;
+function isMatchLive(kickoff: string, finished: boolean): boolean {
+  if (finished) return false;
+  const elapsed = Date.now() - new Date(kickoff).getTime();
+  return elapsed > 0 && elapsed < 115 * 60 * 1000;
 }
 
 export default function MatchCard({ match, onClick, style }: Props) {
-  const { home, away, result, finished } = match;
+  const { home, away, result, finished, actual } = match;
   const homeNation = NATIONS[home];
   const awayNation = NATIONS[away];
-  const cat        = getCategory(result.fp);
-  const topTip     = result.fp >= 0.70 && !finished;
-  const score      = tippScore(match);
-  const wo         = result.wo;
+  const { pH, pD, pA, naturalTipp, wo, fp } = result;
+  const cat    = getCategory(fp);
+  const topTip = fp >= 0.70 && !finished;
+  const live   = isMatchLive(match.kickoff, finished);
 
   return (
     <button
@@ -54,37 +53,64 @@ export default function MatchCard({ match, onClick, style }: Props) {
       <div className={`${styles.accentStripe} ${styles[cat.stripe]}`} />
       <div className={styles.inner}>
 
+        {/* Header */}
         <div className={styles.header}>
           <span className={styles.meta}>{formatKickoff(match.kickoff)}</span>
           <div className={styles.badges}>
-            {topTip && <span className={`${styles.badge} ${styles.badgeTopTip}`}>TOP</span>}
+            {live && <span className={`${styles.badge} ${styles.badgeLive}`}>● Live</span>}
+            {topTip && !live && <span className={`${styles.badge} ${styles.badgeTopTip}`}>TOP</span>}
             <span className={`${styles.badge} ${styles[cat.badge]}`}>{cat.label}</span>
           </div>
         </div>
 
+        {/* Teams + Score */}
         <div className={styles.body}>
-          <div className={`${styles.team} ${wo === 'H' && !finished ? styles.teamFav : ''}`}>
-            <TeamLogo code={home} size={40} />
-            <span className={styles.teamName}>{homeNation?.name ?? home}</span>
+          <div className={styles.teamLeft}>
+            <TeamLogo code={home} size={32} />
+            <span className={`${styles.teamName}${wo === 'H' && !finished ? ` ${styles.teamNameFav}` : ''}`}>
+              {homeNation?.name ?? home}
+            </span>
           </div>
 
           <div className={styles.scoreBox}>
-            {score && (
-              <span className={`${styles.score} ${finished ? styles.scoreResult : styles.scoreTipp}`} data-numeric>
-                {score}
-              </span>
+            {finished && actual ? (
+              <>
+                <span className={styles.score} data-numeric>{actual.g1}:{actual.g2}</span>
+                <span className={styles.scoreLabel}>Ergebnis</span>
+              </>
+            ) : (
+              <>
+                <span className={`${styles.score} ${styles.scoreTipp}`} data-numeric>
+                  {naturalTipp ?? '–'}
+                </span>
+                <span className={styles.scoreLabel}>{live ? 'Live' : 'Tipp'}</span>
+              </>
             )}
-            {finished && <span className={styles.scoreLabel}>Ergebnis</span>}
-            {!finished && score && <span className={styles.scoreLabel}>Tipp</span>}
           </div>
 
-          <div className={`${styles.team} ${styles.teamRight} ${wo === 'A' && !finished ? styles.teamFav : ''}`}>
-            <TeamLogo code={away} size={40} />
-            <span className={styles.teamName}>{awayNation?.name ?? away}</span>
+          <div className={styles.teamRight}>
+            <span className={`${styles.teamName}${wo === 'A' && !finished ? ` ${styles.teamNameFav}` : ''}`}>
+              {awayNation?.name ?? away}
+            </span>
+            <TeamLogo code={away} size={32} />
           </div>
         </div>
 
-        <ProbabilityBar home={result.pH} draw={result.pD} away={result.pA} />
+        {/* Probability grid */}
+        <div className={styles.probGrid}>
+          <div className={`${styles.probCell}${wo === 'H' ? ` ${styles.probCellHome}` : ''}`}>
+            <span className={styles.probPct} data-numeric>{(pH * 100).toFixed(0)}%</span>
+            <span className={styles.probLbl}>Heimsieg</span>
+          </div>
+          <div className={`${styles.probCell} ${styles.probCellMid}${wo === 'D' ? ` ${styles.probCellDraw}` : ''}`}>
+            <span className={styles.probPct} data-numeric>{(pD * 100).toFixed(0)}%</span>
+            <span className={styles.probLbl}>Remis</span>
+          </div>
+          <div className={`${styles.probCell}${wo === 'A' ? ` ${styles.probCellAway}` : ''}`}>
+            <span className={styles.probPct} data-numeric>{(pA * 100).toFixed(0)}%</span>
+            <span className={styles.probLbl}>Auswärtssieg</span>
+          </div>
+        </div>
 
       </div>
     </button>

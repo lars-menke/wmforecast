@@ -63,17 +63,26 @@
 /* Gruppen-Header */
 .groupHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
   margin-bottom: var(--space-2);
 }
 
 .groupAccent {
   width: 3px;
-  height: 20px;
+  height: 36px;
   border-radius: var(--radius-pill);
   background: var(--system-blue);
   flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.groupTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
 }
 
 .groupTitle {
@@ -82,12 +91,29 @@
   color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.groupTeams {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.groupTeam {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--size-caption-1);
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .groupCount {
   font-size: var(--size-caption-1);
   color: var(--text-tertiary);
-  margin-left: auto;
+  white-space: nowrap;
+  padding-top: 2px;
 }
 
 .empty {

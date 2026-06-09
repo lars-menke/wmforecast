@@ -17,34 +17,17 @@
 }
 
 @keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.card:active {
-  transform: scale(0.972) translateY(1px);
-  box-shadow: var(--shadow-card);
-}
+.card:active { transform: scale(0.972) translateY(1px); }
 
-.cardTop {
-  box-shadow: var(--shadow-card-top);
-}
-
-.cardTop:active {
-  box-shadow: var(--shadow-card-top);
-}
+.cardTop { box-shadow: var(--shadow-card-top); }
+.cardTop:active { box-shadow: var(--shadow-card-top); }
 
 /* Left accent stripe */
-.accentStripe {
-  width: 5px;
-  flex-shrink: 0;
-}
+.accentStripe { width: 5px; flex-shrink: 0; }
 
 .stripeGold { background: var(--system-yellow); }
 .stripeBlue { background: var(--system-blue); }
@@ -52,14 +35,14 @@
 
 .inner {
   flex: 1;
-  padding: var(--space-4) var(--space-4) var(--space-3);
+  padding: var(--space-3) var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   min-width: 0;
 }
 
-/* Header row */
+/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -74,11 +57,7 @@
   letter-spacing: 0.1px;
 }
 
-.badges {
-  display: flex;
-  gap: var(--space-1);
-  flex-shrink: 0;
-}
+.badges { display: flex; gap: var(--space-1); flex-shrink: 0; }
 
 .badge {
   font-size: var(--size-caption-2);
@@ -89,74 +68,123 @@
   letter-spacing: 0.2px;
 }
 
-.badgeTopTip    { background: var(--system-yellow); color: #1a1200; }
-.badgeFav       { background: rgba(255, 204, 0, 0.16); color: var(--system-yellow); }
-.badgeEdge      { background: rgba(0, 122, 255, 0.12); color: var(--system-blue); }
+.badgeLive       { background: rgba(255, 59, 48, 0.14); color: var(--system-red); animation: livePulse 1.5s ease-in-out infinite; }
+.badgeTopTip     { background: var(--system-yellow); color: #1a1200; }
+.badgeFav        { background: rgba(255, 204, 0, 0.16); color: var(--system-yellow); }
+.badgeEdge       { background: rgba(0, 122, 255, 0.12); color: var(--system-blue); }
 .badgeFiftyFifty { background: var(--bg-fill); color: var(--text-secondary); }
 
-/* Match body: 3-column layout — team / score / team */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* Body: horizontal teams + score pill */
 .body {
   display: grid;
-  grid-template-columns: 1fr 64px 1fr;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: var(--space-2);
 }
 
-/* Team column — vertical: logo centered, name below */
-.team {
+.teamLeft {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
 }
 
 .teamRight {
-  /* same vertical alignment — no reverse needed */
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .teamName {
   font-size: var(--size-subhead);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  text-align: center;
-  line-height: 1.2;
+  font-weight: var(--weight-regular);
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  white-space: normal;
-  max-width: 100%;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
-.teamFav .teamName {
+.teamNameFav {
+  font-weight: var(--weight-semibold);
   color: var(--text-primary);
 }
 
-/* Center: score / tipp */
+/* Score pill */
 .scoreBox {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   flex-shrink: 0;
+  background: var(--bg-fill);
+  border-radius: 10px;
+  padding: var(--space-2) var(--space-3);
+  min-width: 68px;
 }
 
 .score {
-  font-size: var(--size-title-1);
+  font-size: var(--size-title-2);
   font-weight: var(--weight-bold);
   line-height: 1;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
 }
 
-.scoreTipp   { color: var(--text-secondary); }
-.scoreResult { color: var(--text-primary); }
+.scoreTipp { color: var(--text-secondary); }
 
 .scoreLabel {
   font-size: var(--size-caption-2);
   color: var(--text-tertiary);
   line-height: 1;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
+}
+
+/* Probability grid: 3 equal cells separated by bg-page gap */
+.probGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-radius: var(--radius-button);
+  overflow: hidden;
+  background: var(--bg-page);
+  gap: 1px;
+}
+
+.probCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-1);
+  background: var(--bg-fill);
+  transition: background 0.2s;
+}
+
+/* Active cells: colored tint for the predicted outcome */
+.probCellHome { background: rgba(52, 199, 89, 0.13); }
+.probCellDraw { background: rgba(118, 118, 128, 0.2); }
+.probCellAway { background: rgba(255, 149, 0, 0.13); }
+
+.probPct {
+  font-size: var(--size-subhead);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.probCellHome .probPct { color: var(--system-green); }
+.probCellAway .probPct { color: var(--system-orange); }
+
+.probLbl {
+  font-size: var(--size-caption-2);
+  color: var(--text-tertiary);
+  line-height: 1;
 }

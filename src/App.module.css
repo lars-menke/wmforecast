@@ -18,37 +18,28 @@
   gap: var(--space-2);
 }
 
-/* Dekorativer Wordmark */
+/* Wordmark */
 .wordmark {
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 0;
   flex-shrink: 0;
+  letter-spacing: -1px;
 }
 
 .wordmarkWm {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -1.5px;
   line-height: 1;
 }
 
-.wordmarkYear {
-  font-size: var(--size-caption-1);
-  font-weight: var(--weight-semibold);
-  color: var(--system-blue);
-  background: rgba(0, 122, 255, 0.12);
-  padding: 2px 6px;
-  border-radius: 5px;
-  letter-spacing: 0.2px;
-  line-height: 1.6;
+.wordmarkForecast {
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1;
 }
-
-@media (prefers-color-scheme: dark) {
-  .wordmarkYear { background: rgba(10, 132, 255, 0.18); }
-}
-html[data-theme='dark'] .wordmarkYear { background: rgba(10, 132, 255, 0.18); }
 
 /* Segmented Control */
 .segmented {

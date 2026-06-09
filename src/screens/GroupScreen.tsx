@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { MatchEntry } from '../lib/useMatches';
-import { WM_GROUPS, type WmGroup } from '../lib/schedule';
+import { WM_SCHEDULE, WM_GROUPS, type WmGroup } from '../lib/schedule';
+import { NATIONS } from '../lib/nations';
 import MatchCard from '../components/MatchCard';
 import styles from './GroupScreen.module.css';
 
@@ -17,6 +18,15 @@ export default function GroupScreen({ matches, selectedGroup, onSelectGroup, onM
       .filter(m => m.stage === 'GROUP_STAGE' && m.group === selectedGroup)
       .sort((a, b) => a.kickoff.localeCompare(b.kickoff)),
     [matches, selectedGroup],
+  );
+
+  const groupTeams = useMemo(
+    () => [...new Set(
+      WM_SCHEDULE
+        .filter(m => m.group === selectedGroup && m.stage === 'GROUP_STAGE')
+        .flatMap(m => [m.home, m.away])
+    )],
+    [selectedGroup],
   );
 
   return (
@@ -41,7 +51,17 @@ export default function GroupScreen({ matches, selectedGroup, onSelectGroup, onM
       <div className={styles.list}>
         <div className={styles.groupHeader}>
           <div className={styles.groupAccent} />
-          <h2 className={styles.groupTitle}>Gruppe {selectedGroup}</h2>
+          <div className={styles.groupTitleBlock}>
+            <h2 className={styles.groupTitle}>Gruppe {selectedGroup}</h2>
+            <div className={styles.groupTeams}>
+              {groupTeams.map(code => (
+                <span key={code} className={styles.groupTeam}>
+                  <span aria-hidden="true">{NATIONS[code]?.flag ?? ''}</span>
+                  <span>{NATIONS[code]?.shortName ?? code}</span>
+                </span>
+              ))}
+            </div>
+          </div>
           <span className={styles.groupCount}>{groupMatches.length} Spiele</span>
         </div>
         {groupMatches.length === 0 && (
