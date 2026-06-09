@@ -20,14 +20,16 @@ export default function ProbabilityBar({ home, draw, away }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <span className={styles.label} data-numeric>{hPct}%</span>
       <div className={styles.track}>
-        <div className={`${styles.seg} ${styles.home}`}  style={{ width: mounted ? `${home * 100}%` : '0%' }} />
-        <div className={`${styles.seg} ${styles.draw}`}  style={{ width: mounted ? `${draw * 100}%` : '0%' }} />
-        <div className={`${styles.seg} ${styles.away}`}  style={{ width: mounted ? `${away * 100}%` : '0%' }} />
+        <div className={`${styles.seg} ${styles.home}`} style={{ width: mounted ? `${home * 100}%` : '0%' }} />
+        <div className={`${styles.seg} ${styles.draw}`} style={{ width: mounted ? `${draw * 100}%` : '0%' }} />
+        <div className={`${styles.seg} ${styles.away}`} style={{ width: mounted ? `${away * 100}%` : '0%' }} />
       </div>
-      <span className={styles.label} data-numeric>{aPct}%</span>
-      <span className={styles.drawLabel} data-numeric>{dPct}%</span>
+      <div className={styles.labels}>
+        <span className={styles.labelHome} data-numeric>{hPct}%</span>
+        <span className={styles.labelDraw}  data-numeric>{dPct}%</span>
+        <span className={styles.labelAway}  data-numeric>{aPct}%</span>
+      </div>
     </div>
   );
 }

@@ -1,26 +1,16 @@
 .wrapper {
-  display: grid;
-  grid-template-columns: 36px 1fr 36px;
-  grid-template-rows: auto auto;
-  align-items: center;
-  gap: 0 var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
-
-.label {
-  font-size: var(--size-caption-1);
-  color: var(--text-secondary);
-  line-height: 1;
-}
-
-.label:first-child { text-align: left; }
-.label:nth-child(3) { text-align: right; }
 
 .track {
-  height: 6px;
+  height: 8px;
   border-radius: var(--radius-pill);
   overflow: hidden;
   background: var(--bg-fill);
   display: flex;
+  gap: 2px;
 }
 
 .seg {
@@ -30,15 +20,35 @@
   will-change: width;
 }
 
+.seg:first-child { border-radius: var(--radius-pill) 0 0 var(--radius-pill); }
+.seg:last-child  { border-radius: 0 var(--radius-pill) var(--radius-pill) 0; }
+
 .home { background: var(--system-green); }
 .draw { background: var(--system-neutral); }
 .away { background: var(--system-orange); }
 
-.drawLabel {
-  grid-column: 2;
-  grid-row: 2;
-  text-align: center;
+/* Label row: home% — draw% — away% */
+.labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.labelHome {
+  font-size: var(--size-caption-1);
+  font-weight: var(--weight-semibold);
+  color: var(--system-green);
+  text-align: left;
+}
+
+.labelDraw {
   font-size: var(--size-caption-2);
   color: var(--text-tertiary);
-  margin-top: var(--space-1);
+  text-align: center;
+}
+
+.labelAway {
+  font-size: var(--size-caption-1);
+  font-weight: var(--weight-semibold);
+  color: var(--system-orange);
+  text-align: right;
 }

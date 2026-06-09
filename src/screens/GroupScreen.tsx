@@ -39,7 +39,11 @@ export default function GroupScreen({ matches, selectedGroup, onSelectGroup, onM
 
       {/* Spiele */}
       <div className={styles.list}>
-        <h2 className={styles.groupTitle}>Gruppe {selectedGroup}</h2>
+        <div className={styles.groupHeader}>
+          <div className={styles.groupAccent} />
+          <h2 className={styles.groupTitle}>Gruppe {selectedGroup}</h2>
+          <span className={styles.groupCount}>{groupMatches.length} Spiele</span>
+        </div>
         {groupMatches.length === 0 && (
           <p className={styles.empty}>Keine Spiele gefunden.</p>
         )}

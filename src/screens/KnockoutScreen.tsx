@@ -52,7 +52,10 @@ export default function KnockoutScreen({ matches, onMatchClick }: Props) {
         if (!list || list.length === 0) return null;
         return (
           <section key={stage} className={styles.section}>
-            <h2 className={styles.sectionTitle}>{STAGE_LABELS[stage]}</h2>
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionAccent} />
+              <h2 className={styles.sectionTitle}>{STAGE_LABELS[stage]}</h2>
+            </div>
             <div className={styles.list}>
               {list.map((m, i) => <MatchCard key={m.id} match={m} onClick={() => onMatchClick(m)} style={{ '--card-index': i } as React.CSSProperties} />)}
             </div>

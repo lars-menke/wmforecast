@@ -9,7 +9,9 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  background: var(--bg-page);
+  background: var(--bg-tabbar);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: var(--hairline) solid var(--separator);
   flex-shrink: 0;
 }
@@ -18,24 +20,29 @@
 
 .picker {
   display: flex;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
   width: max-content;
 }
 
 .pill {
-  min-width: 36px;
-  height: 36px;
+  min-width: 38px;
+  height: 38px;
   border-radius: var(--radius-pill);
   font-size: var(--size-subhead);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   color: var(--text-secondary);
-  background: var(--bg-fill);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.1s;
+  letter-spacing: 0.2px;
 }
+
+.pill:active { transform: scale(0.9); }
 
 .pillActive {
   background: var(--system-blue);
@@ -47,17 +54,40 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: var(--space-4);
+  padding: var(--space-5) var(--space-4) var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
 }
 
+/* Gruppen-Header */
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.groupAccent {
+  width: 3px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--system-blue);
+  flex-shrink: 0;
+}
+
 .groupTitle {
   font-size: var(--size-headline);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   color: var(--text-primary);
-  margin: 0 0 var(--space-1);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.groupCount {
+  font-size: var(--size-caption-1);
+  color: var(--text-tertiary);
+  margin-left: auto;
 }
 
 .empty {
