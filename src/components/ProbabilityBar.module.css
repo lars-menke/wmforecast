@@ -16,7 +16,7 @@
 .seg {
   height: 100%;
   min-width: 0;
-  transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: width;
 }
 
@@ -42,7 +42,7 @@
 
 .labelDraw {
   font-size: var(--size-caption-2);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   text-align: center;
 }
 

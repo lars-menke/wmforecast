@@ -220,7 +220,7 @@
   height: 100%;
   background: var(--system-blue);
   border-radius: var(--radius-pill);
-  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scoreProb {

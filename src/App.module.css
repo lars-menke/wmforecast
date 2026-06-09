@@ -96,6 +96,10 @@
 
 .iconBtn:active { transform: scale(0.88); }
 
+@media (hover: hover) {
+  .iconBtn:hover { background: var(--bg-fill-strong); color: var(--text-primary); }
+}
+
 .iconBtnActive {
   background: var(--bg-fill-strong);
   color: var(--text-primary);
@@ -190,4 +194,21 @@
   color: var(--system-red);
   font-size: var(--size-body);
   text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.retryBtn {
+  font-size: var(--size-body);
+  font-weight: var(--weight-semibold);
+  color: var(--system-blue);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  background: rgba(0, 122, 255, 0.1);
+  transition: background 0.15s, transform 0.1s;
+}
+
+.retryBtn:active { transform: scale(0.95); }
+
+@media (hover: hover) {
+  .retryBtn:hover { background: rgba(0, 122, 255, 0.18); }
 }

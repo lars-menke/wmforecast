@@ -44,6 +44,10 @@
 
 .pill:active { transform: scale(0.9); }
 
+@media (hover: hover) {
+  .pill:not(.pillActive):hover { background: var(--bg-fill); color: var(--text-primary); }
+}
+
 .pillActive {
   background: var(--system-blue);
   color: var(--text-on-accent);
@@ -92,6 +96,7 @@
   margin: 0;
   letter-spacing: -0.3px;
   line-height: 1.2;
+  text-wrap: balance;
 }
 
 .groupTeams {

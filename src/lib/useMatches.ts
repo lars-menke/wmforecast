@@ -28,6 +28,7 @@ export type MatchesState = {
   hasMarket: boolean;
   setTab: (t: 'group' | 'knockout') => void;
   setSelectedGroup: (g: WmGroup) => void;
+  retry: () => void;
 };
 
 export function useMatches(): MatchesState {
@@ -37,9 +38,12 @@ export function useMatches(): MatchesState {
   const [selectedGroup, setSelectedGroup]   = useState<WmGroup>('A');
   const [resultsMap, setResultsMap]         = useState<Record<number, MatchResult>>({});
   const [oddsMap, setOddsMap]               = useState<Record<string, MarketProbs>>({});
+  const [retryCount, setRetryCount]         = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError(null);
     async function init() {
       try {
         const [results, odds] = await Promise.all([fetchResults(), fetchOdds()]);
@@ -54,7 +58,7 @@ export function useMatches(): MatchesState {
     }
     init();
     return () => { cancelled = true; };
-  }, []);
+  }, [retryCount]);
 
   const matches = useMemo<MatchEntry[]>(() => {
     const inputs = WM_SCHEDULE
@@ -108,7 +112,7 @@ export function useMatches(): MatchesState {
 
   const hasMarket = matches.some(m => m.result.marketApplied);
 
-  return { loading, error, tab, selectedGroup, matches, hasMarket, setTab, setSelectedGroup };
+  return { loading, error, tab, selectedGroup, matches, hasMarket, setTab, setSelectedGroup, retry: () => setRetryCount(c => c + 1) };
 }
 
 export { WM_GROUPS };

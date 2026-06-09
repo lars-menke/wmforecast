@@ -13,7 +13,7 @@ export default function App() {
   const [activeMatch, setActiveMatch]     = useState<MatchEntry | null>(null);
   const [showSettings, setShowSettings]   = useState(false);
   const state = useMatches();
-  const { tab, setTab, selectedGroup, setSelectedGroup, matches, loading, error } = state;
+  const { tab, setTab, selectedGroup, setSelectedGroup, matches, loading, error, retry } = state;
 
   const handleCardClick  = useCallback((m: MatchEntry) => setActiveMatch(m), []);
   const handleSheetClose = useCallback(() => setActiveMatch(null), []);
@@ -97,8 +97,9 @@ export default function App() {
             </div>
           )}
           {!showSettings && error && !loading && (
-            <div className={styles.center}>
+            <div className={styles.center} style={{ flexDirection: 'column' }}>
               <p className={styles.errorText}>{error}</p>
+              <button className={styles.retryBtn} onClick={retry} type="button">Erneut versuchen</button>
             </div>
           )}
           {!showSettings && !loading && !error && tab === 'group' && (

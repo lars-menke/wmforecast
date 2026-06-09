@@ -3,16 +3,16 @@
 :root {
   /* Hintergruende (Light) */
   --bg-page:        #F2F2F7;
-  --bg-card:        #FFFFFF;
+  --bg-card:        #FEFEFE;
   --bg-fill:        rgba(118, 118, 128, 0.12);
   --bg-fill-strong: rgba(118, 118, 128, 0.24);
   --bg-track:       #F2F2F7;
   --bg-tabbar:      rgba(249, 249, 249, 0.94);
 
   /* Text (Light) */
-  --text-primary:   #000000;
-  --text-secondary: #8E8E93;
-  --text-tertiary:  #C7C7CC;
+  --text-primary:   #050505;
+  --text-secondary: #6D6D72;
+  --text-tertiary:  #8E8E93;
   --text-on-accent: #FFFFFF;
 
   /* Systemfarben (Light) */
@@ -89,13 +89,13 @@
   :root {
     --shadow-card:     0 1px 0 rgba(255,255,255,0.04);
     --shadow-card-top: 0 0 0 1.5px var(--system-yellow), 0 4px 20px -2px rgba(255, 204, 0, 0.22);
-    --bg-page:        #000000;
+    --bg-page:        #0A0A0C;
     --bg-card:        #1C1C1E;
     --bg-fill:        rgba(118, 118, 128, 0.24);
     --bg-fill-strong: rgba(118, 118, 128, 0.36);
     --bg-track:       #2C2C2E;
     --bg-tabbar:      rgba(28, 28, 30, 0.94);
-    --text-primary:   #FFFFFF;
+    --text-primary:   #F5F5F7;
     --text-secondary: #98989E;
     --text-tertiary:  #6C6C70;
     --system-blue:    #0A84FF;
@@ -115,13 +115,13 @@ html[data-theme='dark'] {
   color-scheme: dark;
   --shadow-card:     0 1px 0 rgba(255,255,255,0.04);
   --shadow-card-top: 0 0 0 1.5px var(--system-yellow), 0 4px 20px -2px rgba(255, 204, 0, 0.22);
-  --bg-page:        #000000;
+  --bg-page:        #0A0A0C;
   --bg-card:        #1C1C1E;
   --bg-fill:        rgba(118, 118, 128, 0.24);
   --bg-fill-strong: rgba(118, 118, 128, 0.36);
   --bg-track:       #2C2C2E;
   --bg-tabbar:      rgba(28, 28, 30, 0.94);
-  --text-primary:   #FFFFFF;
+  --text-primary:   #F5F5F7;
   --text-secondary: #98989E;
   --text-tertiary:  #6C6C70;
   --system-blue:    #0A84FF;

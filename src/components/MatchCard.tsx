@@ -13,13 +13,12 @@ type Props = {
 type Category = {
   label: string;
   badge: 'badgeFav' | 'badgeEdge' | 'badgeFiftyFifty';
-  stripe: 'stripeGold' | 'stripeBlue' | 'stripeGray';
 };
 
 function getCategory(fp: number): Category {
-  if (fp >= 0.70) return { label: 'Favorit', badge: 'badgeFav',        stripe: 'stripeGold' };
-  if (fp >= 0.55) return { label: 'Kante',   badge: 'badgeEdge',       stripe: 'stripeBlue' };
-  return             { label: '50/50',     badge: 'badgeFiftyFifty',  stripe: 'stripeGray' };
+  if (fp >= 0.70) return { label: 'Favorit', badge: 'badgeFav' };
+  if (fp >= 0.55) return { label: 'Kante',   badge: 'badgeEdge' };
+  return             { label: '50/50',     badge: 'badgeFiftyFifty' };
 }
 
 function formatKickoff(iso: string): string {
@@ -50,7 +49,6 @@ export default function MatchCard({ match, onClick, style }: Props) {
       style={style}
       type="button"
     >
-      <div className={`${styles.accentStripe} ${styles[cat.stripe]}`} />
       <div className={styles.inner}>
 
         {/* Header */}
@@ -102,7 +100,7 @@ export default function MatchCard({ match, onClick, style }: Props) {
             <span className={styles.probPct} data-numeric>{(pH * 100).toFixed(0)}%</span>
             <span className={styles.probLbl}>Heimsieg</span>
           </div>
-          <div className={`${styles.probCell} ${styles.probCellMid}${wo === 'D' ? ` ${styles.probCellDraw}` : ''}`}>
+          <div className={`${styles.probCell}${wo === 'D' ? ` ${styles.probCellDraw}` : ''}`}>
             <span className={styles.probPct} data-numeric>{(pD * 100).toFixed(0)}%</span>
             <span className={styles.probLbl}>Remis</span>
           </div>

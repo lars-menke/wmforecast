@@ -11,8 +11,8 @@
   box-shadow: var(--shadow-card);
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: cardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--card-index, 0) * 55ms);
+  animation: cardIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--card-index, 0) * 30ms);
   will-change: transform;
 }
 
@@ -23,15 +23,11 @@
 
 .card:active { transform: scale(0.972) translateY(1px); }
 
+@media (hover: hover) {
+  .card:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.08); }
+}
+
 .cardTop { box-shadow: var(--shadow-card-top); }
-.cardTop:active { box-shadow: var(--shadow-card-top); }
-
-/* Left accent stripe */
-.accentStripe { width: 5px; flex-shrink: 0; }
-
-.stripeGold { background: var(--system-yellow); }
-.stripeBlue { background: var(--system-blue); }
-.stripeGray { background: var(--bg-fill-strong); }
 
 .inner {
   flex: 1;
@@ -52,7 +48,7 @@
 
 .meta {
   font-size: var(--size-caption-1);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   white-space: nowrap;
   letter-spacing: 0.1px;
 }
@@ -142,10 +138,8 @@
 
 .scoreLabel {
   font-size: var(--size-caption-2);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   line-height: 1;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
 }
 
 /* Probability grid: 3 equal cells separated by bg-page gap */
@@ -185,6 +179,6 @@
 
 .probLbl {
   font-size: var(--size-caption-2);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   line-height: 1;
 }
