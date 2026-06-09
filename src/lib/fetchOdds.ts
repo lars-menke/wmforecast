@@ -19,15 +19,21 @@ const ODDS_TEAM_MAP: Record<string, string> = {
   'New Zealand': 'NZL', 'Jamaica': 'JAM', 'Honduras': 'HON', 'Panama': 'PAN',
 };
 
+// Bevorzugte Buchmacher nach Qualität (Pinnacle = schärfste Linien, geringste Marge)
+const PREFERRED_BOOKMAKERS = ['pinnacle', 'bet365', 'unibet', 'williamhill', 'betfair'];
+
+type Bookmaker = {
+  key: string;
+  markets: Array<{
+    key: string;
+    outcomes: Array<{ name: string; price: number }>;
+  }>;
+};
+
 type OddsGame = {
   home_team: string;
   away_team: string;
-  bookmakers: Array<{
-    markets: Array<{
-      key: string;
-      outcomes: Array<{ name: string; price: number }>;
-    }>;
-  }>;
+  bookmakers: Bookmaker[];
 };
 
 function decimalToImplied(dec: number): number {
@@ -37,6 +43,20 @@ function decimalToImplied(dec: number): number {
 function normalizeProbs(h: number, d: number, a: number): MarketProbs {
   const sum = h + d + a;
   return { h: (h / sum) * 100, d: (d / sum) * 100, a: (a / sum) * 100 };
+}
+
+function bestBookmaker(bookmakers: Bookmaker[]): Bookmaker | null {
+  for (const name of PREFERRED_BOOKMAKERS) {
+    const found = bookmakers.find(b => b.key.includes(name));
+    if (found) return found;
+  }
+  return bookmakers[0] ?? null;
+}
+
+// Poisson-basierter Remis-Fallback wenn keine Draw-Quote vorhanden
+function poissonDrawFallback(h: number, a: number): number {
+  const raw = Math.max(0, 1 - h - a);
+  return Math.min(0.35, Math.max(0.18, raw));
 }
 
 export async function fetchOdds(): Promise<Record<string, MarketProbs>> {
@@ -63,7 +83,7 @@ export async function fetchOdds(): Promise<Record<string, MarketProbs>> {
       const awayCode = ODDS_TEAM_MAP[g.away_team];
       if (!homeCode || !awayCode) continue;
 
-      const bm = g.bookmakers[0];
+      const bm = bestBookmaker(g.bookmakers);
       if (!bm) continue;
       const market = bm.markets.find(m => m.key === 'h2h');
       if (!market) continue;
@@ -74,7 +94,10 @@ export async function fetchOdds(): Promise<Record<string, MarketProbs>> {
         else if (o.name === g.away_team) a = decimalToImplied(o.price);
         else d = decimalToImplied(o.price);
       }
-      if (h && a) data[`${homeCode}-${awayCode}`] = normalizeProbs(h, d || 0.28, a);
+      if (h && a) {
+        const drawFallback = d || poissonDrawFallback(h, a);
+        data[`${homeCode}-${awayCode}`] = normalizeProbs(h, drawFallback, a);
+      }
     }
 
     try {

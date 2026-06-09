@@ -15,10 +15,10 @@ export type CalibSample = {
 
 // Hardcodierte Kalibrierungsparameter (WM 2018 + 2022, n=128 Spiele)
 export const HARDCODED_CALIB: CalibParams = {
-  aH: 1.08, bH: -0.04,
-  aD: 1.05, bD: -0.02,
-  aA: 1.06, bA: -0.03,
-  n: 128,
+  aH: 0.763, bH: 0.245,
+  aD: 0.867, bD: -0.131,
+  aA: 0.8, bA: 0.021,
+  n: 176,
 };
 
 function sigmoid(x: number): number {
