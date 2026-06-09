@@ -17,10 +17,15 @@
 }
 
 .iconWrap {
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
-  animation: iconIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: iconIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.trophy {
+  filter: drop-shadow(0 8px 24px rgba(200, 148, 10, 0.45))
+          drop-shadow(0 2px 6px rgba(0, 0, 0, 0.30));
 }
 
 @keyframes iconIn {

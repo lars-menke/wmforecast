@@ -7,6 +7,7 @@ import KnockoutScreen from './screens/KnockoutScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './components/SplashScreen';
 import MatchDetailSheet from './components/MatchDetailSheet';
+import TrophyIcon from './components/TrophyIcon';
 import styles from './App.module.css';
 
 export default function App() {
@@ -27,8 +28,9 @@ export default function App() {
       <div className={styles.root}>
         {/* Navigation Header */}
         <header className={styles.header}>
-          {/* Wordmark */}
+          {/* Wordmark + Trophy */}
           <div className={styles.wordmark} aria-label="WMForecast">
+            <TrophyIcon size={22} className={styles.wordmarkTrophy} />
             <span className={styles.wordmarkWm}>WM</span>
             <span className={styles.wordmarkForecast}>Forecast</span>
           </div>
