@@ -21,11 +21,28 @@ function pct(v: number): string {
   return (v * 100).toFixed(1) + '%';
 }
 
+type DetailRowProps = {
+  label: string;
+  value: string;
+  hint: string;
+};
+
+function DetailRow({ label, value, hint }: DetailRowProps) {
+  return (
+    <div className={styles.detailRow}>
+      <div className={styles.detailLeft}>
+        <span className={styles.detailKey}>{label}</span>
+        <span className={styles.detailHint}>{hint}</span>
+      </div>
+      <span className={styles.detailVal} data-numeric>{value}</span>
+    </div>
+  );
+}
+
 export default function MatchDetailSheet({ match, onClose }: Props) {
   const [visible, setVisible] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  // Einblenden wenn match sich aendert
   useEffect(() => {
     if (match) {
       requestAnimationFrame(() => setVisible(true));
@@ -34,7 +51,6 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
     }
   }, [match]);
 
-  // Schliessen per Hintergrund-Klick
   function handleBackdrop(e: React.MouseEvent) {
     if (e.target === e.currentTarget) handleClose();
   }
@@ -44,7 +60,6 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
     setTimeout(onClose, 280);
   }
 
-  // Touch-Swipe nach unten schliesst Sheet
   const touchStartY = useRef(0);
   function onTouchStart(e: React.TouchEvent) {
     touchStartY.current = e.touches[0].clientY;
@@ -76,7 +91,6 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        {/* Drag-Handle */}
         <div className={styles.handle} />
 
         {/* Teams */}
@@ -99,7 +113,7 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
           </div>
         </div>
 
-        {/* Wahrscheinlichkeiten */}
+        {/* Prognose */}
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Prognose</h3>
           <ProbabilityBar home={pH} draw={pD} away={pA} />
@@ -121,32 +135,58 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
 
         {/* Modell-Details */}
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Modell</h3>
+          <h3 className={styles.sectionTitle}>Modell-Parameter</h3>
           <div className={styles.detailGrid}>
-            <span className={styles.detailKey}>xG {homeNation?.shortName ?? home}</span>
-            <span className={styles.detailVal} data-numeric>{lH.toFixed(2)}</span>
-            <span className={styles.detailKey}>xG {awayNation?.shortName ?? away}</span>
-            <span className={styles.detailVal} data-numeric>{lA.toFixed(2)}</span>
-            <span className={styles.detailKey}>Lambda-Differenz</span>
-            <span className={styles.detailVal} data-numeric>{lambdaDiff >= 0 ? '+' : ''}{lambdaDiff.toFixed(2)}</span>
-            <span className={styles.detailKey}>Wahrscheinlichstes Ergebnis</span>
-            <span className={styles.detailVal} data-numeric>{naturalTipp ?? '-'}</span>
-            <span className={styles.detailKey}>Marktquoten</span>
-            <span className={styles.detailVal}>{marketApplied ? 'angewandt' : 'kein Signal'}</span>
-            <span className={styles.detailKey}>Kalibrierung</span>
-            <span className={styles.detailVal}>{calibrated ? 'Platt' : 'Shrink'}</span>
+            <DetailRow
+              label={`xG ${homeNation?.shortName ?? home}`}
+              value={lH.toFixed(2)}
+              hint="Erwartete Tore aus historischer Angriffs- und Abwehrbilanz"
+            />
+            <DetailRow
+              label={`xG ${awayNation?.shortName ?? away}`}
+              value={lA.toFixed(2)}
+              hint="Erwartete Tore aus historischer Angriffs- und Abwehrbilanz"
+            />
+            <DetailRow
+              label="Lambda-Differenz"
+              value={`${lambdaDiff >= 0 ? '+' : ''}${lambdaDiff.toFixed(2)}`}
+              hint="Stärkeunterschied beider Teams; >0 bedeutet Heimteam stärker"
+            />
+            <DetailRow
+              label="Tipp"
+              value={naturalTipp ?? '-'}
+              hint="Wahrscheinlichstes Ergebnis in Richtung der vorhergesagten Seite"
+            />
+            <DetailRow
+              label="Marktquoten"
+              value={marketApplied ? 'angewandt' : 'kein Signal'}
+              hint={marketApplied
+                ? 'Newton-Raphson-Korrektur auf Buchmacher-Implizitwahrscheinlichkeiten'
+                : 'Keine Buchmacher-Quoten verfügbar, reine Modell-Prognose'}
+            />
+            <DetailRow
+              label="Kalibrierung"
+              value={calibrated ? 'Platt' : 'Shrink'}
+              hint={calibrated
+                ? 'Sigmoid-Transformation trainiert auf WM 2018 & 2022'
+                : 'Prior-Shrinkage: 88 % zum Gleichgewicht 1/3 je Ausgang'}
+            />
             {drawBlocked && (
-              <>
-                <span className={styles.detailKey}>Unentschieden</span>
-                <span className={styles.detailVal}>gesperrt</span>
-              </>
+              <DetailRow
+                label="Remis gesperrt"
+                value="aktiv"
+                hint="Bei stark asymmetrischen Duellen wird Remis als Prognose ausgeschlossen"
+              />
             )}
           </div>
         </section>
 
-        {/* Top 5 Ergebnisse */}
+        {/* Top-Ergebnisse */}
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Top-Ergebnisse</h3>
+          <h3 className={styles.sectionTitle}>Wahrscheinlichste Ergebnisse</h3>
+          <p className={styles.sectionHint}>
+            Alle Ergebnisse aus der Poisson-Matrix, sortiert nach Einzel-Wahrscheinlichkeit
+          </p>
           <div className={styles.scoreList}>
             {top5.map(([score, prob]) => (
               <div key={score} className={styles.scoreRow}>
