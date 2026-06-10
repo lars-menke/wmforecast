@@ -117,7 +117,7 @@ export const NATION_STATS: Record<string, TeamStats> = {
   GER: { rank:  8, hGF: 1.72, hGA: 1.05, aGF: 1.72, aGA: 1.05 },
   URU: { rank:  9, hGF: 1.35, hGA: 0.73, aGF: 1.35, aGA: 0.73 },
   COL: { rank: 10, hGF: 1.47, hGA: 0.71, aGF: 1.47, aGA: 0.71 },
-  BEL: { rank: 11, hGF: 2.04, hGA: 0.71, aGF: 2.04, aGA: 0.71 },
+  BEL: { rank: 11, hGF: 1.68, hGA: 0.71, aGF: 1.68, aGA: 0.71 },
   USA: { rank: 12, hGF: 1.11, hGA: 1.04, aGF: 1.11, aGA: 1.04 },
   MEX: { rank: 13, hGF: 1.15, hGA: 1.05, aGF: 1.15, aGA: 1.05 },
   MAR: { rank: 14, hGF: 1.18, hGA: 0.69, aGF: 1.18, aGA: 0.69 },
