@@ -1,13 +1,13 @@
 {
   "name": "wmforecast",
   "private": true,
-  "version": "2.0.0 (Build 02)",
+  "version": "2.0.0 (Build 04)",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "deploy": "node scripts/bump-build.mjs && npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "geist": "^1.7.0",
