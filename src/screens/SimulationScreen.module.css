@@ -70,6 +70,47 @@
   color: var(--text-secondary);
 }
 
+/* Bonus-Tipps */
+.bonusCard {
+  margin: var(--space-4) var(--space-4) 0;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: var(--space-3) var(--space-4);
+}
+
+.bonusTitle {
+  font-size: var(--size-footnote);
+  font-weight: var(--weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-3);
+}
+
+.bonusGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.bonusItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bonusLabel {
+  font-size: var(--size-caption-1);
+  color: var(--text-secondary);
+}
+
+.bonusValue {
+  font-size: var(--size-subhead);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
 /* List */
 .list {
   display: flex;
