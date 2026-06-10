@@ -48,7 +48,10 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
   useEffect(() => {
     if (match) {
       requestAnimationFrame(() => setVisible(true));
+<<<<<<< Updated upstream
       // Load goal detail for finished/live matches
+=======
+>>>>>>> Stashed changes
       if ((match.finished || match.live) && match.actual) {
         setGoals(match.goals ?? []);
         if (match.fdId) {
@@ -224,7 +227,11 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
                 <div key={i} className={styles.goalRow}>
                   <span className={styles.goalMinute} data-numeric>{g.minute}'</span>
                   <span className={styles.goalScorer}>{g.scorer}</span>
+<<<<<<< Updated upstream
                   <span className={styles.goalTeam}>{g.team === 'H' ? homeNation?.shortName ?? match.home : awayNation?.shortName ?? match.away}</span>
+=======
+                  <span className={styles.goalTeam}>{g.team === 'H' ? homeNation?.shortName ?? home : awayNation?.shortName ?? away}</span>
+>>>>>>> Stashed changes
                 </div>
               ))}
             </div>
