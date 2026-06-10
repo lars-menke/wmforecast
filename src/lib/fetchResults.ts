@@ -1,3 +1,5 @@
+import { resolveTla } from './fdUtils';
+
 const FD_BASE   = 'https://api.football-data.org/v4';
 const FD_KEY    = import.meta.env.VITE_FD_API_KEY ?? '';
 const WC_CODE   = 'WC';
@@ -29,38 +31,6 @@ type FdMatch = {
   }>;
 };
 
-// Map football-data.org TLA codes to our FIFA codes where they differ
-const FD_TLA_MAP: Record<string, string> = {
-  // Standard pass-throughs (same code)
-  'GER': 'GER', 'BRA': 'BRA', 'FRA': 'FRA', 'ARG': 'ARG',
-  'ENG': 'ENG', 'ESP': 'ESP', 'POR': 'POR', 'NED': 'NED',
-  'USA': 'USA', 'MEX': 'MEX', 'CAN': 'CAN',
-  'KOR': 'KOR', 'JPN': 'JPN', 'AUS': 'AUS',
-  'BEL': 'BEL', 'CRO': 'CRO', 'DEN': 'DEN', 'POL': 'POL',
-  'SRB': 'SRB', 'SUI': 'SUI', 'TUR': 'TUR', 'URU': 'URU',
-  'COL': 'COL', 'ECU': 'ECU', 'PAR': 'PAR', 'CHI': 'CHI',
-  'MAR': 'MAR', 'SEN': 'SEN', 'NGA': 'NGA', 'GHA': 'GHA',
-  'CMR': 'CMR', 'EGY': 'EGY', 'TUN': 'TUN', 'ALG': 'ALG',
-  'IRN': 'IRN', 'SAU': 'SAU', 'JOR': 'JOR', 'IRQ': 'IRQ',
-  'QAT': 'QAT', 'UZB': 'UZB',
-  'NOR': 'NOR', 'SWE': 'SWE', 'AUT': 'AUT', 'SCO': 'SCO',
-  'RSA': 'RSA', 'NZL': 'NZL', 'CPV': 'CPV',
-  'PAN': 'PAN', 'HAI': 'HAI',
-  'SVN': 'SVN', 'UKR': 'UKR',
-  'VEN': 'VEN', 'JAM': 'JAM', 'HON': 'HON',
-  // Diverging codes
-  'CIV': 'CIV',   // Ivory Coast (fd.org uses CIV)
-  'COD': 'COD',   // DR Congo
-  'BIH': 'BIH',   // Bosnia
-  'CUW': 'CUW',   // Curacao
-  // fd.org sometimes uses GBR for England in older datasets, normalise:
-  'GBR': 'ENG',
-};
-
-function resolveTla(tla: string): string {
-  return FD_TLA_MAP[tla] ?? tla;
-}
-
 export type GoalEvent = {
   minute: number;
   team: 'H' | 'A';
@@ -81,19 +51,37 @@ export type MatchResult = {
   fdId?: number;
 };
 
-function parseGoals(fdMatch: FdMatch, homeCode: string, awayCode: string): GoalEvent[] {
+function parseGoals(fdMatch: FdMatch): GoalEvent[] {
   if (!fdMatch.goals || fdMatch.goals.length === 0) return [];
-  return fdMatch.goals.map(g => {
-    const isHome = g.team.name === fdMatch.homeTeam.name;
-    return {
-      minute: g.minute,
-      team: isHome ? ('H' as const) : ('A' as const),
-      scorer: g.scorer.name,
-      type: g.type,
-    };
-  });
-  // suppress unused variable warning — homeCode/awayCode available for future use
-  void homeCode; void awayCode;
+  return fdMatch.goals.map(g => ({
+    minute: g.minute,
+    team: g.team.name === fdMatch.homeTeam.name ? ('H' as const) : ('A' as const),
+    scorer: g.scorer.name,
+    type: g.type,
+  }));
+}
+
+function matchToResult(m: FdMatch): MatchResult | null {
+  const isLive     = m.status === 'IN_PLAY' || m.status === 'PAUSED';
+  const isFinished = m.status === 'FINISHED' || m.status === 'AWARDED';
+  if (!isLive && !isFinished) return null;
+
+  const homeCode = resolveTla(m.homeTeam.tla);
+  const awayCode = resolveTla(m.awayTeam.tla);
+  const g1 = m.score.fullTime.home ?? 0;
+  const g2 = m.score.fullTime.away ?? 0;
+
+  return {
+    homeCode,
+    awayCode,
+    g1: isFinished ? g1 : 0,
+    g2: isFinished ? g2 : 0,
+    finished: isFinished,
+    live: isLive,
+    ...(isLive ? { g1Live: g1, g2Live: g2 } : {}),
+    goals: parseGoals(m),
+    fdId: m.id,
+  };
 }
 
 export async function fetchMatchDetail(matchId: number): Promise<MatchResult | null> {
@@ -103,31 +91,13 @@ export async function fetchMatchDetail(matchId: number): Promise<MatchResult | n
       headers: { 'X-Auth-Token': FD_KEY },
     });
     if (!r.ok) return null;
-    const m = (await r.json()) as FdMatch;
-    const homeCode = resolveTla(m.homeTeam.tla);
-    const awayCode = resolveTla(m.awayTeam.tla);
-    const isLive = m.status === 'IN_PLAY' || m.status === 'PAUSED';
-    const isFinished = m.status === 'FINISHED' || m.status === 'AWARDED';
-    const g1 = m.score.fullTime.home ?? 0;
-    const g2 = m.score.fullTime.away ?? 0;
-    return {
-      homeCode,
-      awayCode,
-      g1: isFinished ? g1 : 0,
-      g2: isFinished ? g2 : 0,
-      finished: isFinished,
-      live: isLive,
-      ...(isLive ? { g1Live: g1, g2Live: g2 } : {}),
-      goals: parseGoals(m, homeCode, awayCode),
-      fdId: m.id,
-    };
+    return matchToResult((await r.json()) as FdMatch);
   } catch {
     return null;
   }
 }
 
 export async function fetchResults(): Promise<Record<string, MatchResult>> {
-  // Check cache
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
@@ -149,27 +119,9 @@ export async function fetchResults(): Promise<Record<string, MatchResult>> {
     const data: Record<string, MatchResult> = {};
 
     for (const m of matches) {
-      const isLive = m.status === 'IN_PLAY' || m.status === 'PAUSED';
-      const isFinished = m.status === 'FINISHED' || m.status === 'AWARDED';
-      if (!isLive && !isFinished) continue;
-
-      const homeCode = resolveTla(m.homeTeam.tla);
-      const awayCode = resolveTla(m.awayTeam.tla);
-      const key = `${homeCode}-${awayCode}`;
-
-      const g1 = m.score.fullTime.home ?? 0;
-      const g2 = m.score.fullTime.away ?? 0;
-
-      data[key] = {
-        homeCode,
-        awayCode,
-        g1: isFinished ? g1 : 0,
-        g2: isFinished ? g2 : 0,
-        finished: isFinished,
-        live: isLive,
-        ...(isLive ? { g1Live: g1, g2Live: g2 } : {}),
-        fdId: m.id,
-      };
+      const result = matchToResult(m);
+      if (!result) continue;
+      data[`${result.homeCode}-${result.awayCode}`] = result;
     }
 
     try {

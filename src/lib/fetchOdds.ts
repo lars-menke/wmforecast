@@ -5,18 +5,45 @@ const CACHE_KEY = 'wm_odds_v1';
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 Stunden
 
 const ODDS_TEAM_MAP: Record<string, string> = {
-  'Argentina': 'ARG', 'Brazil': 'BRA', 'France': 'FRA', 'England': 'ENG',
-  'Spain': 'ESP', 'Portugal': 'POR', 'Netherlands': 'NED', 'Germany': 'GER',
-  'Belgium': 'BEL', 'Uruguay': 'URU', 'Colombia': 'COL', 'Croatia': 'CRO',
-  'USA': 'USA', 'Mexico': 'MEX', 'Canada': 'CAN', 'Japan': 'JPN',
-  'South Korea': 'KOR', 'Morocco': 'MAR', 'Senegal': 'SEN', 'Australia': 'AUS',
-  'Switzerland': 'SUI', 'Denmark': 'DEN', 'Austria': 'AUT', 'Poland': 'POL',
-  'Serbia': 'SRB', 'Turkey': 'TUR', 'Ukraine': 'UKR', 'Scotland': 'SCO',
-  'Slovenia': 'SVN', 'Ecuador': 'ECU', 'Venezuela': 'VEN', 'Paraguay': 'PAR',
-  'Iran': 'IRN', 'Saudi Arabia': 'SAU', 'Qatar': 'QAT', 'Iraq': 'IRQ',
-  'Jordan': 'JOR', 'Egypt': 'EGY', 'Nigeria': 'NGA', "Cote d'Ivoire": 'CIV',
-  'Ghana': 'GHA', 'Cameroon': 'CMR', 'Tunisia': 'TUN', 'South Africa': 'RSA',
-  'New Zealand': 'NZL', 'Jamaica': 'JAM', 'Honduras': 'HON', 'Panama': 'PAN',
+  // Group A
+  'Mexico': 'MEX', 'South Korea': 'KOR', 'Korea Republic': 'KOR',
+  'South Africa': 'RSA', 'Czech Republic': 'CZE', 'Czechia': 'CZE',
+  // Group B
+  'Canada': 'CAN', 'Qatar': 'QAT',
+  'Bosnia and Herzegovina': 'BIH', 'Bosnia & Herzegovina': 'BIH', 'Bosnia-Herzegovina': 'BIH',
+  'Switzerland': 'SUI',
+  // Group C
+  'Brazil': 'BRA', 'Morocco': 'MAR', 'Haiti': 'HAI', 'Scotland': 'SCO',
+  // Group D
+  'United States': 'USA', 'USA': 'USA', 'Paraguay': 'PAR',
+  'Australia': 'AUS', 'Turkey': 'TUR', 'Türkiye': 'TUR',
+  // Group E
+  'Germany': 'GER', 'Curaçao': 'CUW', 'Curacao': 'CUW',
+  "Cote d'Ivoire": 'CIV', "Côte d'Ivoire": 'CIV', 'Ivory Coast': 'CIV',
+  'Ecuador': 'ECU',
+  // Group F
+  'Netherlands': 'NED', 'Holland': 'NED', 'Japan': 'JPN',
+  'Sweden': 'SWE', 'Tunisia': 'TUN',
+  // Group G
+  'Belgium': 'BEL', 'Egypt': 'EGY', 'Iran': 'IRN', 'IR Iran': 'IRN',
+  'New Zealand': 'NZL',
+  // Group H
+  'Spain': 'ESP', 'Cape Verde': 'CPV', 'Cabo Verde': 'CPV',
+  'Saudi Arabia': 'SAU', 'Uruguay': 'URU',
+  // Group I
+  'France': 'FRA', 'Senegal': 'SEN', 'Iraq': 'IRQ', 'Norway': 'NOR',
+  // Group J
+  'Argentina': 'ARG', 'Algeria': 'ALG', 'Austria': 'AUT', 'Jordan': 'JOR',
+  // Group K
+  'Portugal': 'POR',
+  'DR Congo': 'COD', 'Congo DR': 'COD', 'Democratic Republic of Congo': 'COD',
+  'Uzbekistan': 'UZB', 'Colombia': 'COL',
+  // Group L
+  'England': 'ENG', 'Croatia': 'CRO', 'Ghana': 'GHA', 'Panama': 'PAN',
+  // Others that may appear
+  'Denmark': 'DEN', 'Poland': 'POL', 'Serbia': 'SRB', 'Ukraine': 'UKR',
+  'Slovenia': 'SVN', 'Venezuela': 'VEN', 'Jamaica': 'JAM', 'Honduras': 'HON',
+  'Nigeria': 'NGA', 'Cameroon': 'CMR', 'South Africa': 'RSA',
 };
 
 // Bevorzugte Buchmacher nach Qualität (Pinnacle = schärfste Linien, geringste Marge)

@@ -1,33 +1,10 @@
+import { resolveTla } from './fdUtils';
+
 const FD_BASE   = 'https://api.football-data.org/v4';
 const FD_KEY    = import.meta.env.VITE_FD_API_KEY ?? '';
 const WC_CODE   = 'WC';
 const CACHE_KEY = 'wm_scorers_v1';
 const CACHE_TTL = 10 * 60 * 1000; // 10 min
-
-const FD_TLA_MAP: Record<string, string> = {
-  'GER': 'GER', 'BRA': 'BRA', 'FRA': 'FRA', 'ARG': 'ARG',
-  'ENG': 'ENG', 'ESP': 'ESP', 'POR': 'POR', 'NED': 'NED',
-  'USA': 'USA', 'MEX': 'MEX', 'CAN': 'CAN',
-  'KOR': 'KOR', 'JPN': 'JPN', 'AUS': 'AUS',
-  'BEL': 'BEL', 'CRO': 'CRO', 'DEN': 'DEN', 'POL': 'POL',
-  'SRB': 'SRB', 'SUI': 'SUI', 'TUR': 'TUR', 'URU': 'URU',
-  'COL': 'COL', 'ECU': 'ECU', 'PAR': 'PAR', 'CHI': 'CHI',
-  'MAR': 'MAR', 'SEN': 'SEN', 'NGA': 'NGA', 'GHA': 'GHA',
-  'CMR': 'CMR', 'EGY': 'EGY', 'TUN': 'TUN', 'ALG': 'ALG',
-  'IRN': 'IRN', 'SAU': 'SAU', 'JOR': 'JOR', 'IRQ': 'IRQ',
-  'QAT': 'QAT', 'UZB': 'UZB',
-  'NOR': 'NOR', 'SWE': 'SWE', 'AUT': 'AUT', 'SCO': 'SCO',
-  'RSA': 'RSA', 'NZL': 'NZL', 'CPV': 'CPV',
-  'PAN': 'PAN', 'HAI': 'HAI',
-  'SVN': 'SVN', 'UKR': 'UKR',
-  'VEN': 'VEN', 'JAM': 'JAM', 'HON': 'HON',
-  'CIV': 'CIV', 'COD': 'COD', 'BIH': 'BIH', 'CUW': 'CUW',
-  'GBR': 'ENG',
-};
-
-function resolveTla(tla: string): string {
-  return FD_TLA_MAP[tla] ?? tla;
-}
 
 type FdScorerEntry = {
   player: { id: number; name: string };
@@ -50,7 +27,6 @@ export type TopScorer = {
 };
 
 export async function fetchTopScorers(): Promise<TopScorer[]> {
-  // Check cache
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
