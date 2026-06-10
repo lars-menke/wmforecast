@@ -4,6 +4,34 @@ import styles from './SettingsScreen.module.css';
 
 const VERSION = __APP_VERSION__;
 
+const PROGNOSE_SECTIONS = [
+  {
+    id: 'montecarlo',
+    title: 'Monte-Carlo-Simulation',
+    body: 'Das gesamte Turnier wird 9.000-mal durchgespielt (30 Parametersätze × 300 Simulationen). Jedes Spiel in der Gruppen- und K.o.-Phase wird einzeln simuliert. Das Ergebnis zeigt, wie oft jedes Team in den jeweiligen Runden landet.',
+  },
+  {
+    id: 'ensemble',
+    title: 'Poisson + Elo-Ensemble',
+    body: 'Die Siegwahrscheinlichkeit jedes Spiels kombiniert das Poisson-Modell (60 %) mit einem Elo-basierten Modell (40 %). Das Elo-Modell nutzt internationale Elo-Ratings und gleicht Verzerrungen aus historischen Statistiken aus.',
+  },
+  {
+    id: 'uncertainty',
+    title: 'Parameterunsicherheit',
+    body: 'In jedem der 30 Parameterdurchläufe werden Angriffs- und Defensivstärken leicht variiert (Box-Muller-Rauschen, σ = 8 %). Das ergibt Konfidenzband-Spannen (5.–95. Perzentile), die zeigen, wie stabil eine Prognose ist.',
+  },
+  {
+    id: 'ipf',
+    title: 'Teamstärken (IPF-Kalibrierung)',
+    body: 'Die Angriffs- und Defensivwerte aller 48 Teams wurden per Iterative Proportional Fitting (IPF) auf 1.444 historischen Länderspielen ab 2018 trainiert. Walk-Forward-Backtesting über 6 Zeitfenster ergab optimale Zeitgewichtung ξ = 0.',
+  },
+  {
+    id: 'bonustipps',
+    title: 'Bonus-Tipps',
+    body: 'Die Empfehlungen für Weltmeister, Torschützenkönig, Halbfinalisten und Gruppensieger werden direkt aus den Simulationsergebnissen abgeleitet: der am häufigsten simulierte Titelgewinner, die stärksten Torchancen-Träger und die wahrscheinlichsten Gruppenführenden.',
+  },
+];
+
 const MODEL_SECTIONS = [
   {
     id: 'poisson',
@@ -84,6 +112,17 @@ export default function SettingsScreen({ onClose }: Props) {
           <h2 className={styles.sectionLabel}>Das Modell</h2>
           {MODEL_SECTIONS.map((s, i) => (
             <div key={s.id} className={`${styles.modelCell} ${i < MODEL_SECTIONS.length - 1 ? styles.modelCellBorder : ''}`}>
+              <span className={styles.modelTitle}>{s.title}</span>
+              <p className={styles.modelBody}>{s.body}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* Prognose-Tab */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionLabel}>Prognose-Tab</h2>
+          {PROGNOSE_SECTIONS.map((s, i) => (
+            <div key={s.id} className={`${styles.modelCell} ${i < PROGNOSE_SECTIONS.length - 1 ? styles.modelCellBorder : ''}`}>
               <span className={styles.modelTitle}>{s.title}</span>
               <p className={styles.modelBody}>{s.body}</p>
             </div>
