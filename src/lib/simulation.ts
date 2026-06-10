@@ -72,6 +72,9 @@ function selectBest8Third(thirdPlaceTeams: SimStandingRow[]): string[] {
 // ---------------------------------------------------------------------------
 
 function simKnockout(home: string, away: string): string {
+  // BYE slot: real team advances automatically
+  if (home === 'BYE') return away;
+  if (away === 'BYE') return home;
   const [g1, g2] = simMatch(home, away);
   if (g1 > g2) return home;
   if (g2 > g1) return away;
@@ -177,12 +180,11 @@ export function runSimulation(
       groupAdvance[code] = (groupAdvance[code] ?? 0) + 1;
     }
 
-    // Knockout rounds (simulate bracket with 32 teams)
-    // Pair up r32Participants sequentially
+    // Knockout rounds: pair up 32 participants sequentially.
+    // If fewer than 32 advanced (early in tournament), give excess slots a bye
+    // by duplicating their opponent — winner is always the real team.
     let round = r32Participants.slice();
-
-    // Pad to power of 2 if needed
-    while (round.length < 32) round.push(round[0] ?? 'GER');
+    while (round.length < 32) round.push('BYE');
 
     // Simulate rounds until final
     const semiFinalLosers: string[] = [];

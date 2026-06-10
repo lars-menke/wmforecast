@@ -2,7 +2,7 @@ import type { MarketProbs } from './poisson';
 
 const ODDS_KEY  = import.meta.env.VITE_ODDS_API_KEY ?? '';
 const CACHE_KEY = 'wm_odds_v1';
-const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 Stunden
+const CACHE_TTL = 45 * 60 * 1000; // 45 Minuten
 
 const ODDS_TEAM_MAP: Record<string, string> = {
   // Group A

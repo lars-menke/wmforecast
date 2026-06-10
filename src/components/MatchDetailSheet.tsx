@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MatchEntry } from '../lib/useMatches';
+import { fetchMatchDetail, type GoalEvent } from '../lib/fetchResults';
 import { NATIONS } from '../lib/nations';
 import TeamLogo from './TeamLogo';
 import ProbabilityBar from './ProbabilityBar';
@@ -41,13 +42,24 @@ function DetailRow({ label, value, hint }: DetailRowProps) {
 
 export default function MatchDetailSheet({ match, onClose }: Props) {
   const [visible, setVisible] = useState(false);
+  const [goals, setGoals]     = useState<GoalEvent[]>([]);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (match) {
       requestAnimationFrame(() => setVisible(true));
+      // Load goal detail for finished/live matches
+      if ((match.finished || match.live) && match.actual) {
+        setGoals(match.goals ?? []);
+        if (match.fdId) {
+          fetchMatchDetail(match.fdId).then(r => { if (r?.goals) setGoals(r.goals); }).catch(() => {});
+        }
+      } else {
+        setGoals([]);
+      }
     } else {
       setVisible(false);
+      setGoals([]);
     }
   }, [match]);
 
@@ -202,6 +214,22 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
             ))}
           </div>
         </section>
+
+        {/* Torschützen */}
+        {goals.length > 0 && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>Torschützen</h3>
+            <div className={styles.goalList}>
+              {goals.map((g, i) => (
+                <div key={i} className={styles.goalRow}>
+                  <span className={styles.goalMinute} data-numeric>{g.minute}'</span>
+                  <span className={styles.goalScorer}>{g.scorer}</span>
+                  <span className={styles.goalTeam}>{g.team === 'H' ? homeNation?.shortName ?? match.home : awayNation?.shortName ?? match.away}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className={styles.safeBottom} />
       </div>

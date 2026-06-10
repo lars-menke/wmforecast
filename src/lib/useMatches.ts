@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { WM_SCHEDULE, WM_GROUPS, type WmStage, type WmGroup } from './schedule';
-import { fetchResults, type MatchResult } from './fetchResults';
+import { fetchResults, type MatchResult, type GoalEvent } from './fetchResults';
 import { fetchOdds } from './fetchOdds';
 import { recalcMatches, deriveNaturalTipp, type CalcResult, type MarketProbs } from './poisson';
 import { NATION_STATS } from './nations';
@@ -18,6 +18,8 @@ export type MatchEntry = {
   actual: { g1: number; g2: number } | null;
   finished: boolean;
   live: boolean;
+  goals: GoalEvent[];
+  fdId: number | undefined;
 };
 
 export type MatchesState = {
@@ -87,14 +89,13 @@ export function useMatches(): MatchesState {
   const effectiveLiveCount = Math.max(liveCount, liveCountFromResults);
 
   useEffect(() => {
-    if (effectiveLiveCount > 0) {
-      intervalRef.current = setInterval(async () => {
-        try {
-          const results = await fetchResults();
-          setResultsMap(results);
-        } catch { /* ignore poll errors */ }
-      }, LIVE_POLL_INTERVAL);
-    }
+    if (effectiveLiveCount <= 0) return;
+    intervalRef.current = setInterval(async () => {
+      try {
+        const results = await fetchResults();
+        setResultsMap(results);
+      } catch { /* ignore poll errors */ }
+    }, LIVE_POLL_INTERVAL);
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -159,6 +160,8 @@ export function useMatches(): MatchesState {
           actual: actual ? { g1: actual.g1, g2: actual.g2 } : null,
           finished: actual?.finished ?? false,
           live: actual?.live ?? false,
+          goals: actual?.goals ?? [],
+          fdId: actual?.fdId,
         }];
       });
   }, [oddsMap, resultsMap]);
