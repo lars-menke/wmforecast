@@ -5,6 +5,7 @@ import { useStandings } from './lib/useStandings';
 import type { MatchEntry } from './lib/useMatches';
 import GroupScreen from './screens/GroupScreen';
 import KnockoutScreen from './screens/KnockoutScreen';
+import SimulationScreen from './screens/SimulationScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './components/SplashScreen';
 import MatchDetailSheet from './components/MatchDetailSheet';
@@ -17,6 +18,7 @@ export default function App() {
   const [activeMatch, setActiveMatch]     = useState<MatchEntry | null>(null);
   const [showSettings, setShowSettings]   = useState(false);
   const state = useMatches();
+  const [simTab, setSimTab] = useState(false);
   const { tab, setTab, selectedGroup, setSelectedGroup, matches, loading, error, retry, liveCount, resultsMap } = state;
   const { standings, loading: standingsLoading } = useStandings(resultsMap);
 
@@ -39,20 +41,27 @@ export default function App() {
 
           {/* Segmented Control */}
           {!showSettings && (
-            <div className={styles.segmented}>
+            <div className={`${styles.segmented} ${styles.segmented3}`}>
               <button
-                className={`${styles.seg}${tab === 'group' ? ` ${styles.segActive}` : ''}`}
-                onClick={() => setTab('group')}
+                className={`${styles.seg}${!simTab && tab === 'group' ? ` ${styles.segActive}` : ''}`}
+                onClick={() => { setSimTab(false); setTab('group'); }}
                 type="button"
               >
                 Gruppen
               </button>
               <button
-                className={`${styles.seg}${tab === 'knockout' ? ` ${styles.segActive}` : ''}`}
-                onClick={() => setTab('knockout')}
+                className={`${styles.seg}${!simTab && tab === 'knockout' ? ` ${styles.segActive}` : ''}`}
+                onClick={() => { setSimTab(false); setTab('knockout'); }}
                 type="button"
               >
-                K.o.-Runde
+                K.o.
+              </button>
+              <button
+                className={`${styles.seg}${simTab ? ` ${styles.segActive}` : ''}`}
+                onClick={() => setSimTab(true)}
+                type="button"
+              >
+                Prognose
               </button>
             </div>
           )}
@@ -115,7 +124,7 @@ export default function App() {
               <button className={styles.retryBtn} onClick={retry} type="button">Erneut versuchen</button>
             </div>
           )}
-          {!showSettings && !loading && !error && tab === 'group' && (
+          {!showSettings && !loading && !error && !simTab && tab === 'group' && (
             <GroupScreen
               matches={matches}
               selectedGroup={selectedGroup}
@@ -125,8 +134,11 @@ export default function App() {
               standingsLoading={standingsLoading}
             />
           )}
-          {!showSettings && !loading && !error && tab === 'knockout' && (
+          {!showSettings && !loading && !error && !simTab && tab === 'knockout' && (
             <KnockoutScreen matches={matches} onMatchClick={handleCardClick} />
+          )}
+          {!showSettings && !loading && !error && simTab && (
+            <SimulationScreen resultsMap={resultsMap} />
           )}
         </main>
       </div>

@@ -9,6 +9,22 @@ export type Nation = {
   textOnColor: 'light' | 'dark';
 };
 
+// FIFA/World Football Elo ratings — Stand Turnierbeginn Juni 2026
+export const ELO_RATINGS: Record<string, number> = {
+  ARG: 2052, FRA: 2010, ESP: 1990, ENG: 1985, BRA: 1970,
+  POR: 1960, NED: 1942, GER: 1933, COL: 1882, BEL: 1865,
+  URU: 1855, USA: 1825, MAR: 1815, JPN: 1820, MEX: 1800,
+  CAN: 1785, SEN: 1785, CRO: 1790, SUI: 1800, AUT: 1790,
+  DEN: 1765, UKR: 1745, IRN: 1730, AUS: 1755, SRB: 1745,
+  SWE: 1775, TUR: 1770, NOR: 1775, KOR: 1745, POL: 1735,
+  CZE: 1725, ECU: 1705, SCO: 1720, SVN: 1700, CIV: 1680,
+  SAU: 1660, NGA: 1680, EGY: 1660, ALG: 1650, PAR: 1640,
+  BIH: 1620, CMR: 1620, GHA: 1610, TUN: 1640, COD: 1600,
+  VEN: 1600, PAN: 1590, IRQ: 1570, QAT: 1555, RSA: 1550,
+  UZB: 1550, JAM: 1530, JOR: 1520, CPV: 1530, HON: 1510,
+  CUW: 1490, NZL: 1500, HAI: 1470,
+};
+
 export const NATIONS: Record<string, Nation> = {
   // Nordamerika (Gastgeber)
   USA: { code: 'USA', name: 'USA',           shortName: 'USA', flag: '🇺🇸', color: '#002868', textOnColor: 'light' },
