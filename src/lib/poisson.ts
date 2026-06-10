@@ -19,10 +19,7 @@ export type CalcResult = {
   lH: number; lA: number;
   fp: number;
   drawBlocked: boolean;
-  goalRuleApplied: boolean;
-  favScoreRuleApplied: boolean;
   lambdaDiff: number;
-  effectiveDrawThreshold: number;
   marketApplied: boolean;
   calibrated: boolean;
 };
@@ -145,6 +142,71 @@ function effectiveLambdas(
 }
 
 // ---------------------------------------------------------------------------
+// Hilfsfunktion: Wahrscheinlichkeiten direkt aus Lambdas (ohne Form/Boost)
+// ---------------------------------------------------------------------------
+
+function calcProbsFromLambdas(lH: number, lA: number): { pH: number; pD: number; pA: number } {
+  const mat = buildMatrix(
+    Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lH)),
+    Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lA)),
+  );
+  const { pH, pD, pA } = rawProbs(mat);
+  const sum = pH + pD + pA;
+  return { pH: pH / sum, pD: pD / sum, pA: pA / sum };
+}
+
+// ---------------------------------------------------------------------------
+// Newton-Raphson Marktkorrektur
+// Passt lH und lA iterativ an, sodass P(H) und P(A) den Marktquoten entsprechen.
+// ---------------------------------------------------------------------------
+
+function applyMarketCorrection(
+  lH: number, lA: number,
+  market: MarketProbs,
+  iters = 12,
+  damp  = 0.5,
+): { lH: number; lA: number; pH: number; pD: number; pA: number } {
+  const mH = market.h / 100;
+  const mA = market.a / 100;
+
+  // Degenerierte Marktdaten abfangen
+  if (mH <= 0.02 || mA <= 0.02 || mH + mA > 0.98) {
+    return { lH, lA, ...calcProbsFromLambdas(lH, lA) };
+  }
+
+  let xH = 1.0; // Multiplikator für lH
+  let xA = 1.0; // Multiplikator für lA
+  const eps = 1e-4;
+
+  for (let iter = 0; iter < iters; iter++) {
+    const { pH: pH0, pA: pA0 } = calcProbsFromLambdas(lH * xH, lA * xA);
+    const f1 = pH0 - mH;
+    const f2 = pA0 - mA;
+    if (Math.abs(f1) < 1e-5 && Math.abs(f2) < 1e-5) break;
+
+    // Numerischer Jacobian
+    const { pH: pH_h, pA: pA_h } = calcProbsFromLambdas(lH * (xH + eps), lA * xA);
+    const { pH: pH_a, pA: pA_a } = calcProbsFromLambdas(lH * xH, lA * (xA + eps));
+    const J11 = (pH_h - pH0) / eps;
+    const J12 = (pH_a - pH0) / eps;
+    const J21 = (pA_h - pA0) / eps;
+    const J22 = (pA_a - pA0) / eps;
+
+    const det = J11 * J22 - J12 * J21;
+    if (Math.abs(det) < 1e-10) break;
+
+    xH += damp * (-f1 * J22 + f2 * J12) / det;
+    xA += damp * ( f1 * J21 - f2 * J11) / det;
+    xH = Math.max(0.4, Math.min(2.5, xH));
+    xA = Math.max(0.4, Math.min(2.5, xA));
+  }
+
+  const lH_adj = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lH * xH));
+  const lA_adj = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lA * xA));
+  return { lH: lH_adj, lA: lA_adj, ...calcProbsFromLambdas(lH_adj, lA_adj) };
+}
+
+// ---------------------------------------------------------------------------
 // Wahrscheinlichstes Ergebnis und sortierte Ergebnisliste
 // ---------------------------------------------------------------------------
 
@@ -178,13 +240,26 @@ export function calcMatch(
   allStats: Record<string, TeamStats>,
   hForm: FormData = null,
   aForm: FormData = null,
+  market: MarketProbs | null = null,
 ): CalcResult | null {
   const hStats = allStats[home];
   const aStats = allStats[away];
   if (!hStats || !aStats) return null;
 
-  const { lH, lA } = effectiveLambdas(hStats, aStats, hForm, aForm);
-  const mat = buildMatrix(lH, lA);
+  let { lH, lA } = effectiveLambdas(hStats, aStats, hForm, aForm);
+  let marketApplied = false;
+  let mat: number[][];
+
+  if (market) {
+    const corrected = applyMarketCorrection(lH, lA, market);
+    lH = corrected.lH;
+    lA = corrected.lA;
+    marketApplied = true;
+    mat = buildMatrix(lH, lA);
+  } else {
+    mat = buildMatrix(lH, lA);
+  }
+
   let { pH, pD, pA } = rawProbs(mat);
   const boosted = applyDrawBoost(pH, pD, pA, lH, lA);
   pH = Math.max(0, boosted.pH);
@@ -196,13 +271,7 @@ export function calcMatch(
   const srt = topResults(mat);
   const fp = Math.max(pH, pD, pA);
   const wo: Outcome = pH >= pD && pH >= pA ? 'H' : pD >= pA ? 'D' : 'A';
-  const filteredSrt = srt.filter(([score]) => {
-    const [g1, g2] = score.split(':').map(Number);
-    if (wo === 'H') return g1 > g2;
-    if (wo === 'A') return g1 < g2;
-    return g1 === g2;
-  });
-  const naturalTipp = filteredSrt.length > 0 ? filteredSrt[0][0] : srt[0][0];
+  const naturalTipp = deriveNaturalTipp(srt, wo);
   const lambdaDiff = lH - lA;
 
   return {
@@ -213,13 +282,20 @@ export function calcMatch(
     lH, lA,
     fp,
     drawBlocked: false,
-    goalRuleApplied: false,
-    favScoreRuleApplied: false,
     lambdaDiff,
-    effectiveDrawThreshold: 0,
-    marketApplied: false,
+    marketApplied,
     calibrated: false,
   };
+}
+
+export function deriveNaturalTipp(srt: Array<[string, number]>, wo: Outcome): string | null {
+  const filtered = srt.filter(([score]) => {
+    const [g1, g2] = score.split(':').map(Number);
+    if (wo === 'H') return g1 > g2;
+    if (wo === 'A') return g1 < g2;
+    return g1 === g2;
+  });
+  return filtered.length > 0 ? filtered[0][0] : srt[0]?.[0] ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,7 +308,7 @@ export function recalcMatches(
 ): Record<string, CalcResult> {
   const out: Record<string, CalcResult> = {};
   for (const m of inputs) {
-    const r = calcMatch(m.home, m.away, allStats, m.hForm, m.aForm);
+    const r = calcMatch(m.home, m.away, allStats, m.hForm, m.aForm, m.p);
     if (r) out[m.id] = r;
   }
   return out;

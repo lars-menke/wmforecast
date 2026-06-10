@@ -53,10 +53,14 @@ function bestBookmaker(bookmakers: Bookmaker[]): Bookmaker | null {
   return bookmakers[0] ?? null;
 }
 
-// Poisson-basierter Remis-Fallback wenn keine Draw-Quote vorhanden
+// Schätzt Draw-Wahrscheinlichkeit aus Heimsieg/Auswärtssieg-Implied-Odds.
+// h und a sind rohe Implied-Werte (mit Overround) — ihr Verhältnis gibt
+// die Ausgeglichenheit des Spiels an, unabhängig von der Buchmacher-Marge.
 function poissonDrawFallback(h: number, a: number): number {
-  const raw = Math.max(0, 1 - h - a);
-  return Math.min(0.35, Math.max(0.18, raw));
+  const total = h + a;
+  if (total <= 0) return 0.25;
+  const balance = Math.min(h, a) / Math.max(h, a); // 0 = einseitig, 1 = ausgeglichen
+  return 0.17 + balance * 0.14; // 0.17 bei Favorit, 0.31 bei Gleichstand
 }
 
 export async function fetchOdds(): Promise<Record<string, MarketProbs>> {

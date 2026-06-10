@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { WM_SCHEDULE, WM_GROUPS, type WmStage, type WmGroup } from './schedule';
 import { fetchResults, type MatchResult } from './fetchResults';
 import { fetchOdds } from './fetchOdds';
-import { recalcMatches, type CalcResult, type MarketProbs } from './poisson';
+import { recalcMatches, deriveNaturalTipp, type CalcResult, type MarketProbs } from './poisson';
 import { NATION_STATS } from './nations';
 import { applyCalib, shrinkToMean, HARDCODED_CALIB } from './calibration';
 
@@ -67,7 +67,8 @@ export function useMatches(): MatchesState {
         id: m.id,
         home: m.home,
         away: m.away,
-        p: oddsMap[`${m.home}-${m.away}`] ?? null,
+        // check both key directions — Odds API home/away order may differ from schedule
+      p: oddsMap[`${m.home}-${m.away}`] ?? oddsMap[`${m.away}-${m.home}`] ?? null,
         hForm: null,
         aForm: null,
       }));
@@ -92,7 +93,9 @@ export function useMatches(): MatchesState {
 
         const fp = Math.max(pH, pD, pA);
         const wo = pH >= pD && pH >= pA ? 'H' as const : pD >= pA ? 'D' as const : 'A' as const;
-        const result: CalcResult = { ...rawResult, pH, pD, pA, fp, wo, calibrated };
+        // Recompute naturalTipp using calibrated wo — avoids tipp/outcome mismatch
+        const naturalTipp = deriveNaturalTipp(rawResult.srt, wo);
+        const result: CalcResult = { ...rawResult, pH, pD, pA, fp, wo, naturalTipp, calibrated };
 
         const actual = resultsMap[m.apiId];
         return [{

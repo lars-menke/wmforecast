@@ -13,11 +13,11 @@ export type CalibSample = {
   actual: 'H' | 'D' | 'A';
 };
 
-// Hardcodierte Kalibrierungsparameter (WM 2018 + 2022, n=128 Spiele)
+// Hardcodierte Kalibrierungsparameter (WM 2014 + 2018 + 2022, n=176 Spiele)
 export const HARDCODED_CALIB: CalibParams = {
   aH: 0.763, bH: 0.245,
   aD: 0.867, bD: -0.131,
-  aA: 0.8, bA: 0.021,
+  aA: 0.8,   bA: 0.021,
   n: 176,
 };
 
@@ -25,13 +25,18 @@ function sigmoid(x: number): number {
   return 1 / (1 + Math.exp(-x));
 }
 
+function logit(p: number): number {
+  const c = Math.max(0.001, Math.min(0.999, p));
+  return Math.log(c / (1 - c));
+}
+
 export function applyCalib(
   pH: number, pD: number, pA: number,
   params: CalibParams,
 ): { pH: number; pD: number; pA: number } {
-  const cH = sigmoid(params.aH * Math.log(pH / (1 - pH)) + params.bH);
-  const cD = sigmoid(params.aD * Math.log(pD / (1 - pD)) + params.bD);
-  const cA = sigmoid(params.aA * Math.log(pA / (1 - pA)) + params.bA);
+  const cH = sigmoid(params.aH * logit(pH) + params.bH);
+  const cD = sigmoid(params.aD * logit(pD) + params.bD);
+  const cA = sigmoid(params.aA * logit(pA) + params.bA);
   const sum = cH + cD + cA;
   return { pH: cH / sum, pD: cD / sum, pA: cA / sum };
 }
