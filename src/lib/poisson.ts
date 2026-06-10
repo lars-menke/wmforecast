@@ -155,7 +155,7 @@ function calcFromLambdas(lH: number, lA: number): { mat: number[][]; pH: number;
   return { mat, pH: pH / sum, pD: pD / sum, pA: pA / sum };
 }
 
-// Lightweight variant for NR inner loop — skips matrix allocation overhead
+// Drops the matrix from the return value — used in NR inner loop where only probs are needed
 function calcProbsFromLambdas(lH: number, lA: number): { pH: number; pD: number; pA: number } {
   const { pH, pD, pA } = calcFromLambdas(lH, lA);
   return { pH, pD, pA };

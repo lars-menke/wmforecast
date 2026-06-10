@@ -68,14 +68,14 @@ export function useMatches(): MatchesState {
         home: m.home,
         away: m.away,
         // Odds API picks home/away arbitrarily for neutral-ground WM games.
-      // If the reversed key matches, swap h and a so the NR targets the right team.
-      p: (() => {
-        const fwd = oddsMap[`${m.home}-${m.away}`];
-        if (fwd) return fwd;
-        const rev = oddsMap[`${m.away}-${m.home}`];
-        if (rev) return { h: rev.a, d: rev.d, a: rev.h };
-        return null;
-      })(),
+        // If the reversed key matches, swap h and a so the NR targets the right team.
+        p: (() => {
+          const fwd = oddsMap[`${m.home}-${m.away}`];
+          if (fwd) return fwd;
+          const rev = oddsMap[`${m.away}-${m.home}`];
+          if (rev) return { h: rev.a, d: rev.d, a: rev.h };
+          return null;
+        })(),
         hForm: null,
         aForm: null,
       }));
