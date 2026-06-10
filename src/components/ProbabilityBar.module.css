@@ -16,7 +16,7 @@
 .seg {
   height: 100%;
   min-width: 0;
-  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.65s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .seg:first-child { border-radius: var(--radius-pill) 0 0 var(--radius-pill); }

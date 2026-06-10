@@ -21,7 +21,7 @@
   align-items: center;
   justify-content: center;
   animation: iconIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both,
-             iconLand 0.38s 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+             iconLand 0.5s 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .trophy {
@@ -37,7 +37,7 @@
 /* Hero landing pulse — one beat after entry */
 @keyframes iconLand {
   0%   { transform: scale(1); }
-  45%  { transform: scale(1.045); }
+  45%  { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
 

@@ -10,8 +10,10 @@ type Props = {
 export default function ProbabilityBar({ home, draw, away }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    const id = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(id);
+    // Delay fill until after the card entrance animation (~350ms) so bars
+    // visibly animate into their final values rather than flashing in.
+    const id = setTimeout(() => setMounted(true), 300);
+    return () => clearTimeout(id);
   }, []);
 
   const hPct = (home * 100).toFixed(0);
