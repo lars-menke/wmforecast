@@ -50,7 +50,6 @@ export default function GroupScreen({ matches, selectedGroup, onSelectGroup, onM
       {/* Spiele */}
       <div className={styles.list}>
         <div className={styles.groupHeader}>
-          <div className={styles.groupAccent} />
           <div className={styles.groupTitleBlock}>
             <h2 className={styles.groupTitle}>Gruppe {selectedGroup}</h2>
             <div className={styles.groupTeams}>

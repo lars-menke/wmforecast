@@ -53,7 +53,6 @@ export default function KnockoutScreen({ matches, onMatchClick }: Props) {
         return (
           <section key={stage} className={styles.section}>
             <div className={styles.sectionHeader}>
-              <div className={styles.sectionAccent} />
               <h2 className={styles.sectionTitle}>{STAGE_LABELS[stage]}</h2>
             </div>
             <div className={styles.list}>

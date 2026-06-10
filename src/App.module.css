@@ -79,6 +79,11 @@
 
 .seg:active { transform: scale(0.96); }
 
+.seg:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 .segActive {
   background: var(--bg-card);
   color: var(--text-primary);

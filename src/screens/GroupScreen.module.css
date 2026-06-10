@@ -38,14 +38,24 @@
   justify-content: center;
   transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1),
               color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.1s;
+              transform 0.1s ease-out;
   letter-spacing: 0.2px;
 }
 
-.pill:active { transform: scale(0.9); }
+.pill:active { transform: scale(0.95); }
+
+.pill:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
 
 @media (hover: hover) {
   .pill:not(.pillActive):hover { background: var(--bg-fill); color: var(--text-primary); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill { transition: none; }
+  .pill:active { transform: none; }
 }
 
 .pillActive {
@@ -70,15 +80,6 @@
   align-items: flex-start;
   gap: var(--space-3);
   margin-bottom: var(--space-2);
-}
-
-.groupAccent {
-  width: 3px;
-  height: 36px;
-  border-radius: var(--radius-pill);
-  background: var(--accent-brand);
-  flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .groupTitleBlock {

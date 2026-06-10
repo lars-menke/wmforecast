@@ -3,7 +3,7 @@
   inset: 0;
   z-index: 50;
   background: rgba(0, 0, 0, 0);
-  transition: background 0.28s ease;
+  transition: background 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: flex-end;
 }
@@ -102,10 +102,8 @@
 }
 
 .sectionTitle {
-  font-size: var(--size-footnote);
+  font-size: var(--size-subhead);
   font-weight: var(--weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   color: var(--text-secondary);
   margin: 0;
 }
@@ -220,7 +218,7 @@
   height: 100%;
   background: var(--accent-brand);
   border-radius: var(--radius-pill);
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scoreProb {
@@ -231,4 +229,10 @@
 
 .safeBottom {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet        { transition: none; }
+  .backdrop     { transition: none; }
+  .scoreBarFill { transition: none; }
 }

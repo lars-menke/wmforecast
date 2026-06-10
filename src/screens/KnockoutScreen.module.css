@@ -21,14 +21,6 @@
   gap: var(--space-3);
 }
 
-.sectionAccent {
-  width: 3px;
-  height: 20px;
-  border-radius: var(--radius-pill);
-  background: var(--accent-brand);
-  flex-shrink: 0;
-}
-
 .sectionTitle {
   font-size: var(--size-headline);
   font-weight: var(--weight-bold);
@@ -57,4 +49,8 @@
   font-size: var(--size-body);
   max-width: 260px;
   line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root * { animation: none !important; transition: none !important; }
 }
