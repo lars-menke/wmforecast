@@ -68,7 +68,7 @@ export const WC26_TEAM_MAP: Record<string, string> = {
   // Curacao
   'Curaçao': 'CUW', 'Curacao': 'CUW', 'CUW': 'CUW',
   // Ivory Coast
-  'Ivory Coast': 'CIV', 'Côte d\'Ivoire': 'CIV', 'Cote d\'Ivoire': 'CIV', "Cote d'Ivoire": 'CIV', 'CIV': 'CIV',
+  'Ivory Coast': 'CIV', 'Côte d\'Ivoire': 'CIV', 'Cote d\'Ivoire': 'CIV', 'CIV': 'CIV',
   // Ecuador
   'Ecuador': 'ECU', 'ECU': 'ECU',
   // Netherlands
