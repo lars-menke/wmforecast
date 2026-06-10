@@ -43,7 +43,7 @@ const ODDS_TEAM_MAP: Record<string, string> = {
   // Others that may appear
   'Denmark': 'DEN', 'Poland': 'POL', 'Serbia': 'SRB', 'Ukraine': 'UKR',
   'Slovenia': 'SVN', 'Venezuela': 'VEN', 'Jamaica': 'JAM', 'Honduras': 'HON',
-  'Nigeria': 'NGA', 'Cameroon': 'CMR', 'South Africa': 'RSA',
+  'Nigeria': 'NGA', 'Cameroon': 'CMR',
 };
 
 // Bevorzugte Buchmacher nach Qualität (Pinnacle = schärfste Linien, geringste Marge)
