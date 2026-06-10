@@ -1,11 +1,11 @@
-import { WC26_TEAM_MAP } from './fetchWc26';
 import { WM_SCHEDULE } from './schedule';
 import type { MatchResult } from './fetchResults';
 
-const WC26_BASE   = 'https://worldcup26.ir';
-const WC26_TOKEN  = import.meta.env.VITE_WC26_TOKEN ?? '';
-const CACHE_KEY   = 'wm_groups_v1';
-const CACHE_TTL   = 5 * 60 * 1000; // 5 min
+const FD_BASE   = 'https://api.football-data.org/v4';
+const FD_KEY    = import.meta.env.VITE_FD_API_KEY ?? '';
+const WC_CODE   = 'WC';
+const CACHE_KEY = 'wm_standings_v2';
+const CACHE_TTL = 5 * 60 * 1000; // 5 min
 
 export type StandingRow = {
   code: string;
@@ -21,93 +21,65 @@ export type StandingRow = {
 
 export type GroupStandings = Record<string, StandingRow[]>; // key = group letter "A"-"L"
 
-// Loosely typed API response
-type Wc26Group = {
-  name?: string;
-  group?: string;
-  letter?: string;
-  teams?: unknown[];
-  standings?: unknown[];
-  [key: string]: unknown;
+// football-data.org TLA -> our FIFA code (same map as fetchResults)
+const FD_TLA_MAP: Record<string, string> = {
+  'GER': 'GER', 'BRA': 'BRA', 'FRA': 'FRA', 'ARG': 'ARG',
+  'ENG': 'ENG', 'ESP': 'ESP', 'POR': 'POR', 'NED': 'NED',
+  'USA': 'USA', 'MEX': 'MEX', 'CAN': 'CAN',
+  'KOR': 'KOR', 'JPN': 'JPN', 'AUS': 'AUS',
+  'BEL': 'BEL', 'CRO': 'CRO', 'DEN': 'DEN', 'POL': 'POL',
+  'SRB': 'SRB', 'SUI': 'SUI', 'TUR': 'TUR', 'URU': 'URU',
+  'COL': 'COL', 'ECU': 'ECU', 'PAR': 'PAR', 'CHI': 'CHI',
+  'MAR': 'MAR', 'SEN': 'SEN', 'NGA': 'NGA', 'GHA': 'GHA',
+  'CMR': 'CMR', 'EGY': 'EGY', 'TUN': 'TUN', 'ALG': 'ALG',
+  'IRN': 'IRN', 'SAU': 'SAU', 'JOR': 'JOR', 'IRQ': 'IRQ',
+  'QAT': 'QAT', 'UZB': 'UZB',
+  'NOR': 'NOR', 'SWE': 'SWE', 'AUT': 'AUT', 'SCO': 'SCO',
+  'RSA': 'RSA', 'NZL': 'NZL', 'CPV': 'CPV',
+  'PAN': 'PAN', 'HAI': 'HAI',
+  'SVN': 'SVN', 'UKR': 'UKR',
+  'VEN': 'VEN', 'JAM': 'JAM', 'HON': 'HON',
+  'CIV': 'CIV', 'COD': 'COD', 'BIH': 'BIH', 'CUW': 'CUW',
+  'GBR': 'ENG',
 };
 
-type Wc26TeamStanding = {
-  team?: string | { name?: string; code?: string };
-  name?: string;
-  code?: string;
-  played?: number;
-  mp?: number;
-  won?: number;
-  w?: number;
-  drawn?: number;
-  d?: number;
-  lost?: number;
-  l?: number;
-  gf?: number;
-  goals_for?: number;
-  ga?: number;
-  goals_against?: number;
-  gd?: number;
-  goal_difference?: number;
-  pts?: number;
-  points?: number;
-  [key: string]: unknown;
-};
+function resolveTla(tla: string): string {
+  return FD_TLA_MAP[tla] ?? tla;
+}
 
-function resolveGroupLetter(raw: Wc26Group): string | null {
-  const candidates = [raw.name, raw.group, raw.letter];
-  for (const c of candidates) {
-    if (typeof c === 'string') {
-      const m = c.match(/[A-L]/i);
-      if (m) return m[0].toUpperCase();
-    }
-  }
+// football-data.org group string "GROUP_A" -> "A"
+function resolveGroupLetter(group: string): string | null {
+  const m = group.match(/GROUP_([A-L])/i);
+  if (m) return m[1].toUpperCase();
+  // Also handle bare "A"-"L"
+  const bare = group.trim().toUpperCase();
+  if (/^[A-L]$/.test(bare)) return bare;
   return null;
 }
 
-function resolveTeamCode(raw: unknown): string | null {
-  if (!raw) return null;
-  if (typeof raw === 'string') {
-    return WC26_TEAM_MAP[raw] ?? WC26_TEAM_MAP[raw.trim()] ?? null;
-  }
-  if (typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    const code = typeof obj.code === 'string' ? obj.code : null;
-    const name = typeof obj.name === 'string' ? obj.name : null;
-    if (code && WC26_TEAM_MAP[code]) return WC26_TEAM_MAP[code];
-    if (name && WC26_TEAM_MAP[name]) return WC26_TEAM_MAP[name];
-  }
-  return null;
-}
+type FdStandingRow = {
+  position: number;
+  team: { id: number; name: string; shortName: string; tla: string; crest: string };
+  playedGames: number;
+  won: number;
+  draw: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+};
 
-function parseStandingRow(raw: unknown): StandingRow | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const s = raw as Wc26TeamStanding;
+type FdStandingGroup = {
+  stage: string;
+  type: string;
+  group: string;
+  table: FdStandingRow[];
+};
 
-  const code = resolveTeamCode(s.team ?? s.name ?? s.code);
-  if (!code) return null;
-
-  const played = s.played ?? s.mp ?? 0;
-  const won    = s.won ?? s.w ?? 0;
-  const drawn  = s.drawn ?? s.d ?? 0;
-  const lost   = s.lost ?? s.l ?? 0;
-  const gf     = s.gf ?? s.goals_for ?? 0;
-  const ga     = s.ga ?? s.goals_against ?? 0;
-  const gd     = s.gd ?? s.goal_difference ?? (gf - ga);
-  const pts    = s.pts ?? s.points ?? (won * 3 + drawn);
-
-  return {
-    code,
-    played: Number(played),
-    won: Number(won),
-    drawn: Number(drawn),
-    lost: Number(lost),
-    gf: Number(gf),
-    ga: Number(ga),
-    gd: Number(gd),
-    pts: Number(pts),
-  };
-}
+type FdStandingsResponse = {
+  standings: FdStandingGroup[];
+};
 
 export function computeStandings(resultsMap: Record<string, MatchResult>): GroupStandings {
   // Build standings from WM_SCHEDULE + resultsMap
@@ -170,7 +142,7 @@ export function computeStandings(resultsMap: Record<string, MatchResult>): Group
 }
 
 export async function fetchGroups(): Promise<GroupStandings> {
-  if (!WC26_TOKEN) return {};
+  if (!FD_KEY) return {};
 
   // Check cache
   try {
@@ -182,48 +154,34 @@ export async function fetchGroups(): Promise<GroupStandings> {
   } catch { /* ignore */ }
 
   try {
-    const r = await fetch(`${WC26_BASE}/get/groups`, {
-      headers: { Authorization: `Bearer ${WC26_TOKEN}` },
-    });
+    const r = await fetch(
+      `${FD_BASE}/competitions/${WC_CODE}/standings`,
+      { headers: { 'X-Auth-Token': FD_KEY } },
+    );
     if (!r.ok) return {};
 
-    const json: unknown = await r.json();
-
-    // API may return { groups: [...] } or [...]
-    let groupList: unknown[] = [];
-    if (Array.isArray(json)) {
-      groupList = json;
-    } else if (json && typeof json === 'object') {
-      const obj = json as Record<string, unknown>;
-      const key = ['groups', 'data', 'standings'].find(k => Array.isArray(obj[k]));
-      if (key) groupList = obj[key] as unknown[];
-    }
-
+    const json = (await r.json()) as FdStandingsResponse;
     const result: GroupStandings = {};
 
-    for (const rawGroup of groupList) {
-      if (!rawGroup || typeof rawGroup !== 'object') continue;
-      const g = rawGroup as Wc26Group;
-      const letter = resolveGroupLetter(g);
+    for (const sg of json.standings) {
+      if (sg.type !== 'TOTAL') continue;
+      const letter = resolveGroupLetter(sg.group);
       if (!letter) continue;
 
-      // Teams may be in .teams or .standings
-      const teamList: unknown[] = Array.isArray(g.teams)
-        ? g.teams
-        : Array.isArray(g.standings)
-          ? g.standings
-          : [];
-
-      const rows: StandingRow[] = [];
-      for (const t of teamList) {
-        const row = parseStandingRow(t);
-        if (row) rows.push(row);
-      }
+      const rows: StandingRow[] = sg.table.map(row => ({
+        code: resolveTla(row.team.tla),
+        played: row.playedGames,
+        won: row.won,
+        drawn: row.draw,
+        lost: row.lost,
+        gf: row.goalsFor,
+        ga: row.goalsAgainst,
+        gd: row.goalDifference,
+        pts: row.points,
+      }));
 
       if (rows.length > 0) {
-        result[letter] = rows.sort((a, b) =>
-          b.pts - a.pts || b.gd - a.gd || b.gf - a.gf,
-        );
+        result[letter] = rows; // already sorted by fd.org
       }
     }
 

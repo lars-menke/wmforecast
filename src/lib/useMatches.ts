@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { WM_SCHEDULE, WM_GROUPS, type WmMatch, type WmStage, type WmGroup } from './schedule';
+import { WM_SCHEDULE, WM_GROUPS, type WmStage, type WmGroup } from './schedule';
 import { fetchResults, type MatchResult } from './fetchResults';
 import { fetchOdds } from './fetchOdds';
-import { fetchWc26Schedule } from './fetchWc26';
 import { recalcMatches, deriveNaturalTipp, type CalcResult, type MarketProbs } from './poisson';
 import { NATION_STATS } from './nations';
 import { applyCalib, shrinkToMean, HARDCODED_CALIB } from './calibration';
@@ -44,7 +43,6 @@ export function useMatches(): MatchesState {
   const [selectedGroup, setSelectedGroup]   = useState<WmGroup>('A');
   const [resultsMap, setResultsMap]         = useState<Record<string, MatchResult>>({});
   const [oddsMap, setOddsMap]               = useState<Record<string, MarketProbs>>({});
-  const [apiSchedule, setApiSchedule]       = useState<WmMatch[] | null>(null);
   const [retryCount, setRetryCount]         = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -54,19 +52,13 @@ export function useMatches(): MatchesState {
     setError(null);
     async function init() {
       try {
-        const [results, odds, wc26Schedule] = await Promise.all([
+        const [results, odds] = await Promise.all([
           fetchResults(),
           fetchOdds(),
-          fetchWc26Schedule(),
         ]);
         if (cancelled) return;
         setResultsMap(results);
         setOddsMap(odds);
-        // Use API schedule if it has a plausible number of matches (≥72)
-        if (wc26Schedule.length >= 72) {
-          // Convert Wc26ScheduleMatch to WmMatch (apiId = wc26Id)
-          setApiSchedule(wc26Schedule.map(m => ({ ...m, apiId: m.wc26Id })));
-        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Ladefehler');
       } finally {
@@ -77,17 +69,14 @@ export function useMatches(): MatchesState {
     return () => { cancelled = true; };
   }, [retryCount]);
 
-  // Active schedule: API takes precedence over static fallback
-  const schedule = useMemo<WmMatch[]>(() => apiSchedule ?? WM_SCHEDULE, [apiSchedule]);
-
   // Live polling: check if any matches are currently live
   const liveCount = useMemo(() => {
     const now = Date.now();
-    return schedule.filter(m => {
+    return WM_SCHEDULE.filter(m => {
       const kick = new Date(m.kickoff).getTime();
       return kick <= now && now <= kick + 120 * 60 * 1000;
     }).length;
-  }, [schedule]);
+  }, []);
 
   // Also count matches in resultsMap that are live
   const liveCountFromResults = useMemo(
@@ -115,7 +104,7 @@ export function useMatches(): MatchesState {
   }, [effectiveLiveCount]);
 
   const matches = useMemo<MatchEntry[]>(() => {
-    const inputs = schedule
+    const inputs = WM_SCHEDULE
       .filter(m => m.home !== 'TBD' && m.away !== 'TBD')
       .map(m => ({
         id: m.id,
@@ -134,7 +123,7 @@ export function useMatches(): MatchesState {
 
     const raw = recalcMatches(inputs, NATION_STATS);
 
-    return schedule
+    return WM_SCHEDULE
       .filter(m => m.home !== 'TBD' && m.away !== 'TBD')
       .flatMap(m => {
         const rawResult = raw[m.id];
@@ -172,7 +161,7 @@ export function useMatches(): MatchesState {
           live: actual?.live ?? false,
         }];
       });
-  }, [oddsMap, resultsMap, schedule]);
+  }, [oddsMap, resultsMap]);
 
   const hasMarket = matches.some(m => m.result.marketApplied);
 
