@@ -73,11 +73,11 @@
   color: var(--text-secondary);
   transition: background 0.22s cubic-bezier(0.16, 1, 0.3, 1),
               color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.1s;
+              transform 0.1s ease-out;
   white-space: nowrap;
 }
 
-.seg:active { transform: scale(0.94); }
+.seg:active { transform: scale(0.96); }
 
 .segActive {
   background: var(--bg-card);
@@ -97,10 +97,10 @@
   justify-content: center;
   color: var(--text-secondary);
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s, transform 0.12s;
+  transition: background 0.15s ease-out, color 0.15s ease-out, transform 0.12s ease-out;
 }
 
-.iconBtn:active { transform: scale(0.88); }
+.iconBtn:active { transform: scale(0.92); }
 
 @media (hover: hover) {
   .iconBtn:hover { background: var(--bg-fill-strong); color: var(--text-primary); }
@@ -137,7 +137,7 @@
   gap: var(--space-3);
   opacity: 0;
   animation: skelIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--card-index, 0) * 60ms);
+  animation-delay: calc(var(--card-index, 0) * 40ms);
 }
 
 @keyframes skelIn {
@@ -169,7 +169,7 @@
     var(--bg-fill-strong) 50%,
     transparent 100%
   );
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer 1.5s linear infinite;
   transform: translateX(-100%);
 }
 
