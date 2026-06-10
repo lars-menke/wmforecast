@@ -63,6 +63,47 @@
   color: var(--text-on-accent);
 }
 
+/* Secondary segmented control */
+.subTabBar {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-page);
+  border-bottom: var(--hairline) solid var(--separator);
+  flex-shrink: 0;
+}
+
+.subSeg {
+  display: flex;
+  background: var(--bg-fill);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+  gap: 2px;
+}
+
+.subSegBtn {
+  padding: 5px var(--space-5);
+  border-radius: var(--radius-pill);
+  font-size: var(--size-footnote);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.subSegBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.subSegActive {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
 /* Spiel-Liste */
 .list {
   flex: 1;

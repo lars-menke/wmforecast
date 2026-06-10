@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useMatches } from './lib/useMatches';
 import { useTheme } from './lib/useTheme';
+import { useStandings } from './lib/useStandings';
 import type { MatchEntry } from './lib/useMatches';
 import GroupScreen from './screens/GroupScreen';
 import KnockoutScreen from './screens/KnockoutScreen';
@@ -11,12 +12,13 @@ import TrophyIcon from './components/TrophyIcon';
 import styles from './App.module.css';
 
 export default function App() {
-  useTheme(); // activates theme persistence at root — must run on every mount
+  useTheme();
   const [splashDone, setSplashDone]       = useState(false);
   const [activeMatch, setActiveMatch]     = useState<MatchEntry | null>(null);
   const [showSettings, setShowSettings]   = useState(false);
   const state = useMatches();
-  const { tab, setTab, selectedGroup, setSelectedGroup, matches, loading, error, retry } = state;
+  const { tab, setTab, selectedGroup, setSelectedGroup, matches, loading, error, retry, liveCount, resultsMap } = state;
+  const { standings, loading: standingsLoading } = useStandings(resultsMap);
 
   const handleCardClick  = useCallback((m: MatchEntry) => setActiveMatch(m), []);
   const handleSheetClose = useCallback(() => setActiveMatch(null), []);
@@ -55,6 +57,14 @@ export default function App() {
             </div>
           )}
           {showSettings && <span className={styles.headerFill} />}
+
+          {/* Live indicator */}
+          {liveCount > 0 && !showSettings && (
+            <div className={styles.liveIndicator} aria-label={`${liveCount} Spiel${liveCount > 1 ? 'e' : ''} live`}>
+              <span className={styles.liveDot} aria-hidden="true" />
+              <span className={styles.liveCount}>{liveCount}</span>
+            </div>
+          )}
 
           {/* Settings-Button */}
           <button
@@ -111,6 +121,8 @@ export default function App() {
               selectedGroup={selectedGroup}
               onSelectGroup={setSelectedGroup}
               onMatchClick={handleCardClick}
+              standings={standings}
+              standingsLoading={standingsLoading}
             />
           )}
           {!showSettings && !loading && !error && tab === 'knockout' && (
