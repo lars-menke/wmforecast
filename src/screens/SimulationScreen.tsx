@@ -27,6 +27,7 @@ export default function SimulationScreen({ resultsMap }: Props) {
   const [result, setResult] = useState<SimResultWithBands | null>(null);
   const [running, setRunning] = useState(false);
   const [tab, setTab] = useState<'title' | 'top4' | 'advance'>('title');
+  const [bonusOpen, setBonusOpen] = useState(false);
 
   useEffect(() => {
     setRunning(true);
@@ -110,29 +111,44 @@ export default function SimulationScreen({ resultsMap }: Props) {
         <div className={styles.list}>
           {/* Bonus-Tipps */}
           <div className={styles.bonusCard}>
-            <div className={styles.bonusTitle}>Bonus-Tipps</div>
-            <div className={styles.bonusGrid}>
-              <div className={styles.bonusItem}>
-                <span className={styles.bonusLabel}>Weltmeister</span>
-                <span className={styles.bonusValue}>🇫🇷 Frankreich</span>
+            <button
+              className={styles.bonusHeader}
+              onClick={() => setBonusOpen(o => !o)}
+              type="button"
+              aria-expanded={bonusOpen}
+            >
+              <span className={styles.bonusTitle}>Bonus-Tipps</span>
+              <svg
+                className={`${styles.bonusChevron}${bonusOpen ? ` ${styles.bonusChevronOpen}` : ''}`}
+                width="16" height="16" viewBox="0 0 16 16" fill="none"
+              >
+                <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            {bonusOpen && (
+              <div className={styles.bonusGrid}>
+                <div className={styles.bonusItem}>
+                  <span className={styles.bonusLabel}>Weltmeister</span>
+                  <span className={styles.bonusValue}>🇫🇷 Frankreich</span>
+                </div>
+                <div className={styles.bonusItem}>
+                  <span className={styles.bonusLabel}>Torschützenkönig</span>
+                  <span className={styles.bonusValue}>Mbappé (FRA)</span>
+                </div>
+                <div className={styles.bonusItem}>
+                  <span className={styles.bonusLabel}>Halbfinale</span>
+                  <span className={styles.bonusValue}>FRA · ARG · BRA · ESP</span>
+                </div>
+                <div className={styles.bonusItem}>
+                  <span className={styles.bonusLabel}>Gruppensieger</span>
+                  <span className={styles.bonusValue}>
+                    A: MEX · B: SUI · C: BRA · D: TUR<br />
+                    E: GER · F: NED · G: BEL · H: ESP<br />
+                    I: FRA · J: ARG · K: POR · L: ENG
+                  </span>
+                </div>
               </div>
-              <div className={styles.bonusItem}>
-                <span className={styles.bonusLabel}>Torschützenkönig</span>
-                <span className={styles.bonusValue}>Mbappé (FRA)</span>
-              </div>
-              <div className={styles.bonusItem}>
-                <span className={styles.bonusLabel}>Halbfinale</span>
-                <span className={styles.bonusValue}>FRA · ARG · BRA · ESP</span>
-              </div>
-              <div className={styles.bonusItem}>
-                <span className={styles.bonusLabel}>Gruppensieger</span>
-                <span className={styles.bonusValue}>
-                  A: MEX · B: SUI · C: BRA · D: TUR<br />
-                  E: GER · F: NED · G: BEL · H: ESP<br />
-                  I: FRA · J: ARG · K: POR · L: ENG
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
           {activeRows.map((row, idx) => {
