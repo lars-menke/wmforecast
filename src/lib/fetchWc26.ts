@@ -1,18 +1,31 @@
+import type { WmMatch, WmStage } from './schedule';
+
 const WC26_BASE = 'https://worldcup26.ir';
 const WC26_TOKEN = import.meta.env.VITE_WC26_TOKEN ?? '';
 
-const CACHE_KEY = 'wm_wc26_v1';
-const CACHE_TTL_LIVE     = 30 * 1000;       // 30s for live matches
-const CACHE_TTL_FINISHED = 3 * 60 * 1000;   // 3 min standard
+const CACHE_KEY          = 'wm_wc26_v1';
+const CACHE_KEY_SCHEDULE = 'wm_wc26_schedule_v1';
+const CACHE_TTL_LIVE     = 30 * 1000;          // 30s for live matches
+const CACHE_TTL_FINISHED = 3 * 60 * 1000;      // 3 min standard
+const CACHE_TTL_SCHEDULE = 60 * 60 * 1000;     // 1h for schedule
 
 // Unknown API response — typed loosely, with safe property access
 type Wc26Game = {
   id?: number;
-  home_team?: string | { name?: string; code?: string };
-  away_team?: string | { name?: string; code?: string };
+  home_team?: string | { name?: string; code?: string; id?: number };
+  away_team?: string | { name?: string; code?: string; id?: number };
   home_score?: number | null;
   away_score?: number | null;
-  status?: string; // 'finished', 'completed', 'live', 'upcoming', etc.
+  status?: string;
+  date?: string;
+  time?: string;
+  datetime?: string;
+  kickoff?: string;
+  start_time?: string;
+  utc_date?: string;
+  group?: string | { name?: string; code?: string };
+  stage?: string | { name?: string; code?: string };
+  round?: string | { name?: string; code?: string };
   [key: string]: unknown;
 };
 
@@ -163,6 +176,137 @@ export type Wc26MatchResult = {
   g1Live?: number;
   g2Live?: number;
 };
+
+// ---------------------------------------------------------------------------
+// Schedule helpers
+// ---------------------------------------------------------------------------
+
+const GROUP_NAME_MAP: Record<string, string> = {
+  'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F': 'F',
+  'G': 'G', 'H': 'H', 'I': 'I', 'J': 'J', 'K': 'K', 'L': 'L',
+  'Group A': 'A', 'Group B': 'B', 'Group C': 'C', 'Group D': 'D',
+  'Group E': 'E', 'Group F': 'F', 'Group G': 'G', 'Group H': 'H',
+  'Group I': 'I', 'Group J': 'J', 'Group K': 'K', 'Group L': 'L',
+  'GROUP_A': 'A', 'GROUP_B': 'B', 'GROUP_C': 'C', 'GROUP_D': 'D',
+  'GROUP_E': 'E', 'GROUP_F': 'F', 'GROUP_G': 'G', 'GROUP_H': 'H',
+  'GROUP_I': 'I', 'GROUP_J': 'J', 'GROUP_K': 'K', 'GROUP_L': 'L',
+};
+
+function resolveGroup(raw: string | { name?: string; code?: string } | undefined): string {
+  if (!raw) return 'R32';
+  const s = typeof raw === 'string' ? raw : (raw.code ?? raw.name ?? '');
+  return GROUP_NAME_MAP[s] ?? GROUP_NAME_MAP[s.trim()] ?? 'R32';
+}
+
+function resolveStage(raw: string | { name?: string; code?: string } | undefined, group: string): WmStage {
+  const s = typeof raw === 'string' ? raw : (raw ? (raw.code ?? raw.name ?? '') : '');
+  const lo = s.toLowerCase().replace(/[-_ ]/g, '');
+
+  if (!s || group.length === 1) return 'GROUP_STAGE';
+  if (lo.includes('roundof32') || lo === 'r32' || lo.includes('last32') || lo.includes('roundofsixteenone') || lo === '32') return 'ROUND_OF_32';
+  if (lo.includes('roundof16') || lo.includes('sixteens') || lo === 'r16' || lo === '16') return 'ROUND_OF_16';
+  if (lo.includes('quarter') || lo === 'qf') return 'QUARTER_FINALS';
+  if (lo.includes('semi') || lo === 'sf') return 'SEMI_FINALS';
+  if (lo.includes('third') || lo.includes('place') || lo === '3rd') return 'THIRD_PLACE';
+  if (lo.includes('final')) return 'FINAL';
+  return 'GROUP_STAGE';
+}
+
+function resolveKickoff(g: Wc26Game): string {
+  // Try various field names the API might use
+  const raw = g.utc_date ?? g.datetime ?? g.kickoff ?? g.start_time;
+  if (raw && typeof raw === 'string') {
+    // Already ISO? Return as-is (ensure Z suffix)
+    if (raw.includes('T')) return raw.endsWith('Z') ? raw : raw + 'Z';
+    // "2026-06-11 19:00:00" format
+    if (raw.includes(' ') && raw.includes('-')) return raw.replace(' ', 'T') + 'Z';
+  }
+  // Separate date + time fields
+  const date = g.date;
+  const time = g.time;
+  if (date && typeof date === 'string' && time && typeof time === 'string') {
+    const d = date.includes('T') ? date.split('T')[0] : date;
+    const t = time.length === 5 ? time + ':00' : time;
+    return `${d}T${t}Z`;
+  }
+  return '2026-01-01T00:00:00Z'; // fallback placeholder
+}
+
+export type Wc26ScheduleMatch = Omit<WmMatch, 'apiId'> & { wc26Id: number };
+
+async function fetchGamesRaw(): Promise<Wc26Game[]> {
+  const r = await fetch(`${WC26_BASE}/get/games`, {
+    headers: { Authorization: `Bearer ${WC26_TOKEN}` },
+  });
+  if (!r.ok) return [];
+  const json: unknown = await r.json();
+
+  if (Array.isArray(json)) return json as Wc26Game[];
+  if (json && typeof json === 'object') {
+    const obj = json as Record<string, unknown>;
+    const key = ['games', 'matches', 'data', 'results'].find(k => Array.isArray(obj[k]));
+    if (key) return obj[key] as Wc26Game[];
+  }
+  return [];
+}
+
+export async function fetchWc26Schedule(): Promise<Wc26ScheduleMatch[]> {
+  if (!WC26_TOKEN) return [];
+
+  try {
+    const cached = localStorage.getItem(CACHE_KEY_SCHEDULE);
+    if (cached) {
+      const { ts, data } = JSON.parse(cached) as { ts: number; data: Wc26ScheduleMatch[] };
+      if (Date.now() - ts < CACHE_TTL_SCHEDULE) return data;
+    }
+  } catch { /* ignore */ }
+
+  try {
+    const games = await fetchGamesRaw();
+    const results: Wc26ScheduleMatch[] = [];
+    let idx = 0;
+
+    for (const g of games) {
+      if (!g || typeof g !== 'object') continue;
+
+      const homeCode = resolveTeamName(g.home_team);
+      const awayCode = resolveTeamName(g.away_team);
+      // Allow TBD for knockout slots
+      const home = homeCode ?? 'TBD';
+      const away = awayCode ?? 'TBD';
+
+      const kickoff = resolveKickoff(g);
+      const group = resolveGroup(g.group);
+      const stageRaw = g.stage ?? g.round;
+      const stage = resolveStage(stageRaw, group);
+
+      // Generate a stable id
+      const id = (home !== 'TBD' && away !== 'TBD')
+        ? `${home}-${away}-${group}`
+        : `KO-${String(++idx).padStart(3, '0')}`;
+
+      results.push({
+        id,
+        wc26Id: typeof g.id === 'number' ? g.id : 0,
+        group,
+        stage,
+        home,
+        away,
+        kickoff,
+      });
+    }
+
+    if (results.length > 10) {
+      try {
+        localStorage.setItem(CACHE_KEY_SCHEDULE, JSON.stringify({ ts: Date.now(), data: results }));
+      } catch { /* storage full */ }
+    }
+
+    return results;
+  } catch {
+    return [];
+  }
+}
 
 export async function fetchWc26Games(): Promise<Wc26MatchResult[]> {
   if (!WC26_TOKEN) return [];
