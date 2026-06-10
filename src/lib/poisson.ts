@@ -142,17 +142,23 @@ function effectiveLambdas(
 }
 
 // ---------------------------------------------------------------------------
-// Hilfsfunktion: Wahrscheinlichkeiten direkt aus Lambdas (ohne Form/Boost)
+// Hilfsfunktion: Wahrscheinlichkeiten + Matrix aus Lambdas (ohne Form/Boost)
 // ---------------------------------------------------------------------------
 
-function calcProbsFromLambdas(lH: number, lA: number): { pH: number; pD: number; pA: number } {
+function calcFromLambdas(lH: number, lA: number): { mat: number[][]; pH: number; pD: number; pA: number } {
   const mat = buildMatrix(
     Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lH)),
     Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lA)),
   );
   const { pH, pD, pA } = rawProbs(mat);
   const sum = pH + pD + pA;
-  return { pH: pH / sum, pD: pD / sum, pA: pA / sum };
+  return { mat, pH: pH / sum, pD: pD / sum, pA: pA / sum };
+}
+
+// Lightweight variant for NR inner loop — skips matrix allocation overhead
+function calcProbsFromLambdas(lH: number, lA: number): { pH: number; pD: number; pA: number } {
+  const { pH, pD, pA } = calcFromLambdas(lH, lA);
+  return { pH, pD, pA };
 }
 
 // ---------------------------------------------------------------------------
@@ -165,13 +171,13 @@ function applyMarketCorrection(
   market: MarketProbs,
   iters = 12,
   damp  = 0.5,
-): { lH: number; lA: number; pH: number; pD: number; pA: number } {
+): { lH: number; lA: number; mat: number[][] } {
   const mH = market.h / 100;
   const mA = market.a / 100;
 
   // Degenerierte Marktdaten abfangen
   if (mH <= 0.02 || mA <= 0.02 || mH + mA > 0.98) {
-    return { lH, lA, ...calcProbsFromLambdas(lH, lA) };
+    return { lH, lA, mat: buildMatrix(lH, lA) };
   }
 
   let xH = 1.0; // Multiplikator für lH
@@ -203,7 +209,8 @@ function applyMarketCorrection(
 
   const lH_adj = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lH * xH));
   const lA_adj = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lA * xA));
-  return { lH: lH_adj, lA: lA_adj, ...calcProbsFromLambdas(lH_adj, lA_adj) };
+  // Return the final matrix directly — caller uses it for rawProbs + topResults
+  return { lH: lH_adj, lA: lA_adj, mat: buildMatrix(lH_adj, lA_adj) };
 }
 
 // ---------------------------------------------------------------------------
@@ -254,8 +261,8 @@ export function calcMatch(
     const corrected = applyMarketCorrection(lH, lA, market);
     lH = corrected.lH;
     lA = corrected.lA;
+    mat = corrected.mat; // reuse matrix — no redundant buildMatrix call
     marketApplied = true;
-    mat = buildMatrix(lH, lA);
   } else {
     mat = buildMatrix(lH, lA);
   }

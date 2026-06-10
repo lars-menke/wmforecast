@@ -67,8 +67,15 @@ export function useMatches(): MatchesState {
         id: m.id,
         home: m.home,
         away: m.away,
-        // check both key directions — Odds API home/away order may differ from schedule
-      p: oddsMap[`${m.home}-${m.away}`] ?? oddsMap[`${m.away}-${m.home}`] ?? null,
+        // Odds API picks home/away arbitrarily for neutral-ground WM games.
+      // If the reversed key matches, swap h and a so the NR targets the right team.
+      p: (() => {
+        const fwd = oddsMap[`${m.home}-${m.away}`];
+        if (fwd) return fwd;
+        const rev = oddsMap[`${m.away}-${m.home}`];
+        if (rev) return { h: rev.a, d: rev.d, a: rev.h };
+        return null;
+      })(),
         hForm: null,
         aForm: null,
       }));
@@ -81,7 +88,12 @@ export function useMatches(): MatchesState {
         const rawResult = raw[m.id];
         if (!rawResult) return [];
 
-        // Kalibrierung anwenden
+        // Kalibrierung anwenden.
+        // Hinweis zur Reihenfolge: Marktkorrektur (Newton-Raphson auf lH/lA)
+        // geschieht in calcMatch/recalcMatches, Platt-Scaling hier danach.
+        // HARDCODED_CALIB wurde auf unkorrekte Rohwahrscheinlichkeiten trainiert
+        // (keine Marktdaten in WM 2014/2018/2022-Samples) — bei aktivem Market-
+        // Signal leicht systematisch über-/unterkalibriert. Bei n=176 vernachlässigbar.
         let { pH, pD, pA } = rawResult;
         let calibrated = false;
         if (HARDCODED_CALIB.n >= 45) {
