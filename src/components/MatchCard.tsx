@@ -66,29 +66,29 @@ export default function MatchCard({ match, onClick, style }: Props) {
           <div className={styles.teamLeft}>
             <TeamLogo code={home} size={32} />
             <span className={`${styles.teamName}${wo === 'H' && !finished ? ` ${styles.teamNameFav}` : ''}`}>
-              {homeNation?.name ?? home}
+              {homeNation?.shortName ?? home}
             </span>
           </div>
 
           <div className={styles.scoreBox}>
             {finished && actual ? (
               <>
-                <span className={styles.scoreLabel}>Ergebnis</span>
                 <span className={styles.score} data-numeric>{actual.g1}:{actual.g2}</span>
+                <span className={styles.scoreLabel}>Ergebnis</span>
               </>
             ) : (
               <>
-                <span className={styles.scoreLabel}>{live ? 'Live' : 'Tipp'}</span>
                 <span className={`${styles.score} ${styles.scoreTipp}`} data-numeric>
                   {naturalTipp ?? '–'}
                 </span>
+                <span className={styles.scoreLabel}>{live ? 'Live' : 'Tipp'}</span>
               </>
             )}
           </div>
 
           <div className={styles.teamRight}>
             <span className={`${styles.teamName}${wo === 'A' && !finished ? ` ${styles.teamNameFav}` : ''}`}>
-              {awayNation?.name ?? away}
+              {awayNation?.shortName ?? away}
             </span>
             <TeamLogo code={away} size={32} />
           </div>
