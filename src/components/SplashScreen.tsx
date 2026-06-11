@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import TrophyIcon from './TrophyIcon';
+import trophyImg from '../assets/trophy-new.png';
 import styles from './SplashScreen.module.css';
 
 type Props = {
@@ -18,7 +18,7 @@ export default function SplashScreen({ onDone }: Props) {
   return (
     <div className={`${styles.root}${fading ? ` ${styles.fadeOut}` : ''}`}>
       <div className={styles.iconWrap}>
-        <TrophyIcon height={160} className={styles.trophy} />
+        <img src={trophyImg} alt="WM-Pokal" className={styles.trophy} />
       </div>
 
       <div className={styles.brand}>

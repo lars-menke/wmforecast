@@ -20,6 +20,7 @@ export type MatchEntry = {
   live: boolean;
   goals: GoalEvent[];
   fdId: number | undefined;
+  venue?: string;
 };
 
 export type MatchesState = {
@@ -162,6 +163,7 @@ export function useMatches(): MatchesState {
           live: actual?.live ?? false,
           goals: actual?.goals ?? [],
           fdId: actual?.fdId,
+          venue:    m.venue,
         }];
       });
   }, [oddsMap, resultsMap]);

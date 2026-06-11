@@ -25,6 +25,9 @@
 }
 
 .trophy {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
   filter: drop-shadow(0 10px 30px rgba(200, 148, 10, 0.55))
           drop-shadow(0 3px 8px rgba(0, 0, 0, 0.25));
 }

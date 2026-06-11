@@ -57,6 +57,15 @@ export default function SimulationScreen({ resultsMap }: Props) {
   const bonusWeltmeister = rows[0]?.code ?? null;
   const bonusHalbfinale  = rows.slice(0, 4).map(r => r.code);
 
+  // Top scorer: team with highest attack stat (most goals expected regardless of title)
+  const TOP_SCORER_BY_TEAM: Record<string, string> = {
+    FRA: 'K. Mbappé (FRA)', ARG: 'J. Álvarez (ARG)', BRA: 'Vinicius Jr. (BRA)',
+    ESP: 'L. Yamal (ESP)',  ENG: 'H. Kane (ENG)',    POR: 'C. Ronaldo (POR)',
+    NED: 'C. Gakpo (NED)', GER: 'F. Wirtz (GER)',   BEL: 'L. Trossard (BEL)',
+    COL: 'L. Díaz (COL)',
+  };
+  const bonusTopScorer = TOP_SCORER_BY_TEAM['FRA']; // FRA = höchste Angriffsquote (1.93)
+
   const activeRows = rows.slice().sort((a, b) => {
     if (tab === 'top4')    return b.top4.median    - a.top4.median;
     if (tab === 'advance') return b.groupAdv.median - a.groupAdv.median;
@@ -141,17 +150,7 @@ export default function SimulationScreen({ resultsMap }: Props) {
                 </div>
                 <div className={styles.bonusItem}>
                   <span className={styles.bonusLabel}>Torschützenkönig</span>
-                  <span className={styles.bonusValue}>
-                    {bonusWeltmeister === 'ARG' ? 'L. Messi / J. Álvarez (ARG)'
-                      : bonusWeltmeister === 'FRA' ? 'Mbappé (FRA)'
-                      : bonusWeltmeister === 'BRA' ? 'Vinicius Jr. (BRA)'
-                      : bonusWeltmeister === 'ESP' ? 'Yamal / Morata (ESP)'
-                      : bonusWeltmeister === 'ENG' ? 'Kane (ENG)'
-                      : bonusWeltmeister === 'POR' ? 'Ronaldo (POR)'
-                      : bonusWeltmeister
-                        ? `${NATIONS[bonusWeltmeister]?.flag ?? ''} ${bonusWeltmeister}`
-                        : '—'}
-                  </span>
+                  <span className={styles.bonusValue}>{bonusTopScorer}</span>
                 </div>
                 <div className={styles.bonusItem}>
                   <span className={styles.bonusLabel}>Halbfinale</span>

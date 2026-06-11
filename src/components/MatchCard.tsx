@@ -53,7 +53,10 @@ export default function MatchCard({ match, onClick, style }: Props) {
 
         {/* Header */}
         <div className={styles.header}>
-          <span className={styles.meta}>{formatKickoff(match.kickoff)}</span>
+          <div className={styles.metaCol}>
+            <span className={styles.meta}>{formatKickoff(match.kickoff)}</span>
+            {match.venue && <span className={styles.metaVenue}>{match.venue}</span>}
+          </div>
           <div className={styles.badges}>
             {live && <span className={`${styles.badge} ${styles.badgeLive}`}>● Live</span>}
             {topTip && !live && <span className={`${styles.badge} ${styles.badgeTopTip}`}>TOP</span>}

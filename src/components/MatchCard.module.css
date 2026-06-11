@@ -65,11 +65,26 @@
   gap: var(--space-2);
 }
 
+.metaCol {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
 .meta {
   font-size: var(--size-caption-1);
   color: var(--text-secondary);
   white-space: nowrap;
   letter-spacing: 0.1px;
+}
+
+.metaVenue {
+  font-size: var(--size-caption-2);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .badges { display: flex; gap: var(--space-1); flex-shrink: 0; }
@@ -141,8 +156,9 @@
   flex-shrink: 0;
   background: var(--bg-fill);
   border-radius: 10px;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-1) var(--space-3);
   min-width: 68px;
+  align-self: flex-start;
 }
 
 .score {

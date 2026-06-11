@@ -19,27 +19,28 @@ export type WmMatch = {
   home: string;
   away: string;
   kickoff: string; // ISO-8601 UTC
+  venue?: string;
 };
 
 export const WM_SCHEDULE: WmMatch[] = [
 
   // ===== GRUPPE A: MEX, KOR, RSA, CZE =====
   // MD1: Jun 11  MD2: Jun 18  MD3: Jun 24/25 (gleichzeitig)
-  { id: 'MEX-RSA-A1',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'MEX', away: 'RSA', kickoff: '2026-06-11T19:00:00Z' },
-  { id: 'KOR-CZE-A2',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'KOR', away: 'CZE', kickoff: '2026-06-12T02:00:00Z' },
-  { id: 'MEX-KOR-A3',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'MEX', away: 'KOR', kickoff: '2026-06-19T01:00:00Z' },
-  { id: 'CZE-RSA-A4',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'CZE', away: 'RSA', kickoff: '2026-06-18T16:00:00Z' },
-  { id: 'CZE-MEX-A5',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'CZE', away: 'MEX', kickoff: '2026-06-25T01:00:00Z' },
-  { id: 'RSA-KOR-A6',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'RSA', away: 'KOR', kickoff: '2026-06-25T01:00:00Z' },
+  { id: 'MEX-RSA-A1', venue: 'Estadio Azteca, Mexiko-Stadt',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'MEX', away: 'RSA', kickoff: '2026-06-11T19:00:00Z' },
+  { id: 'KOR-CZE-A2', venue: 'SoFi Stadium, Los Angeles',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'KOR', away: 'CZE', kickoff: '2026-06-12T02:00:00Z' },
+  { id: 'MEX-KOR-A3', venue: 'Estadio Akron, Guadalajara',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'MEX', away: 'KOR', kickoff: '2026-06-19T01:00:00Z' },
+  { id: 'CZE-RSA-A4', venue: 'Lumen Field, Seattle',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'CZE', away: 'RSA', kickoff: '2026-06-18T16:00:00Z' },
+  { id: 'CZE-MEX-A5', venue: 'AT&T Stadium, Dallas',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'CZE', away: 'MEX', kickoff: '2026-06-25T01:00:00Z' },
+  { id: 'RSA-KOR-A6', venue: 'Estadio BBVA, Monterrey',  apiId: 0, group: 'A', stage: 'GROUP_STAGE', home: 'RSA', away: 'KOR', kickoff: '2026-06-25T01:00:00Z' },
 
   // ===== GRUPPE B: CAN, QAT, BIH, SUI =====
   // MD1: Jun 12/13  MD2: Jun 18  MD3: Jun 24 (gleichzeitig)
-  { id: 'CAN-BIH-B1',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'CAN', away: 'BIH', kickoff: '2026-06-12T19:00:00Z' },
-  { id: 'QAT-SUI-B2',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'QAT', away: 'SUI', kickoff: '2026-06-13T19:00:00Z' },
-  { id: 'CAN-QAT-B3',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'CAN', away: 'QAT', kickoff: '2026-06-18T22:00:00Z' },
-  { id: 'SUI-BIH-B4',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'SUI', away: 'BIH', kickoff: '2026-06-18T19:00:00Z' },
+  { id: 'CAN-BIH-B1', venue: 'BMO Field, Toronto',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'CAN', away: 'BIH', kickoff: '2026-06-12T19:00:00Z' },
+  { id: 'QAT-SUI-B2', venue: 'Arrowhead Stadium, Kansas City',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'QAT', away: 'SUI', kickoff: '2026-06-13T19:00:00Z' },
+  { id: 'CAN-QAT-B3', venue: 'BC Place, Vancouver',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'CAN', away: 'QAT', kickoff: '2026-06-18T22:00:00Z' },
+  { id: 'SUI-BIH-B4', venue: 'Rose Bowl, Pasadena',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'SUI', away: 'BIH', kickoff: '2026-06-18T19:00:00Z' },
   { id: 'SUI-CAN-B5',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'SUI', away: 'CAN', kickoff: '2026-06-24T19:00:00Z' },
-  { id: 'BIH-QAT-B6',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'BIH', away: 'QAT', kickoff: '2026-06-24T19:00:00Z' },
+  { id: 'BIH-QAT-B6', venue: 'Lincoln Financial Field, Philadelphia',  apiId: 0, group: 'B', stage: 'GROUP_STAGE', home: 'BIH', away: 'QAT', kickoff: '2026-06-24T19:00:00Z' },
 
   // ===== GRUPPE C: BRA, MAR, HAI, SCO =====
   // MD1: Jun 13/14  MD2: Jun 19/20  MD3: Jun 24 (gleichzeitig)
@@ -47,12 +48,12 @@ export const WM_SCHEDULE: WmMatch[] = [
   { id: 'HAI-SCO-C2',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'HAI', away: 'SCO', kickoff: '2026-06-14T01:00:00Z' },
   { id: 'BRA-HAI-C3',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'BRA', away: 'HAI', kickoff: '2026-06-20T01:00:00Z' },
   { id: 'SCO-MAR-C4',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'SCO', away: 'MAR', kickoff: '2026-06-19T22:00:00Z' },
-  { id: 'SCO-BRA-C5',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'SCO', away: 'BRA', kickoff: '2026-06-24T22:00:00Z' },
-  { id: 'MAR-HAI-C6',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'MAR', away: 'HAI', kickoff: '2026-06-24T22:00:00Z' },
+  { id: 'SCO-BRA-C5', venue: 'SoFi Stadium, Los Angeles',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'SCO', away: 'BRA', kickoff: '2026-06-24T22:00:00Z' },
+  { id: 'MAR-HAI-C6', venue: 'Arrowhead Stadium, Kansas City',  apiId: 0, group: 'C', stage: 'GROUP_STAGE', home: 'MAR', away: 'HAI', kickoff: '2026-06-24T22:00:00Z' },
 
   // ===== GRUPPE D: USA, PAR, AUS, TUR =====
   // MD1: Jun 12/13  MD2: Jun 19/20  MD3: Jun 25/26 (gleichzeitig)
-  { id: 'USA-PAR-D1',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'USA', away: 'PAR', kickoff: '2026-06-13T01:00:00Z' },
+  { id: 'USA-PAR-D1', venue: 'MetLife Stadium, East Rutherford',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'USA', away: 'PAR', kickoff: '2026-06-13T01:00:00Z' },
   { id: 'AUS-TUR-D2',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'AUS', away: 'TUR', kickoff: '2026-06-14T04:00:00Z' },
   { id: 'USA-AUS-D3',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'USA', away: 'AUS', kickoff: '2026-06-19T19:00:00Z' },
   { id: 'TUR-PAR-D4',  apiId: 0, group: 'D', stage: 'GROUP_STAGE', home: 'TUR', away: 'PAR', kickoff: '2026-06-20T04:00:00Z' },
@@ -61,7 +62,7 @@ export const WM_SCHEDULE: WmMatch[] = [
 
   // ===== GRUPPE E: GER, CUW, CIV, ECU =====
   // MD1: Jun 14  MD2: Jun 20/21  MD3: Jun 25 (gleichzeitig)
-  { id: 'GER-CUW-E1',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'GER', away: 'CUW', kickoff: '2026-06-14T17:00:00Z' },
+  { id: 'GER-CUW-E1', venue: 'Lincoln Financial Field, Philadelphia',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'GER', away: 'CUW', kickoff: '2026-06-14T17:00:00Z' },
   { id: 'CIV-ECU-E2',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'CIV', away: 'ECU', kickoff: '2026-06-14T23:00:00Z' },
   { id: 'GER-CIV-E3',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'GER', away: 'CIV', kickoff: '2026-06-20T20:00:00Z' },
   { id: 'ECU-CUW-E4',  apiId: 0, group: 'E', stage: 'GROUP_STAGE', home: 'ECU', away: 'CUW', kickoff: '2026-06-21T00:00:00Z' },
@@ -84,7 +85,7 @@ export const WM_SCHEDULE: WmMatch[] = [
   { id: 'BEL-IRN-G3',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'BEL', away: 'IRN', kickoff: '2026-06-21T19:00:00Z' },
   { id: 'NZL-EGY-G4',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'NZL', away: 'EGY', kickoff: '2026-06-22T01:00:00Z' },
   { id: 'NZL-BEL-G5',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'NZL', away: 'BEL', kickoff: '2026-06-27T03:00:00Z' },
-  { id: 'EGY-IRN-G6',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'EGY', away: 'IRN', kickoff: '2026-06-27T03:00:00Z' },
+  { id: 'EGY-IRN-G6', venue: 'Lincoln Financial Field, Philadelphia',  apiId: 0, group: 'G', stage: 'GROUP_STAGE', home: 'EGY', away: 'IRN', kickoff: '2026-06-27T03:00:00Z' },
 
   // ===== GRUPPE H: ESP, CPV, SAU, URU =====
   // MD1: Jun 15  MD2: Jun 21/22  MD3: Jun 26/27 (gleichzeitig)
@@ -102,7 +103,7 @@ export const WM_SCHEDULE: WmMatch[] = [
   { id: 'FRA-IRQ-I3',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'FRA', away: 'IRQ', kickoff: '2026-06-22T21:00:00Z' },
   { id: 'NOR-SEN-I4',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'NOR', away: 'SEN', kickoff: '2026-06-23T00:00:00Z' },
   { id: 'NOR-FRA-I5',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'NOR', away: 'FRA', kickoff: '2026-06-26T19:00:00Z' },
-  { id: 'SEN-IRQ-I6',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'SEN', away: 'IRQ', kickoff: '2026-06-26T19:00:00Z' },
+  { id: 'SEN-IRQ-I6', venue: 'Gillette Stadium, Boston',  apiId: 0, group: 'I', stage: 'GROUP_STAGE', home: 'SEN', away: 'IRQ', kickoff: '2026-06-26T19:00:00Z' },
 
   // ===== GRUPPE J: ARG, ALG, AUT, JOR =====
   // MD1: Jun 16/17  MD2: Jun 22/23  MD3: Jun 27/28 (gleichzeitig)
@@ -111,11 +112,11 @@ export const WM_SCHEDULE: WmMatch[] = [
   { id: 'ARG-AUT-J3',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'ARG', away: 'AUT', kickoff: '2026-06-22T17:00:00Z' },
   { id: 'JOR-ALG-J4',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'JOR', away: 'ALG', kickoff: '2026-06-23T03:00:00Z' },
   { id: 'JOR-ARG-J5',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'JOR', away: 'ARG', kickoff: '2026-06-28T02:00:00Z' },
-  { id: 'ALG-AUT-J6',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'ALG', away: 'AUT', kickoff: '2026-06-28T02:00:00Z' },
+  { id: 'ALG-AUT-J6', venue: 'Arrowhead Stadium, Kansas City',  apiId: 0, group: 'J', stage: 'GROUP_STAGE', home: 'ALG', away: 'AUT', kickoff: '2026-06-28T02:00:00Z' },
 
   // ===== GRUPPE K: POR, COD, UZB, COL =====
   // MD1: Jun 17/18  MD2: Jun 23/24  MD3: Jun 27 (gleichzeitig)
-  { id: 'POR-COD-K1',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'POR', away: 'COD', kickoff: '2026-06-17T17:00:00Z' },
+  { id: 'POR-COD-K1', venue: 'Gillette Stadium, Boston',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'POR', away: 'COD', kickoff: '2026-06-17T17:00:00Z' },
   { id: 'UZB-COL-K2',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'UZB', away: 'COL', kickoff: '2026-06-18T02:00:00Z' },
   { id: 'POR-UZB-K3',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'POR', away: 'UZB', kickoff: '2026-06-23T17:00:00Z' },
   { id: 'COL-COD-K4',  apiId: 0, group: 'K', stage: 'GROUP_STAGE', home: 'COL', away: 'COD', kickoff: '2026-06-24T02:00:00Z' },
