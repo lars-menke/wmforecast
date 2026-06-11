@@ -99,7 +99,7 @@
   flex: 1;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: center;
+  align-items: end;
   gap: var(--space-2);
 }
 
@@ -154,12 +154,11 @@
 .scoreTipp { color: var(--text-secondary); }
 
 .scoreLabel {
-  font-size: 10px;
-  font-family: Georgia, 'Palatino Linotype', Palatino, serif;
-  font-style: italic;
-  color: var(--text-tertiary);
+  font-size: var(--size-caption-2);
+  font-weight: var(--weight-regular);
+  color: var(--system-blue);
   line-height: 1;
-  letter-spacing: 0.1px;
+  letter-spacing: 0.2px;
 }
 
 /* Probability grid: 3 equal cells separated by bg-page gap */
