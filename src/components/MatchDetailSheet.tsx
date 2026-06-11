@@ -82,7 +82,7 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
 
   if (!match) return null;
 
-  const { home, away, result, actual, finished, kickoff } = match;
+  const { home, away, result, actual, finished, kickoff, venue } = match;
   const homeNation = NATIONS[home];
   const awayNation = NATIONS[away];
   const { pH, pD, pA, lH, lA, naturalTipp, srt, lambdaDiff, marketApplied, calibrated, drawBlocked } = result;
@@ -117,6 +117,7 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
               <span className={styles.vs}>vs</span>
             )}
             <span className={styles.date}>{formatKickoff(kickoff)}</span>
+            {venue && <span className={styles.venue}>{venue}</span>}
           </div>
           <div className={`${styles.teamCol} ${styles.teamColRight}`}>
             <TeamLogo code={away} size={48} />

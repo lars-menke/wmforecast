@@ -158,7 +158,7 @@
   border-radius: 10px;
   padding: var(--space-1) var(--space-3);
   min-width: 68px;
-  align-self: flex-start;
+  align-self: center;
 }
 
 .score {

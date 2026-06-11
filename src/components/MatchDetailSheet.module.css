@@ -92,6 +92,13 @@
   line-height: 1.3;
 }
 
+.venue {
+  font-size: var(--size-caption-2);
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.3;
+}
+
 /* Sections */
 .section {
   border-top: var(--hairline) solid var(--separator);
