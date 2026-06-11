@@ -53,6 +53,10 @@ export default function SimulationScreen({ resultsMap }: Props) {
         .sort((a, b) => b.title.median - a.title.median)
     : [];
 
+  // Derive bonus tips from simulation
+  const bonusWeltmeister = rows[0]?.code ?? null;
+  const bonusHalbfinale  = rows.slice(0, 4).map(r => r.code);
+
   const activeRows = rows.slice().sort((a, b) => {
     if (tab === 'top4')    return b.top4.median    - a.top4.median;
     if (tab === 'advance') return b.groupAdv.median - a.groupAdv.median;
@@ -129,15 +133,31 @@ export default function SimulationScreen({ resultsMap }: Props) {
               <div className={styles.bonusGrid}>
                 <div className={styles.bonusItem}>
                   <span className={styles.bonusLabel}>Weltmeister</span>
-                  <span className={styles.bonusValue}>🇫🇷 Frankreich</span>
+                  <span className={styles.bonusValue}>
+                    {bonusWeltmeister
+                      ? `${NATIONS[bonusWeltmeister]?.flag ?? ''} ${NATIONS[bonusWeltmeister]?.name ?? bonusWeltmeister}`
+                      : '—'}
+                  </span>
                 </div>
                 <div className={styles.bonusItem}>
                   <span className={styles.bonusLabel}>Torschützenkönig</span>
-                  <span className={styles.bonusValue}>Mbappé (FRA)</span>
+                  <span className={styles.bonusValue}>
+                    {bonusWeltmeister === 'ARG' ? 'L. Messi / J. Álvarez (ARG)'
+                      : bonusWeltmeister === 'FRA' ? 'Mbappé (FRA)'
+                      : bonusWeltmeister === 'BRA' ? 'Vinicius Jr. (BRA)'
+                      : bonusWeltmeister === 'ESP' ? 'Yamal / Morata (ESP)'
+                      : bonusWeltmeister === 'ENG' ? 'Kane (ENG)'
+                      : bonusWeltmeister === 'POR' ? 'Ronaldo (POR)'
+                      : bonusWeltmeister
+                        ? `${NATIONS[bonusWeltmeister]?.flag ?? ''} ${bonusWeltmeister}`
+                        : '—'}
+                  </span>
                 </div>
                 <div className={styles.bonusItem}>
                   <span className={styles.bonusLabel}>Halbfinale</span>
-                  <span className={styles.bonusValue}>FRA · ARG · BRA · ESP</span>
+                  <span className={styles.bonusValue}>
+                    {bonusHalbfinale.join(' · ')}
+                  </span>
                 </div>
                 <div className={styles.bonusItem}>
                   <span className={styles.bonusLabel}>Gruppensieger</span>
