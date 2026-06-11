@@ -51,47 +51,45 @@ export default function MatchCard({ match, onClick, style }: Props) {
     >
       <div className={styles.inner}>
 
-        {/* Header */}
-        <div className={styles.header}>
-          <span className={styles.meta}>{formatKickoff(match.kickoff)}</span>
-          <div className={styles.badges}>
-            {live && <span className={`${styles.badge} ${styles.badgeLive}`}>● Live</span>}
-            {topTip && !live && <span className={`${styles.badge} ${styles.badgeTopTip}`}>TOP</span>}
-            <span className={`${styles.badge} ${styles[cat.badge]}`}>{cat.label}</span>
-          </div>
+        {/* Grid: date | score (spans 2 rows) | badges */}
+        <span className={styles.meta}>{formatKickoff(match.kickoff)}</span>
+
+        <div className={styles.scoreBox}>
+          {finished && actual ? (
+            <>
+              <span className={styles.score} data-numeric>{actual.g1}:{actual.g2}</span>
+              <span className={styles.scoreLabel}>Ergebnis</span>
+            </>
+          ) : (
+            <>
+              <span className={`${styles.score} ${styles.scoreTipp}`} data-numeric>
+                {naturalTipp ?? '–'}
+              </span>
+              <span className={styles.scoreLabel}>{live ? 'Live' : 'Tipp'}</span>
+            </>
+          )}
         </div>
 
-        {/* Teams + Score */}
-        <div className={styles.body}>
-          <div className={styles.teamLeft}>
-            <TeamLogo code={home} size={32} />
-            <span className={`${styles.teamName}${wo === 'H' && !finished ? ` ${styles.teamNameFav}` : ''}`}>
-              {homeNation?.name ?? home}
-            </span>
-          </div>
+        <div className={styles.badges}>
+          {live && <span className={`${styles.badge} ${styles.badgeLive}`}>● Live</span>}
+          {topTip && !live && <span className={`${styles.badge} ${styles.badgeTopTip}`}>TOP</span>}
+          <span className={`${styles.badge} ${styles[cat.badge]}`}>{cat.label}</span>
+        </div>
 
-          <div className={styles.scoreBox}>
-            {finished && actual ? (
-              <>
-                <span className={styles.score} data-numeric>{actual.g1}:{actual.g2}</span>
-                <span className={styles.scoreLabel}>Ergebnis</span>
-              </>
-            ) : (
-              <>
-                <span className={`${styles.score} ${styles.scoreTipp}`} data-numeric>
-                  {naturalTipp ?? '–'}
-                </span>
-                <span className={styles.scoreLabel}>{live ? 'Live' : 'Tipp'}</span>
-              </>
-            )}
-          </div>
+        <div className={styles.teamLeft}>
+          <TeamLogo code={home} size={32} />
+          <span className={`${styles.teamName}${wo === 'H' && !finished ? ` ${styles.teamNameFav}` : ''}`}>
+            {homeNation?.name ?? home}
+          </span>
+        </div>
 
-          <div className={styles.teamRight}>
-            <span className={`${styles.teamName}${wo === 'A' && !finished ? ` ${styles.teamNameFav}` : ''}`}>
-              {awayNation?.name ?? away}
-            </span>
-            <TeamLogo code={away} size={32} />
-          </div>
+        {/* scoreBox already placed above, spans rows 1+2 */}
+
+        <div className={styles.teamRight}>
+          <span className={`${styles.teamName}${wo === 'A' && !finished ? ` ${styles.teamNameFav}` : ''}`}>
+            {awayNation?.name ?? away}
+          </span>
+          <TeamLogo code={away} size={32} />
         </div>
 
         {/* Probability grid */}
