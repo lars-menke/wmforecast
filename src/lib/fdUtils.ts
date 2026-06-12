@@ -4,7 +4,8 @@ const ESPN_TLA_MAP: Record<string, string> = {
   'HAIT': 'HAI',  // Haiti
   'CUW':  'CUW',  // Curaçao (ESPN may use 'CUR')
   'CUR':  'CUW',
-  'BIH':  'BIH',  // Bosnia
+  'BIH':  'BIH',  // Bosnia (ESPN may use BOS)
+  'BOS':  'BIH',
   'CPV':  'CPV',  // Cape Verde (ESPN may use 'CVI')
   'CVI':  'CPV',
   'COD':  'COD',  // DR Congo (ESPN may use 'DRC')
