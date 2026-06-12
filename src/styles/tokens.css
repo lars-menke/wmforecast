@@ -99,8 +99,8 @@
     --bg-fill-strong: rgba(238, 255, 26, 0.16);
     --bg-track:       #111D38;
     --bg-tabbar:      rgba(6, 9, 26, 0.92);
-    --text-primary:   #EEFF1A;
-    --text-secondary: #8CAA00;
+    --text-primary:   #F0EED8;
+    --text-secondary: #A8C050;
     --text-tertiary:  #6E8A00;
     --text-on-accent: #06091A;
     --separator:        rgba(238, 255, 26, 0.15);
@@ -132,8 +132,8 @@ html[data-theme='dark'] {
   --bg-fill-strong: rgba(238, 255, 26, 0.16);
   --bg-track:       #111D38;
   --bg-tabbar:      rgba(6, 9, 26, 0.92);
-  --text-primary:   #EEFF1A;
-  --text-secondary: #8CAA00;
+  --text-primary:   #F0EED8;
+  --text-secondary: #A8C050;
   --text-tertiary:  #506400;
   --text-on-accent: #06091A;
   --separator:        rgba(238, 255, 26, 0.15);

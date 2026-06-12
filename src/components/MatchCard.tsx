@@ -98,7 +98,7 @@ export default function MatchCard({ match, onClick, style }: Props) {
         <div className={styles.probGrid}>
           <div className={`${styles.probCell}${wo === 'H' ? ` ${styles.probCellHome}` : ''}`}>
             <span className={styles.probPct} data-numeric>{(pH * 100).toFixed(0)}%</span>
-            <span className={styles.probLbl}>Heimsieg</span>
+            <span className={styles.probLbl}>Heim</span>
           </div>
           <div className={`${styles.probCell}${wo === 'D' ? ` ${styles.probCellDraw}` : ''}`}>
             <span className={styles.probPct} data-numeric>{(pD * 100).toFixed(0)}%</span>
@@ -106,7 +106,7 @@ export default function MatchCard({ match, onClick, style }: Props) {
           </div>
           <div className={`${styles.probCell}${wo === 'A' ? ` ${styles.probCellAway}` : ''}`}>
             <span className={styles.probPct} data-numeric>{(pA * 100).toFixed(0)}%</span>
-            <span className={styles.probLbl}>Auswärtssieg</span>
+            <span className={styles.probLbl}>Ausw.</span>
           </div>
         </div>
 

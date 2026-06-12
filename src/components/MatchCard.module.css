@@ -119,7 +119,7 @@
 }
 
 .teamName {
-  font-size: var(--size-subhead);
+  font-size: var(--size-callout);
   font-weight: var(--weight-regular);
   color: var(--text-secondary);
   overflow: hidden;
@@ -178,7 +178,7 @@
   align-items: center;
   gap: 2px;
   padding: var(--space-2) var(--space-1);
-  background: var(--bg-fill);
+  background: var(--bg-fill-strong);
   transition: background 0.2s;
 }
 
