@@ -85,6 +85,23 @@
   letter-spacing: -1px;
 }
 
+.resultLive { color: var(--system-red); }
+
+.livePill {
+  font-size: var(--size-caption-2);
+  font-weight: var(--weight-semibold);
+  color: var(--system-red);
+  background: rgba(255, 59, 48, 0.12);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .date {
   font-size: var(--size-caption-1);
   color: var(--text-secondary);
@@ -234,35 +251,146 @@
   text-align: right;
 }
 
-/* Torschützen */
-.goalList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+/* Loading indicator */
+.loadingDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--text-tertiary);
+  border-radius: 50%;
+  margin-left: var(--space-2);
+  vertical-align: middle;
+  animation: loadingPulse 1s ease-in-out infinite;
 }
 
-.goalRow {
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.empty {
+  font-size: var(--size-subhead);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tlRow {
   display: grid;
-  grid-template-columns: 36px 1fr auto;
+  grid-template-columns: 1fr 36px 1fr;
+  align-items: center;
+  min-height: 28px;
+}
+
+.tlMin {
+  font-size: var(--size-caption-1);
+  font-weight: var(--weight-semibold);
+  color: var(--text-tertiary);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.tlHome { display: flex; justify-content: flex-end; }
+.tlAway { display: flex; justify-content: flex-start; }
+
+.tlContent {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+}
+
+.tlContentHome { flex-direction: row; }
+.tlContentAway { flex-direction: row; }
+
+.tlName {
+  font-size: var(--size-subhead);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.tlGoalIcon { color: var(--system-green); flex-shrink: 0; }
+.tlAway .tlGoalIcon { color: var(--system-orange); }
+.tlCardIcon { flex-shrink: 0; display: flex; align-items: center; }
+
+/* Statistics */
+.possessionRow {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
   align-items: center;
   gap: var(--space-2);
 }
 
-.goalMinute {
-  font-size: var(--size-caption-1);
-  color: var(--text-secondary);
-  text-align: right;
+.possessionVal {
+  font-size: var(--size-subhead);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-align: center;
 }
 
-.goalScorer {
+.possessionBar {
+  height: 8px;
+  background: rgba(255, 149, 0, 0.35);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.possessionHome {
+  height: 100%;
+  background: var(--system-green);
+  border-radius: var(--radius-pill);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statVal {
   font-size: var(--size-subhead);
   color: var(--text-primary);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
-.goalTeam {
-  font-size: var(--size-caption-1);
+.statBarWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.statBarTrack {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-fill);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.statBarHome {
+  height: 100%;
+  background: var(--system-blue);
+  border-radius: var(--radius-pill);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.statLabel {
+  font-size: var(--size-caption-2);
   color: var(--text-tertiary);
-  text-align: right;
+  text-align: center;
 }
 
 .safeBottom {
