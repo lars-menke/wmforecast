@@ -15,7 +15,7 @@ export type MatchEntry = {
   away: string;
   kickoff: string;
   result: CalcResult;
-  actual: { g1: number; g2: number } | null;
+  actual: { g1: number; g2: number; g1Live?: number; g2Live?: number } | null;
   finished: boolean;
   live: boolean;
   goals: GoalEvent[];
@@ -158,7 +158,7 @@ export function useMatches(): MatchesState {
           away: m.away,
           kickoff: m.kickoff,
           result,
-          actual: actual ? { g1: actual.g1, g2: actual.g2 } : null,
+          actual: actual ? { g1: actual.g1, g2: actual.g2, g1Live: actual.g1Live, g2Live: actual.g2Live } : null,
           finished: actual?.finished ?? false,
           live: actual?.live ?? false,
           goals: actual?.goals ?? [],

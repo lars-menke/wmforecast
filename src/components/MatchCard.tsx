@@ -76,12 +76,19 @@ export default function MatchCard({ match, onClick, style }: Props) {
                 <span className={styles.score} data-numeric>{actual.g1}:{actual.g2}</span>
                 <span className={styles.scoreLabel}>Ergebnis</span>
               </>
+            ) : live && actual ? (
+              <>
+                <span className={`${styles.score} ${styles.scoreLive}`} data-numeric>
+                  {actual.g1Live ?? 0}:{actual.g2Live ?? 0}
+                </span>
+                <span className={`${styles.scoreLabel} ${styles.scoreLabelLive}`}>Live</span>
+              </>
             ) : (
               <>
                 <span className={`${styles.score} ${styles.scoreTipp}`} data-numeric>
                   {naturalTipp ?? '–'}
                 </span>
-                <span className={styles.scoreLabel}>{live ? 'Live' : 'Tipp'}</span>
+                <span className={styles.scoreLabel}>Tipp</span>
               </>
             )}
           </div>

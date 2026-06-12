@@ -152,6 +152,8 @@
 }
 
 .scoreTipp { color: var(--text-secondary); }
+.scoreLive { color: var(--system-red); }
+.scoreLabelLive { color: var(--system-red); }
 
 .scoreLabel {
   font-size: var(--size-caption-2);
