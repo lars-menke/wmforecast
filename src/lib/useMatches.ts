@@ -19,8 +19,7 @@ export type MatchEntry = {
   finished: boolean;
   live: boolean;
   goals: GoalEvent[];
-  fdId: number | undefined;
-  venue?: string;
+  espnId: string | undefined;
 };
 
 export type MatchesState = {
@@ -158,12 +157,11 @@ export function useMatches(): MatchesState {
           away: m.away,
           kickoff: m.kickoff,
           result,
-          actual: actual ? { g1: actual.g1, g2: actual.g2, g1Live: actual.g1Live, g2Live: actual.g2Live } : null,
+          actual: actual ? { g1: actual.g1, g2: actual.g2 } : null,
           finished: actual?.finished ?? false,
           live: actual?.live ?? false,
           goals: actual?.goals ?? [],
-          fdId: actual?.fdId,
-          venue:    m.venue,
+          espnId: actual?.espnId,
         }];
       });
   }, [oddsMap, resultsMap]);

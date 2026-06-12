@@ -50,8 +50,8 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
       requestAnimationFrame(() => setVisible(true));
       if ((match.finished || match.live) && match.actual) {
         setGoals(match.goals ?? []);
-        if (match.fdId) {
-          fetchMatchDetail(match.fdId).then(r => { if (r?.goals) setGoals(r.goals); }).catch(() => {});
+        if (match.espnId) {
+          fetchMatchDetail(match.espnId).then(r => { if (r?.goals) setGoals(r.goals); }).catch(() => {});
         }
       } else {
         setGoals([]);

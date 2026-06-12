@@ -1,29 +1,31 @@
-import { resolveTla } from './fdUtils';
+const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world';
+const CACHE_KEY = 'wm_results_v5';
+const CACHE_TTL = 2 * 60 * 1000;
 
-const FD_BASE    = 'https://api.football-data.org/v4';
-const FD_KEY     = import.meta.env.VITE_FD_API_KEY ?? '';
-const STATIC_URL = `${import.meta.env.BASE_URL}data/results.json`;
-const CACHE_KEY  = 'wm_results_v4';
-const CACHE_TTL  = 2 * 60 * 1000; // 2 min (file updates every 5 min)
+// WM 2026: 11 Jun – 19 Jul
+const WM_DATE_RANGE = '20260611-20260719';
 
-type FdMatch = {
-  id: number;
-  status: 'SCHEDULED' | 'TIMED' | 'IN_PLAY' | 'PAUSED' | 'FINISHED' | 'SUSPENDED' | 'POSTPONED' | 'CANCELLED' | 'AWARDED';
-  homeTeam: { tla: string; name?: string };
-  awayTeam: { tla: string; name?: string };
-  score: {
-    winner: 'HOME_TEAM' | 'AWAY_TEAM' | 'DRAW' | null;
-    duration: 'REGULAR' | 'EXTRA_TIME' | 'PENALTY_SHOOTOUT';
-    fullTime: { home: number | null; away: number | null };
-    halfTime:  { home: number | null; away: number | null };
+type EspnCompetitor = {
+  homeAway: 'home' | 'away';
+  score: string;
+  team: { abbreviation: string; displayName: string; id: string };
+};
+
+type EspnEvent = {
+  id: string;
+  date: string;
+  status: {
+    type: { name: string; completed: boolean };
   };
-  goals: Array<{
-    minute: number;
-    injuryTime?: number | null;
-    type: 'REGULAR' | 'OWN' | 'PENALTY';
-    team: { id?: number; name: string };
-    scorer: { id?: number; name: string };
-    assist: { id?: number; name: string } | null;
+  competitions: Array<{
+    competitors: EspnCompetitor[];
+    details?: Array<{
+      type?: { text?: string };
+      clock?: { displayValue?: string };
+      team?: { id?: string };
+      athletesInvolved?: Array<{ displayName?: string }>;
+      scoringPlay?: boolean;
+    }>;
   }>;
 };
 
@@ -44,28 +46,49 @@ export type MatchResult = {
   g1Live?: number;
   g2Live?: number;
   goals?: GoalEvent[];
-  fdId?: number;
+  espnId?: string;
 };
 
-function parseGoals(fdMatch: FdMatch): GoalEvent[] {
-  if (!fdMatch.goals?.length) return [];
-  return fdMatch.goals.map(g => ({
-    minute: g.minute,
-    team: g.team.name === (fdMatch.homeTeam.name ?? '') ? ('H' as const) : ('A' as const),
-    scorer: g.scorer.name,
-    type: g.type,
-  }));
+function parseGoalsFromDetails(
+  details: EspnEvent['competitions'][0]['details'],
+  homeTeamId: string,
+): GoalEvent[] {
+  if (!details?.length) return [];
+  const goals: GoalEvent[] = [];
+  for (const d of details) {
+    if (!d.scoringPlay) continue;
+    const clockStr = d.clock?.displayValue ?? '0:00';
+    const [minStr] = clockStr.split(':');
+    const minute = parseInt(minStr, 10) || 0;
+    const isHome = d.team?.id === homeTeamId;
+    const scorer = d.athletesInvolved?.[0]?.displayName ?? '';
+    const typeText = d.type?.text ?? '';
+    const type = typeText.toLowerCase().includes('own') ? 'OWN'
+      : typeText.toLowerCase().includes('penalty') ? 'PENALTY'
+      : 'REGULAR';
+    goals.push({ minute, team: isHome ? 'H' : 'A', scorer, type });
+  }
+  return goals;
 }
 
-function matchToResult(m: FdMatch): MatchResult | null {
-  const isLive     = m.status === 'IN_PLAY' || m.status === 'PAUSED';
-  const isFinished = m.status === 'FINISHED' || m.status === 'AWARDED';
+function eventToResult(event: EspnEvent): MatchResult | null {
+  const statusName = event.status.type.name;
+  const isLive     = statusName === 'STATUS_IN_PROGRESS' || statusName === 'STATUS_HALFTIME';
+  const isFinished = event.status.type.completed || statusName === 'STATUS_FINAL' || statusName === 'STATUS_FULL_TIME';
   if (!isLive && !isFinished) return null;
 
-  const homeCode = resolveTla(m.homeTeam.tla);
-  const awayCode = resolveTla(m.awayTeam.tla);
-  const g1 = m.score.fullTime.home ?? 0;
-  const g2 = m.score.fullTime.away ?? 0;
+  const comp = event.competitions[0];
+  if (!comp?.competitors?.length) return null;
+
+  const home = comp.competitors.find(c => c.homeAway === 'home');
+  const away = comp.competitors.find(c => c.homeAway === 'away');
+  if (!home || !away) return null;
+
+  const homeCode = home.team.abbreviation;
+  const awayCode = away.team.abbreviation;
+  const g1 = parseInt(home.score, 10) || 0;
+  const g2 = parseInt(away.score, 10) || 0;
+  const goals = parseGoalsFromDetails(comp.details, home.team.id);
 
   return {
     homeCode,
@@ -75,52 +98,22 @@ function matchToResult(m: FdMatch): MatchResult | null {
     finished: isFinished,
     live: isLive,
     ...(isLive ? { g1Live: g1, g2Live: g2 } : {}),
-    goals: parseGoals(m),
-    fdId: m.id,
+    goals,
+    espnId: event.id,
   };
 }
 
-function parseMatches(matches: FdMatch[]): Record<string, MatchResult> {
+function parseEvents(events: EspnEvent[]): Record<string, MatchResult> {
   const data: Record<string, MatchResult> = {};
-  for (const m of matches) {
-    const result = matchToResult(m);
+  for (const e of events) {
+    const result = eventToResult(e);
     if (!result) continue;
     data[`${result.homeCode}-${result.awayCode}`] = result;
   }
   return data;
 }
 
-// Primary: read static file written by GitHub Actions (no CORS issue)
-async function fetchFromStatic(): Promise<Record<string, MatchResult> | null> {
-  try {
-    const r = await fetch(`${STATIC_URL}?t=${Math.floor(Date.now() / (2 * 60 * 1000))}`);
-    if (!r.ok) return null;
-    const { matches } = (await r.json()) as { matches: FdMatch[] };
-    if (!Array.isArray(matches)) return null;
-    return parseMatches(matches);
-  } catch {
-    return null;
-  }
-}
-
-// Fallback: direct API call (works on localhost, blocked in production)
-async function fetchFromApi(): Promise<Record<string, MatchResult> | null> {
-  if (!FD_KEY) return null;
-  try {
-    const r = await fetch(
-      `${FD_BASE}/competitions/WC/matches`,
-      { headers: { 'X-Auth-Token': FD_KEY } },
-    );
-    if (!r.ok) return null;
-    const { matches } = (await r.json()) as { matches: FdMatch[] };
-    return parseMatches(matches);
-  } catch {
-    return null;
-  }
-}
-
 export async function fetchResults(): Promise<Record<string, MatchResult>> {
-  // Check cache
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
@@ -129,26 +122,93 @@ export async function fetchResults(): Promise<Record<string, MatchResult>> {
     }
   } catch { /* ignore */ }
 
-  const data = (await fetchFromStatic()) ?? (await fetchFromApi()) ?? {};
+  try {
+    const r = await fetch(`${ESPN_BASE}/scoreboard?dates=${WM_DATE_RANGE}&limit=200`);
+    if (!r.ok) return {};
+    const { events } = (await r.json()) as { events: EspnEvent[] };
+    if (!Array.isArray(events)) return {};
 
-  if (Object.keys(data).length > 0) {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-    } catch { /* storage full */ }
+    const data = parseEvents(events);
+
+    if (Object.keys(data).length > 0) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+      } catch { /* storage full */ }
+    }
+    return data;
+  } catch {
+    return {};
   }
-
-  return data;
 }
 
-// Detail fetch for goal scorers (direct API, only called from MatchDetailSheet)
-export async function fetchMatchDetail(matchId: number): Promise<MatchResult | null> {
-  if (!FD_KEY) return null;
+type EspnSummaryPlay = {
+  scoringPlay?: boolean;
+  clock?: { displayValue?: string };
+  team?: { id?: string };
+  type?: { text?: string };
+  participants?: Array<{
+    athlete?: { displayName?: string };
+    type?: { id?: string };
+  }>;
+};
+
+export async function fetchMatchDetail(espnId: string): Promise<MatchResult | null> {
+  if (!espnId) return null;
   try {
-    const r = await fetch(`${FD_BASE}/matches/${matchId}`, {
-      headers: { 'X-Auth-Token': FD_KEY },
-    });
+    const r = await fetch(`${ESPN_BASE}/summary?event=${espnId}`);
     if (!r.ok) return null;
-    return matchToResult((await r.json()) as FdMatch);
+    const json = await r.json() as {
+      header?: {
+        competitions?: Array<{
+          competitors?: Array<{ homeAway?: string; team?: { id?: string; abbreviation?: string }; score?: string }>;
+          status?: { type?: { name?: string; completed?: boolean } };
+        }>;
+      };
+      scoringPlays?: EspnSummaryPlay[];
+    };
+
+    const comp = json.header?.competitions?.[0];
+    if (!comp) return null;
+
+    const home = comp.competitors?.find(c => c.homeAway === 'home');
+    const away = comp.competitors?.find(c => c.homeAway === 'away');
+    if (!home || !away) return null;
+
+    const statusName = comp.status?.type?.name ?? '';
+    const isLive     = statusName === 'STATUS_IN_PROGRESS' || statusName === 'STATUS_HALFTIME';
+    const isFinished = comp.status?.type?.completed || statusName === 'STATUS_FINAL';
+
+    const g1 = parseInt(home.score ?? '0', 10) || 0;
+    const g2 = parseInt(away.score ?? '0', 10) || 0;
+    const homeTeamId = home.team?.id ?? '';
+
+    const goals: GoalEvent[] = (json.scoringPlays ?? [])
+      .filter(p => p.scoringPlay)
+      .map(p => {
+        const clockStr = p.clock?.displayValue ?? '0:00';
+        const minute = parseInt(clockStr.split(':')[0], 10) || 0;
+        const isHomeGoal = p.team?.id === homeTeamId;
+        const scorer = p.participants?.find(pa => pa.type?.id === 'scorer')?.athlete?.displayName
+          ?? p.participants?.[0]?.athlete?.displayName
+          ?? '';
+        const typeText = p.type?.text ?? '';
+        const type = typeText.toLowerCase().includes('own') ? 'OWN'
+          : typeText.toLowerCase().includes('penalty') ? 'PENALTY'
+          : 'REGULAR';
+        return { minute, team: isHomeGoal ? ('H' as const) : ('A' as const), scorer, type };
+      });
+
+    return {
+      homeCode: home.team?.abbreviation ?? '',
+      awayCode: away.team?.abbreviation ?? '',
+      g1: isFinished ? g1 : 0,
+      g2: isFinished ? g2 : 0,
+      finished: !!isFinished,
+      live: isLive,
+      ...(isLive ? { g1Live: g1, g2Live: g2 } : {}),
+      goals,
+      espnId,
+    };
   } catch {
     return null;
   }
