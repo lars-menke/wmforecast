@@ -35,6 +35,7 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          npx gh-pages -d dist --add --message "Deploy [skip ci]"
+          touch dist/.nojekyll
+          npx gh-pages -d dist --add --dotfiles --message "Deploy [skip ci]"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
