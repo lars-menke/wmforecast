@@ -28,6 +28,9 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+        env:
+          VITE_FD_API_KEY: ${{ secrets.FD_API_KEY }}
+          VITE_ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,10 +1,11 @@
 import { resolveTla } from './fdUtils';
 
-const FD_BASE   = 'https://api.football-data.org/v4';
-const FD_KEY    = import.meta.env.VITE_FD_API_KEY ?? '';
-const WC_CODE   = 'WC';
-const CACHE_KEY = 'wm_results_v3';
-const CACHE_TTL = 3 * 60 * 1000; // 3 min
+const FD_BASE    = 'https://api.football-data.org/v4';
+const FD_KEY     = import.meta.env.VITE_FD_API_KEY ?? '';
+const WC_CODE    = 'WC';
+const STATIC_URL = 'https://raw.githubusercontent.com/lars-menke/wmforecast/gh-pages/data/results.json';
+const CACHE_KEY  = 'wm_results_v4';
+const CACHE_TTL  = 2 * 60 * 1000; // 2 min
 
 type FdMatch = {
   id: number;
@@ -97,6 +98,45 @@ export async function fetchMatchDetail(matchId: number): Promise<MatchResult | n
   }
 }
 
+async function fetchFromStatic(): Promise<Record<string, MatchResult> | null> {
+  try {
+    const r = await fetch(`${STATIC_URL}?t=${Math.floor(Date.now() / (2 * 60 * 1000))}`);
+    if (!r.ok) return null;
+    const { matches } = (await r.json()) as { matches: FdMatch[] };
+    if (!Array.isArray(matches)) return null;
+    const data: Record<string, MatchResult> = {};
+    for (const m of matches) {
+      const result = matchToResult(m);
+      if (!result) continue;
+      data[`${result.homeCode}-${result.awayCode}`] = result;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchFromApi(): Promise<Record<string, MatchResult> | null> {
+  if (!FD_KEY) return null;
+  try {
+    const r = await fetch(
+      `${FD_BASE}/competitions/${WC_CODE}/matches`,
+      { headers: { 'X-Auth-Token': FD_KEY } },
+    );
+    if (!r.ok) return null;
+    const { matches } = (await r.json()) as { matches: FdMatch[] };
+    const data: Record<string, MatchResult> = {};
+    for (const m of matches) {
+      const result = matchToResult(m);
+      if (!result) continue;
+      data[`${result.homeCode}-${result.awayCode}`] = result;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchResults(): Promise<Record<string, MatchResult>> {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
@@ -106,30 +146,13 @@ export async function fetchResults(): Promise<Record<string, MatchResult>> {
     }
   } catch { /* ignore */ }
 
-  if (!FD_KEY) return {};
+  const data = (await fetchFromStatic()) ?? (await fetchFromApi()) ?? {};
 
-  try {
-    const r = await fetch(
-      `${FD_BASE}/competitions/${WC_CODE}/matches`,
-      { headers: { 'X-Auth-Token': FD_KEY } },
-    );
-    if (!r.ok) return {};
-
-    const { matches } = (await r.json()) as { matches: FdMatch[] };
-    const data: Record<string, MatchResult> = {};
-
-    for (const m of matches) {
-      const result = matchToResult(m);
-      if (!result) continue;
-      data[`${result.homeCode}-${result.awayCode}`] = result;
-    }
-
+  if (Object.keys(data).length > 0) {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
     } catch { /* storage full */ }
-
-    return data;
-  } catch {
-    return {};
   }
+
+  return data;
 }
