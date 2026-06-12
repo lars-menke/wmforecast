@@ -165,7 +165,7 @@ type EspnSummaryPlay = {
   scoringPlay?: boolean;
   clock?: { displayValue?: string };
   team?: { id?: string };
-  type?: { id?: string; text?: string };
+  type?: { id?: string; text?: string; type?: string };
   participants?: Array<{
     athlete?: { displayName?: string };
     type?: { id?: string };
@@ -183,7 +183,7 @@ const STAT_MAP: Record<string, string> = {
   totalShots:      'Schüsse',
   shotsOnTarget:   'Aufs Tor',
   foulsCommitted:  'Fouls',
-  cornerKicks:     'Ecken',
+  wonCorners:      'Ecken',
   offsides:        'Abseits',
 };
 
@@ -213,15 +213,16 @@ export async function fetchMatchDetail(espnId: string): Promise<MatchDetail | nu
     const comp = json.header?.competitions?.[0];
     const homeTeamId = comp?.competitors?.find(c => c.homeAway === 'home')?.team?.id ?? '';
 
-    // Goals
-    const goals: GoalEvent[] = (json.scoringPlays ?? [])
+    // Goals and cards both live in keyEvents
+    const keyEvents = json.keyEvents ?? [];
+
+    const goals: GoalEvent[] = keyEvents
       .filter(p => p.scoringPlay)
       .map(p => {
         const minute = parseMinute(p.clock?.displayValue);
         const isHomeGoal = p.team?.id === homeTeamId;
-        const scorer = p.participants?.find(pa => pa.type?.id === 'scorer')?.athlete?.displayName
+        const scorer = p.participants?.[0]?.athlete?.displayName
           ?? p.athletesInvolved?.[0]?.displayName
-          ?? p.participants?.[0]?.athlete?.displayName
           ?? '';
         const typeText = (p.type?.text ?? '').toLowerCase();
         const type: GoalEvent['type'] = typeText.includes('own') ? 'OWN'
@@ -230,11 +231,10 @@ export async function fetchMatchDetail(espnId: string): Promise<MatchDetail | nu
         return { minute, team: isHomeGoal ? ('H' as const) : ('A' as const), scorer, type };
       });
 
-    // Cards from keyEvents
-    const cards: CardEvent[] = (json.keyEvents ?? [])
+    const cards: CardEvent[] = keyEvents
       .filter(e => {
-        const id = (e.type?.id ?? '').toLowerCase();
-        return id.includes('yellow') || id.includes('red');
+        const t = (e.type?.type ?? '').toLowerCase();
+        return t === 'yellow-card' || t === 'red-card';
       })
       .map(e => {
         const minute = parseMinute(e.clock?.displayValue);
@@ -242,8 +242,8 @@ export async function fetchMatchDetail(espnId: string): Promise<MatchDetail | nu
         const player = e.participants?.[0]?.athlete?.displayName
           ?? e.athletesInvolved?.[0]?.displayName
           ?? '';
-        const id = (e.type?.id ?? '').toLowerCase();
-        const card: CardEvent['card'] = id.includes('red') && !id.includes('yellow') ? 'RED' : 'YELLOW';
+        const t = (e.type?.type ?? '').toLowerCase();
+        const card: CardEvent['card'] = t === 'red-card' ? 'RED' : 'YELLOW';
         return { minute, team: isHome ? ('H' as const) : ('A' as const), player, card };
       });
 
