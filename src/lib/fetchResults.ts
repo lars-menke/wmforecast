@@ -94,7 +94,12 @@ function parseGoalsFromDetails(
 
 function eventToResult(event: EspnEvent): MatchResult | null {
   const statusName = event.status.type.name;
-  const isLive     = statusName === 'STATUS_IN_PROGRESS' || statusName === 'STATUS_HALFTIME';
+  const isLive     = statusName === 'STATUS_IN_PROGRESS'
+    || statusName === 'STATUS_HALFTIME'
+    || statusName === 'STATUS_FIRST_HALF'
+    || statusName === 'STATUS_SECOND_HALF'
+    || statusName === 'STATUS_EXTRA_TIME'
+    || statusName === 'STATUS_SHOOTOUT';
   const isFinished = event.status.type.completed || statusName === 'STATUS_FINAL' || statusName === 'STATUS_FULL_TIME';
   if (!isLive && !isFinished) return null;
 
