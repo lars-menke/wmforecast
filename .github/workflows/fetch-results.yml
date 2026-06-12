@@ -1,0 +1,80 @@
+name: Fetch WM Results
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # every 5 minutes
+  workflow_dispatch:          # manual trigger
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Fetch results from football-data.org
+        run: |
+          HTTP_STATUS=$(curl -s -w "%{http_code}" -o matches_raw.json \
+            -H "X-Auth-Token: ${{ secrets.FD_API_KEY }}" \
+            "https://api.football-data.org/v4/competitions/WC/matches")
+
+          echo "HTTP status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "API returned $HTTP_STATUS, aborting"
+            exit 0
+          fi
+
+          # Validate: must contain "matches" key
+          if ! python3 -c "import json,sys; d=json.load(open('matches_raw.json')); assert 'matches' in d, 'no matches key'" 2>/dev/null; then
+            echo "Invalid JSON response, aborting"
+            cat matches_raw.json
+            exit 0
+          fi
+
+          echo "Received $(python3 -c "import json; d=json.load(open('matches_raw.json')); print(len(d['matches']))" ) matches"
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages-dir
+
+      - name: Write results.json to gh-pages
+        run: |
+          mkdir -p gh-pages-dir/data
+          # Store only relevant fields to keep file small
+          python3 - <<'EOF'
+import json
+
+with open('matches_raw.json') as f:
+    raw = json.load(f)
+
+out = []
+for m in raw.get('matches', []):
+    status = m.get('status', '')
+    if status not in ('IN_PLAY', 'PAUSED', 'FINISHED', 'AWARDED'):
+        continue
+    out.append({
+        'id': m['id'],
+        'status': status,
+        'homeTeam': {'tla': m['homeTeam']['tla']},
+        'awayTeam': {'tla': m['awayTeam']['tla']},
+        'score': m['score'],
+        'goals': m.get('goals', []),
+    })
+
+with open('gh-pages-dir/data/results.json', 'w') as f:
+    json.dump({'matches': out, 'updatedAt': __import__('datetime').datetime.utcnow().isoformat() + 'Z'}, f)
+
+print(f"Wrote {len(out)} active/finished matches")
+EOF
+
+      - name: Commit and push
+        run: |
+          cd gh-pages-dir
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add data/results.json
+          git diff --staged --quiet && echo "No changes" || \
+            git commit -m "chore: update WM results [skip ci]" && git push
