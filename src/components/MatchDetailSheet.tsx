@@ -22,12 +22,14 @@ function pct(v: number): string {
   return (v * 100).toFixed(1) + '%';
 }
 
-function GoalIcon() {
+function GoalIcon({ own = false }: { own?: boolean }) {
+  const fill = own ? 'var(--system-red)' : 'var(--text-primary)';
   return (
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-      <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.25" />
-      <path d="M6.5 2.5L8 5.5H11L8.5 7.5L9.5 10.5L6.5 8.5L3.5 10.5L4.5 7.5L2 5.5H5L6.5 2.5Z"
-        fill="currentColor" fillOpacity="0.5" />
+      <circle cx="6.5" cy="6.5" r="5.5" fill={fill} stroke={own ? 'var(--system-red)' : 'var(--separator-opaque)'} strokeWidth="0.75" />
+      <path d="M6.5 3.5L7.5 5.5H9.5L8 7L8.5 9.5L6.5 8L4.5 9.5L5 7L3.5 5.5H5.5Z"
+        fill={own ? 'rgba(255,255,255,0.7)' : 'var(--bg-card)'} />
+      <circle cx="6.5" cy="6.5" r="5.5" stroke={own ? 'var(--system-red)' : 'var(--text-tertiary)'} strokeWidth="0.75" fill="none" />
     </svg>
   );
 }
@@ -203,16 +205,15 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
                   const min = ev.kind === 'goal' ? ev.data.minute : ev.data.minute;
 
                   if (ev.kind === 'goal') {
-                    const suffix = ev.data.type === 'OWN' ? ' (ET)'
-                      : ev.data.type === 'PENALTY' ? ' (E)'
-                      : '';
+                    const isOwn = ev.data.type === 'OWN';
+                    const suffix = isOwn ? ' (ET)' : ev.data.type === 'PENALTY' ? ' (E)' : '';
                     return (
-                      <div key={i} className={`${styles.tlRow} ${isHome ? styles.tlHome : styles.tlAway}`}>
+                      <div key={i} className={styles.tlRow}>
                         <div className={styles.tlHome}>
                           {isHome && (
                             <span className={`${styles.tlContent} ${styles.tlContentHome}`}>
                               <span className={styles.tlName}>{ev.data.scorer}{suffix}</span>
-                              <span className={styles.tlGoalIcon}><GoalIcon /></span>
+                              <span className={styles.tlGoalIcon}><GoalIcon own={isOwn} /></span>
                             </span>
                           )}
                         </div>
@@ -220,7 +221,7 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
                         <div className={styles.tlAway}>
                           {!isHome && (
                             <span className={`${styles.tlContent} ${styles.tlContentAway}`}>
-                              <span className={styles.tlGoalIcon}><GoalIcon /></span>
+                              <span className={styles.tlGoalIcon}><GoalIcon own={isOwn} /></span>
                               <span className={styles.tlName}>{ev.data.scorer}{suffix}</span>
                             </span>
                           )}

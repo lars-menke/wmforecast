@@ -318,8 +318,7 @@
   max-width: 120px;
 }
 
-.tlGoalIcon { color: var(--system-green); flex-shrink: 0; }
-.tlAway .tlGoalIcon { color: var(--system-orange); }
+.tlGoalIcon { flex-shrink: 0; line-height: 0; }
 .tlCardIcon { flex-shrink: 0; display: flex; align-items: center; }
 
 /* Statistics */
