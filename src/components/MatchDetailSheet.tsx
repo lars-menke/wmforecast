@@ -87,7 +87,6 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
     if (match) {
       requestAnimationFrame(() => setVisible(true));
       if ((match.finished || match.live) && match.espnId) {
-        // Seed with goals already on the match while remote loads
         setDetail({ goals: match.goals ?? [], cards: [], stats: [] });
         setDetailLoading(true);
         fetchMatchDetail(match.espnId)
@@ -103,6 +102,17 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
       setDetail(null);
     }
   }, [match]);
+
+  // Poll for live updates while the sheet is open
+  useEffect(() => {
+    if (!match?.live || !match.espnId) return;
+    const id = setInterval(() => {
+      fetchMatchDetail(match.espnId!)
+        .then(d => { if (d) setDetail(d); })
+        .catch(() => {});
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [match?.live, match?.espnId]);
 
   function handleBackdrop(e: React.MouseEvent) {
     if (e.target === e.currentTarget) handleClose();

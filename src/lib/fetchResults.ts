@@ -1,6 +1,7 @@
 const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world';
 const CACHE_KEY = 'wm_results_v5';
-const CACHE_TTL = 2 * 60 * 1000;
+const CACHE_TTL      = 2 * 60 * 1000;
+const CACHE_TTL_LIVE = 30 * 1000;
 
 // WM 2026: 11 Jun – 19 Jul
 const WM_DATE_RANGE = '20260611-20260719';
@@ -133,12 +134,14 @@ function parseEvents(events: EspnEvent[]): Record<string, MatchResult> {
   return data;
 }
 
-export async function fetchResults(): Promise<Record<string, MatchResult>> {
+export async function fetchResults(bypassCache = false): Promise<Record<string, MatchResult>> {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
+    if (cached && !bypassCache) {
       const { ts, data } = JSON.parse(cached) as { ts: number; data: Record<string, MatchResult> };
-      if (Date.now() - ts < CACHE_TTL) return data;
+      const hasLive = Object.values(data).some(d => d.live);
+      const ttl = hasLive ? CACHE_TTL_LIVE : CACHE_TTL;
+      if (Date.now() - ts < ttl) return data;
     }
   } catch { /* ignore */ }
 
