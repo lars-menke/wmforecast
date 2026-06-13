@@ -119,8 +119,6 @@ export function useMatches(): MatchesState {
           if (rev) return { h: rev.a, d: rev.d, a: rev.h };
           return null;
         })(),
-        hForm: null,
-        aForm: null,
       }));
 
     const raw = recalcMatches(inputs, NATION_STATS);

@@ -1,5 +1,4 @@
-// Poisson-Modell + Dixon-Coles + Draw-Boost
-// Vollstaendige Implementierung folgt (aus BLforecast portieren)
+// Poisson-Modell + Dixon-Coles, neutral ground
 
 export type TeamStats = {
   rank: number;
@@ -7,7 +6,6 @@ export type TeamStats = {
   aGF: number; aGA: number;
 };
 
-export type FormData = { gf: number; ga: number } | null;
 export type MarketProbs = { h: number; d: number; a: number };
 export type Outcome = 'H' | 'D' | 'A';
 
@@ -28,14 +26,10 @@ export type CalcResult = {
 // Modell-Konstanten
 // ---------------------------------------------------------------------------
 
-const DC_RHO         = -0.13;
-const FORM_WEIGHT    = 0.40;
-const DECAY          = 0.72;
-const DRAW_BOOST_MAX = 0;
-const DRAW_BOOST_RANGE = 0.40;
-const M              = 7;   // max Tore pro Team in der Matrix
-const LAMBDA_MIN     = 0.3;
-const LAMBDA_MAX     = 4.5;
+const DC_RHO     = -0.13;
+const M          = 7;    // max Tore pro Team in der Matrix
+const LAMBDA_MIN = 0.3;
+const LAMBDA_MAX = 4.5;
 
 // ---------------------------------------------------------------------------
 // Dixon-Coles tau-Korrektur
@@ -92,57 +86,21 @@ function rawProbs(mat: number[][]): { pH: number; pD: number; pA: number } {
 }
 
 // ---------------------------------------------------------------------------
-// Draw-Boost: hebt Remis-Wahrscheinlichkeit an, wenn Teams aehnlich stark
-// ---------------------------------------------------------------------------
-
-function applyDrawBoost(pH: number, pD: number, pA: number, lH: number, lA: number) {
-  const diff = Math.abs(lH - lA);
-  if (diff >= DRAW_BOOST_RANGE) return { pH, pD, pA };
-  const boost = DRAW_BOOST_MAX * (1 - diff / DRAW_BOOST_RANGE);
-  const take = boost / 2;
-  return {
-    pH: pH - take,
-    pD: pD + boost,
-    pA: pA - take,
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Effektive Lambdas (neutral ground: Durchschnitt aus Heim/Auswaerts)
 // ---------------------------------------------------------------------------
 
-function effectiveLambdas(
-  hStats: TeamStats,
-  aStats: TeamStats,
-  hForm: FormData,
-  aForm: FormData,
-): { lH: number; lA: number } {
-  const hAttBase = (hStats.hGF + hStats.aGF) / 2;
-  const hDefBase = (hStats.hGA + hStats.aGA) / 2;
-  const aAttBase = (aStats.hGF + aStats.aGF) / 2;
-  const aDefBase = (aStats.hGA + aStats.aGA) / 2;
-
-  let hAtt = hAttBase;
-  let hDef = hDefBase;
-  let aAtt = aAttBase;
-  let aDef = aDefBase;
-
-  if (hForm) {
-    hAtt = hAtt * (1 - FORM_WEIGHT) + hForm.gf * FORM_WEIGHT * DECAY;
-    hDef = hDef * (1 - FORM_WEIGHT) + hForm.ga * FORM_WEIGHT * DECAY;
-  }
-  if (aForm) {
-    aAtt = aAtt * (1 - FORM_WEIGHT) + aForm.gf * FORM_WEIGHT * DECAY;
-    aDef = aDef * (1 - FORM_WEIGHT) + aForm.ga * FORM_WEIGHT * DECAY;
-  }
-
+function effectiveLambdas(hStats: TeamStats, aStats: TeamStats): { lH: number; lA: number } {
+  const hAtt = (hStats.hGF + hStats.aGF) / 2;
+  const hDef = (hStats.hGA + hStats.aGA) / 2;
+  const aAtt = (aStats.hGF + aStats.aGF) / 2;
+  const aDef = (aStats.hGA + aStats.aGA) / 2;
   const lH = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, hAtt * aDef));
   const lA = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, aAtt * hDef));
   return { lH, lA };
 }
 
 // ---------------------------------------------------------------------------
-// Hilfsfunktion: Wahrscheinlichkeiten + Matrix aus Lambdas (ohne Form/Boost)
+// Hilfsfunktion: Wahrscheinlichkeiten + Matrix aus Lambdas
 // ---------------------------------------------------------------------------
 
 function calcFromLambdas(lH: number, lA: number): { mat: number[][]; pH: number; pD: number; pA: number } {
@@ -237,23 +195,19 @@ export type MatchInput = {
   home: string;
   away: string;
   p: MarketProbs | null;
-  hForm: FormData;
-  aForm: FormData;
 };
 
 export function calcMatch(
   home: string,
   away: string,
   allStats: Record<string, TeamStats>,
-  hForm: FormData = null,
-  aForm: FormData = null,
   market: MarketProbs | null = null,
 ): CalcResult | null {
   const hStats = allStats[home];
   const aStats = allStats[away];
   if (!hStats || !aStats) return null;
 
-  let { lH, lA } = effectiveLambdas(hStats, aStats, hForm, aForm);
+  let { lH, lA } = effectiveLambdas(hStats, aStats);
   let marketApplied = false;
   let mat: number[][];
 
@@ -261,17 +215,13 @@ export function calcMatch(
     const corrected = applyMarketCorrection(lH, lA, market);
     lH = corrected.lH;
     lA = corrected.lA;
-    mat = corrected.mat; // reuse matrix — no redundant buildMatrix call
+    mat = corrected.mat;
     marketApplied = true;
   } else {
     mat = buildMatrix(lH, lA);
   }
 
   let { pH, pD, pA } = rawProbs(mat);
-  const boosted = applyDrawBoost(pH, pD, pA, lH, lA);
-  pH = Math.max(0, boosted.pH);
-  pD = Math.max(0, boosted.pD);
-  pA = Math.max(0, boosted.pA);
   const sum = pH + pD + pA;
   pH /= sum; pD /= sum; pA /= sum;
 
@@ -315,7 +265,7 @@ export function recalcMatches(
 ): Record<string, CalcResult> {
   const out: Record<string, CalcResult> = {};
   for (const m of inputs) {
-    const r = calcMatch(m.home, m.away, allStats, m.hForm, m.aForm, m.p);
+    const r = calcMatch(m.home, m.away, allStats, m.p);
     if (r) out[m.id] = r;
   }
   return out;
