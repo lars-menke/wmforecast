@@ -45,6 +45,7 @@ export function useMatches(): MatchesState {
   const [tab, setTab]                       = useState<'group' | 'knockout'>('group');
   const [selectedGroup, setSelectedGroup]   = useState<WmGroup>('A');
   const [resultsMap, setResultsMap]         = useState<Record<string, MatchResult>>({});
+  const [venueMap, setVenueMap]             = useState<Record<string, string>>({});
   const [oddsMap, setOddsMap]               = useState<Record<string, MarketProbs>>({});
   const [retryCount, setRetryCount]         = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -55,12 +56,13 @@ export function useMatches(): MatchesState {
     setError(null);
     async function init() {
       try {
-        const [results, odds] = await Promise.all([
+        const [{ results, venues }, odds] = await Promise.all([
           fetchResults(),
           fetchOdds(),
         ]);
         if (cancelled) return;
         setResultsMap(results);
+        setVenueMap(venues);
         setOddsMap(odds);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Ladefehler');
@@ -93,8 +95,9 @@ export function useMatches(): MatchesState {
     if (effectiveLiveCount <= 0) return;
     intervalRef.current = setInterval(async () => {
       try {
-        const results = await fetchResults();
+        const { results, venues } = await fetchResults();
         setResultsMap(results);
+        setVenueMap(venues);
       } catch { /* ignore poll errors */ }
     }, LIVE_POLL_INTERVAL);
     return () => {
@@ -161,10 +164,12 @@ export function useMatches(): MatchesState {
           live: actual?.live ?? false,
           goals: actual?.goals ?? [],
           espnId: actual?.espnId,
-          venue: m.venue,
+          venue: m.venue
+            ?? venueMap[`${m.home}-${m.away}`]
+            ?? venueMap[`${m.away}-${m.home}`],
         }];
       });
-  }, [oddsMap, resultsMap]);
+  }, [oddsMap, resultsMap, venueMap]);
 
   const hasMarket = matches.some(m => m.result.marketApplied);
 
