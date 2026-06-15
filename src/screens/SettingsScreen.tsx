@@ -28,19 +28,34 @@ function useApiTest() {
       setOdds({ state: 'error', msg: 'Kein API-Key konfiguriert' });
       return;
     }
-    fetch(ODDS_TEST_URL)
-      .then(async r => {
-        if (!r.ok) {
-          const rem = r.headers.get('x-requests-remaining') ?? '?';
-          setOdds({ state: 'error', msg: `HTTP ${r.status} · Remaining: ${rem}` });
-          return;
-        }
-        const json = await r.json();
-        const count = Array.isArray(json) ? json.length : 0;
-        const rem = r.headers.get('x-requests-remaining') ?? '?';
-        setOdds({ state: 'ok', msg: `${count} Spiele · ${rem} Req. übrig` });
-      })
-      .catch(e => setOdds({ state: 'error', msg: String(e) }));
+
+    // First discover available sport keys
+    try {
+      const sportsR = await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${ODDS_KEY}`);
+      if (!sportsR.ok) {
+        setOdds({ state: 'error', msg: `Sports-Liste HTTP ${sportsR.status}` });
+        return;
+      }
+      const sports = await sportsR.json() as Array<{ key: string; title: string; active: boolean }>;
+      const wc = sports.find(s => s.key.includes('world') || s.key.includes('cup') || s.key.includes('wc'));
+      if (!wc) {
+        const keys = sports.filter(s => s.key.startsWith('soccer')).map(s => s.key).join(', ');
+        setOdds({ state: 'error', msg: `WM nicht gefunden. Soccer-Keys: ${keys || 'keine'}` });
+        return;
+      }
+      // Use discovered key
+      const oddsR = await fetch(`https://api.the-odds-api.com/v4/sports/${wc.key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`);
+      const rem = oddsR.headers.get('x-requests-remaining') ?? '?';
+      if (!oddsR.ok) {
+        setOdds({ state: 'error', msg: `${wc.key} HTTP ${oddsR.status} · ${rem} übrig` });
+        return;
+      }
+      const json = await oddsR.json();
+      const count = Array.isArray(json) ? json.length : 0;
+      setOdds({ state: 'ok', msg: `${wc.key} · ${count} Spiele · ${rem} übrig` });
+    } catch (e) {
+      setOdds({ state: 'error', msg: String(e) });
+    }
   }
 
   return { espn, odds, run };
