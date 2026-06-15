@@ -19,7 +19,7 @@ export default function App() {
   const [showSettings, setShowSettings]   = useState(false);
   const state = useMatches();
   const [simTab, setSimTab] = useState(false);
-  const { tab, setTab, selectedGroup, setSelectedGroup, matches, loading, error, retry, liveCount, resultsMap } = state;
+  const { tab, setTab, selectedGroup, setSelectedGroup, matches, loading, error, retry, liveCount, resultsMap, hasMarket } = state;
   const { standings, loading: standingsLoading } = useStandings(resultsMap);
 
   const handleCardClick  = useCallback((m: MatchEntry) => setActiveMatch(m), []);
@@ -98,7 +98,7 @@ export default function App() {
         {/* Inhalt */}
         <main className={styles.main}>
           {showSettings && (
-            <SettingsScreen onClose={() => setShowSettings(false)} />
+            <SettingsScreen onClose={() => setShowSettings(false)} hasMarket={hasMarket} />
           )}
 
           {!showSettings && loading && (

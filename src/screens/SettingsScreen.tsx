@@ -65,9 +65,9 @@ const MODEL_SECTIONS = [
   },
 ];
 
-type Props = { onClose: () => void };
+type Props = { onClose: () => void; hasMarket: boolean };
 
-export default function SettingsScreen({ onClose }: Props) {
+export default function SettingsScreen({ onClose, hasMarket }: Props) {
   const { theme, toggle } = useTheme();
   const isDark = theme === 'dark';
   const firstRender = useRef(true);
@@ -136,9 +136,15 @@ export default function SettingsScreen({ onClose }: Props) {
             <span className={styles.cellLabel}>Version</span>
             <span className={styles.cellValue}>{VERSION}</span>
           </div>
-          <div className={styles.cell}>
+          <div className={`${styles.cell} ${styles.cellBorder}`}>
             <span className={styles.cellLabel}>Datenquellen</span>
             <span className={styles.cellValue}>ESPN API · The Odds API</span>
+          </div>
+          <div className={styles.cell}>
+            <span className={styles.cellLabel}>Marktquoten-Signal</span>
+            <span className={styles.cellValue} style={{ color: hasMarket ? 'var(--system-green)' : 'var(--system-orange)' }}>
+              {hasMarket ? 'Aktiv' : 'Kein Signal'}
+            </span>
           </div>
         </section>
 
