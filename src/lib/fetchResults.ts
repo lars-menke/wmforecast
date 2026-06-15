@@ -1,7 +1,7 @@
 import { resolveTla } from './fdUtils';
 
 const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world';
-const CACHE_KEY = 'wm_results_v5';
+const CACHE_KEY = 'wm_results_v6';
 const CACHE_TTL      = 2 * 60 * 1000;
 const CACHE_TTL_LIVE = 30 * 1000;
 
@@ -153,7 +153,8 @@ function parseEvents(events: EspnEvent[]): Record<string, MatchResult> {
 
 export type FetchResultsOutput = {
   results: Record<string, MatchResult>;
-  venues: Record<string, string>; // "HOME-AWAY" -> venue string
+  venues: Record<string, string>;   // "HOME-AWAY" -> venue string
+  kickoffs: Record<string, string>; // "HOME-AWAY" -> ISO-8601 UTC kickoff
 };
 
 export async function fetchResults(bypassCache = false): Promise<FetchResultsOutput> {
@@ -161,7 +162,7 @@ export async function fetchResults(bypassCache = false): Promise<FetchResultsOut
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached && !bypassCache) {
       const { ts, data } = JSON.parse(cached) as { ts: number; data: FetchResultsOutput };
-      if (data.results && data.venues) {
+      if (data.results && data.venues && data.kickoffs) {
         const hasLive = Object.values(data.results).some(d => d.live);
         const ttl = hasLive ? CACHE_TTL_LIVE : CACHE_TTL;
         if (Date.now() - ts < ttl) return data;
@@ -171,31 +172,34 @@ export async function fetchResults(bypassCache = false): Promise<FetchResultsOut
 
   try {
     const r = await fetch(`${ESPN_BASE}/scoreboard?dates=${WM_DATE_RANGE}&limit=200`);
-    if (!r.ok) return { results: {}, venues: {} };
+    if (!r.ok) return { results: {}, venues: {}, kickoffs: {} };
     const { events } = (await r.json()) as { events: EspnEvent[] };
-    if (!Array.isArray(events)) return { results: {}, venues: {} };
+    if (!Array.isArray(events)) return { results: {}, venues: {}, kickoffs: {} };
 
     const results = parseEvents(events);
 
-    // Extract venues from ALL events (including scheduled)
+    // Extract venues and kickoff times from ALL events (including scheduled)
     const venues: Record<string, string> = {};
+    const kickoffs: Record<string, string> = {};
     for (const e of events) {
       const comp = e.competitions[0];
       if (!comp?.competitors?.length) continue;
       const home = comp.competitors.find(c => c.homeAway === 'home');
       const away = comp.competitors.find(c => c.homeAway === 'away');
       if (!home || !away) continue;
+      const key = `${resolveTla(home.team.abbreviation)}-${resolveTla(away.team.abbreviation)}`;
       const v = formatVenue(comp);
-      if (v) venues[`${resolveTla(home.team.abbreviation)}-${resolveTla(away.team.abbreviation)}`] = v;
+      if (v) venues[key] = v;
+      if (e.date) kickoffs[key] = e.date;
     }
 
-    const data: FetchResultsOutput = { results, venues };
+    const data: FetchResultsOutput = { results, venues, kickoffs };
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
     } catch { /* storage full */ }
     return data;
   } catch {
-    return { results: {}, venues: {} };
+    return { results: {}, venues: {}, kickoffs: {} };
   }
 }
 

@@ -46,6 +46,7 @@ export function useMatches(): MatchesState {
   const [selectedGroup, setSelectedGroup]   = useState<WmGroup>('A');
   const [resultsMap, setResultsMap]         = useState<Record<string, MatchResult>>({});
   const [venueMap, setVenueMap]             = useState<Record<string, string>>({});
+  const [kickoffMap, setKickoffMap]         = useState<Record<string, string>>({});
   const [oddsMap, setOddsMap]               = useState<Record<string, MarketProbs>>({});
   const [retryCount, setRetryCount]         = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -56,13 +57,14 @@ export function useMatches(): MatchesState {
     setError(null);
     async function init() {
       try {
-        const [{ results, venues }, odds] = await Promise.all([
+        const [{ results, venues, kickoffs }, odds] = await Promise.all([
           fetchResults(),
           fetchOdds(),
         ]);
         if (cancelled) return;
         setResultsMap(results);
         setVenueMap(venues);
+        setKickoffMap(kickoffs);
         setOddsMap(odds);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Ladefehler');
@@ -95,9 +97,10 @@ export function useMatches(): MatchesState {
     if (effectiveLiveCount <= 0) return;
     intervalRef.current = setInterval(async () => {
       try {
-        const { results, venues } = await fetchResults();
+        const { results, venues, kickoffs } = await fetchResults();
         setResultsMap(results);
         setVenueMap(venues);
+        setKickoffMap(kickoffs);
       } catch { /* ignore poll errors */ }
     }, LIVE_POLL_INTERVAL);
     return () => {
@@ -157,7 +160,9 @@ export function useMatches(): MatchesState {
           stage: m.stage,
           home: m.home,
           away: m.away,
-          kickoff: m.kickoff,
+          kickoff: kickoffMap[`${m.home}-${m.away}`]
+            ?? kickoffMap[`${m.away}-${m.home}`]
+            ?? m.kickoff,
           result,
           actual: actual ? { g1: actual.g1, g2: actual.g2, g1Live: actual.g1Live, g2Live: actual.g2Live } : null,
           finished: actual?.finished ?? false,
@@ -169,7 +174,7 @@ export function useMatches(): MatchesState {
             ?? venueMap[`${m.away}-${m.home}`],
         }];
       });
-  }, [oddsMap, resultsMap, venueMap]);
+  }, [oddsMap, resultsMap, venueMap, kickoffMap]);
 
   const hasMarket = matches.some(m => m.result.marketApplied);
 
