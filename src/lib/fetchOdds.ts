@@ -102,7 +102,14 @@ export async function fetchOdds(): Promise<Record<string, MarketProbs>> {
   if (!ODDS_KEY) return {};
 
   try {
-    const url = `https://api.the-odds-api.com/v4/sports/soccer_fifa_world_cup/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+    // Discover WM sport key dynamically
+    const sportsR = await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${ODDS_KEY}`);
+    if (!sportsR.ok) return {};
+    const sports = await sportsR.json() as Array<{ key: string; active: boolean }>;
+    const wc = sports.find(s => s.key.startsWith('soccer') && (s.key.includes('world') || s.key.includes('cup') || s.key.includes('fifa')));
+    if (!wc) return {};
+
+    const url = `https://api.the-odds-api.com/v4/sports/${wc.key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
     const r = await fetch(url);
     if (!r.ok) return {};
 

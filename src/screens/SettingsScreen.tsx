@@ -36,7 +36,7 @@ function useApiTest() {
         return;
       }
       const sports = await sportsR.json() as Array<{ key: string; title: string; active: boolean }>;
-      const wc = sports.find(s => s.key.includes('world') || s.key.includes('cup') || s.key.includes('wc'));
+      const wc = sports.find(s => s.key.startsWith('soccer') && (s.key.includes('world') || s.key.includes('cup') || s.key.includes('fifa')));
       if (!wc) {
         const keys = sports.filter(s => s.key.startsWith('soccer')).map(s => s.key).join(', ');
         setOdds({ state: 'error', msg: `WM nicht gefunden. Soccer-Keys: ${keys || 'keine'}` });
