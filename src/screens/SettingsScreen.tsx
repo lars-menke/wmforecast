@@ -4,7 +4,6 @@ import styles from './SettingsScreen.module.css';
 
 const ESPN_TEST_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260719&limit=1';
 const ODDS_KEY = import.meta.env.VITE_ODDS_API_KEY ?? '';
-const ODDS_TEST_URL = `https://api.the-odds-api.com/v4/sports/soccer_fifa_world_cup/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal&dateFormat=iso`;
 
 type ApiStatus = { state: 'idle' | 'loading' | 'ok' | 'error'; msg: string };
 
