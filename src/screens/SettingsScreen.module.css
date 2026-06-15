@@ -179,3 +179,19 @@
   margin: 0;
   padding: 0 var(--space-4);
 }
+
+.testBtn {
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background: var(--system-blue);
+  color: #fff;
+  border-radius: var(--radius-control);
+  font-size: var(--size-callout);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  transition: opacity 0.15s;
+}
+
+.testBtn:disabled {
+  opacity: 0.5;
+}

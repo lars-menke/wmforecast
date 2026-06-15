@@ -1,6 +1,50 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../lib/useTheme';
 import styles from './SettingsScreen.module.css';
+
+const ESPN_TEST_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260719&limit=1';
+const ODDS_KEY = import.meta.env.VITE_ODDS_API_KEY ?? '';
+const ODDS_TEST_URL = `https://api.the-odds-api.com/v4/sports/soccer_world_cup/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal&dateFormat=iso`;
+
+type ApiStatus = { state: 'idle' | 'loading' | 'ok' | 'error'; msg: string };
+
+function useApiTest() {
+  const [espn, setEspn] = useState<ApiStatus>({ state: 'idle', msg: '' });
+  const [odds, setOdds] = useState<ApiStatus>({ state: 'idle', msg: '' });
+
+  async function run() {
+    setEspn({ state: 'loading', msg: '' });
+    setOdds({ state: 'loading', msg: '' });
+
+    fetch(ESPN_TEST_URL)
+      .then(async r => {
+        const json = await r.json();
+        const count = json.events?.length ?? 0;
+        setEspn({ state: 'ok', msg: `${count} Events · HTTP ${r.status}` });
+      })
+      .catch(e => setEspn({ state: 'error', msg: String(e) }));
+
+    if (!ODDS_KEY) {
+      setOdds({ state: 'error', msg: 'Kein API-Key konfiguriert' });
+      return;
+    }
+    fetch(ODDS_TEST_URL)
+      .then(async r => {
+        if (!r.ok) {
+          const rem = r.headers.get('x-requests-remaining') ?? '?';
+          setOdds({ state: 'error', msg: `HTTP ${r.status} · Remaining: ${rem}` });
+          return;
+        }
+        const json = await r.json();
+        const count = Array.isArray(json) ? json.length : 0;
+        const rem = r.headers.get('x-requests-remaining') ?? '?';
+        setOdds({ state: 'ok', msg: `${count} Spiele · ${rem} Req. übrig` });
+      })
+      .catch(e => setOdds({ state: 'error', msg: String(e) }));
+  }
+
+  return { espn, odds, run };
+}
 
 const VERSION = __APP_VERSION__;
 
@@ -71,6 +115,7 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
   const { theme, toggle } = useTheme();
   const isDark = theme === 'dark';
   const firstRender = useRef(true);
+  const { espn, odds, run } = useApiTest();
 
   useEffect(() => {
     firstRender.current = false;
@@ -145,6 +190,33 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
             <span className={styles.cellValue} style={{ color: hasMarket ? 'var(--system-green)' : 'var(--system-orange)' }}>
               {hasMarket ? 'Aktiv' : 'Kein Signal'}
             </span>
+          </div>
+        </section>
+
+        {/* API-Test */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionLabel}>API-Diagnose</h2>
+          <div className={`${styles.cell} ${styles.cellBorder}`}>
+            <span className={styles.cellLabel}>ESPN API</span>
+            <span className={styles.cellValue} style={{ color: espn.state === 'ok' ? 'var(--system-green)' : espn.state === 'error' ? 'var(--system-red)' : 'var(--text-secondary)' }}>
+              {espn.state === 'idle' ? '--' : espn.state === 'loading' ? '...' : espn.msg}
+            </span>
+          </div>
+          <div className={`${styles.cell} ${styles.cellBorder}`}>
+            <span className={styles.cellLabel}>Odds API</span>
+            <span className={styles.cellValue} style={{ color: odds.state === 'ok' ? 'var(--system-green)' : odds.state === 'error' ? 'var(--system-red)' : 'var(--text-secondary)' }}>
+              {odds.state === 'idle' ? '--' : odds.state === 'loading' ? '...' : odds.msg}
+            </span>
+          </div>
+          <div className={styles.cell}>
+            <button
+              className={styles.testBtn}
+              onClick={run}
+              disabled={espn.state === 'loading' || odds.state === 'loading'}
+              type="button"
+            >
+              {espn.state === 'loading' || odds.state === 'loading' ? 'Teste...' : 'APIs testen'}
+            </button>
           </div>
         </section>
 
