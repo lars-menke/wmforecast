@@ -72,6 +72,11 @@
   letter-spacing: 0.1px;
 }
 
+.context {
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
 .badges { display: flex; gap: var(--space-1); flex-shrink: 0; }
 
 .badge {

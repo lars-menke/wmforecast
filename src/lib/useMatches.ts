@@ -26,13 +26,13 @@ export type MatchEntry = {
 export type MatchesState = {
   loading: boolean;
   error: string | null;
-  tab: 'group' | 'knockout';
+  tab: 'today' | 'group' | 'knockout';
   selectedGroup: WmGroup;
   matches: MatchEntry[];
   hasMarket: boolean;
   liveCount: number;
   resultsMap: Record<string, MatchResult>;
-  setTab: (t: 'group' | 'knockout') => void;
+  setTab: (t: 'today' | 'group' | 'knockout') => void;
   setSelectedGroup: (g: WmGroup) => void;
   retry: () => void;
 };
@@ -42,7 +42,7 @@ const LIVE_POLL_INTERVAL = 45 * 1000; // 45 seconds
 export function useMatches(): MatchesState {
   const [loading, setLoading]               = useState(true);
   const [error, setError]                   = useState<string | null>(null);
-  const [tab, setTab]                       = useState<'group' | 'knockout'>('group');
+  const [tab, setTab]                       = useState<'today' | 'group' | 'knockout'>('today');
   const [selectedGroup, setSelectedGroup]   = useState<WmGroup>('A');
   const [resultsMap, setResultsMap]         = useState<Record<string, MatchResult>>({});
   const [venueMap, setVenueMap]             = useState<Record<string, string>>({});

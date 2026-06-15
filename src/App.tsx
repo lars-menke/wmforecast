@@ -3,6 +3,7 @@ import { useMatches } from './lib/useMatches';
 import { useTheme } from './lib/useTheme';
 import { useStandings } from './lib/useStandings';
 import type { MatchEntry } from './lib/useMatches';
+import TodayScreen from './screens/TodayScreen';
 import GroupScreen from './screens/GroupScreen';
 import KnockoutScreen from './screens/KnockoutScreen';
 import SimulationScreen from './screens/SimulationScreen';
@@ -41,7 +42,14 @@ export default function App() {
 
           {/* Segmented Control */}
           {!showSettings && (
-            <div className={`${styles.segmented} ${styles.segmented3}`}>
+            <div className={`${styles.segmented} ${styles.segmented4}`}>
+              <button
+                className={`${styles.seg}${!simTab && tab === 'today' ? ` ${styles.segActive}` : ''}`}
+                onClick={() => { setSimTab(false); setTab('today'); }}
+                type="button"
+              >
+                Heute
+              </button>
               <button
                 className={`${styles.seg}${!simTab && tab === 'group' ? ` ${styles.segActive}` : ''}`}
                 onClick={() => { setSimTab(false); setTab('group'); }}
@@ -123,6 +131,9 @@ export default function App() {
               <p className={styles.errorText}>{error}</p>
               <button className={styles.retryBtn} onClick={retry} type="button">Erneut versuchen</button>
             </div>
+          )}
+          {!showSettings && !loading && !error && !simTab && tab === 'today' && (
+            <TodayScreen matches={matches} onMatchClick={handleCardClick} />
           )}
           {!showSettings && !loading && !error && !simTab && tab === 'group' && (
             <GroupScreen

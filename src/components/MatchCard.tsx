@@ -8,6 +8,7 @@ type Props = {
   match: MatchEntry;
   onClick?: () => void;
   style?: React.CSSProperties;
+  context?: string;
 };
 
 type Category = {
@@ -33,7 +34,7 @@ function isMatchLive(kickoff: string, finished: boolean): boolean {
   return elapsed > 0 && elapsed < 115 * 60 * 1000;
 }
 
-export default function MatchCard({ match, onClick, style }: Props) {
+export default function MatchCard({ match, onClick, style, context }: Props) {
   const { home, away, result, finished, actual } = match;
   const homeNation = NATIONS[home];
   const awayNation = NATIONS[away];
@@ -53,7 +54,10 @@ export default function MatchCard({ match, onClick, style }: Props) {
 
         {/* Header */}
         <div className={styles.header}>
-          <span className={styles.meta}>{formatKickoff(match.kickoff)}</span>
+          <span className={styles.meta}>
+            {context && <span className={styles.context}>{context} · </span>}
+            {formatKickoff(match.kickoff)}
+          </span>
           <div className={styles.badges}>
             {live && <span className={`${styles.badge} ${styles.badgeLive}`}>● Live</span>}
             {topTip && !live && <span className={`${styles.badge} ${styles.badgeTopTip}`}>TOP</span>}
