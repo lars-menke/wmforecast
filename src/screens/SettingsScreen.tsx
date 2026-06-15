@@ -138,7 +138,7 @@ export default function SettingsScreen({ onClose }: Props) {
           </div>
           <div className={styles.cell}>
             <span className={styles.cellLabel}>Datenquellen</span>
-            <span className={styles.cellValue}>football-data.org · The Odds API</span>
+            <span className={styles.cellValue}>ESPN API · The Odds API</span>
           </div>
         </section>
 
