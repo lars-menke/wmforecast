@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MatchEntry } from '../lib/useMatches';
 import { fetchMatchDetail, type MatchDetail, type GoalEvent, type CardEvent } from '../lib/fetchResults';
+import { fetchWeather, weatherDesc, type WeatherData } from '../lib/fetchWeather';
 import { NATIONS } from '../lib/nations';
 import TeamLogo from './TeamLogo';
 import ProbabilityBar from './ProbabilityBar';
@@ -83,11 +84,13 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
   const [visible, setVisible]           = useState(false);
   const [detail, setDetail]             = useState<MatchDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [weather, setWeather]           = useState<WeatherData | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (match) {
       requestAnimationFrame(() => setVisible(true));
+      setWeather(null);
       if ((match.finished || match.live) && match.espnId) {
         setDetail({ goals: match.goals ?? [], cards: [], stats: [] });
         setDetailLoading(true);
@@ -99,9 +102,13 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
         setDetail(null);
         setDetailLoading(false);
       }
+      fetchWeather(match.venue, match.kickoff)
+        .then(w => setWeather(w))
+        .catch(() => {});
     } else {
       setVisible(false);
       setDetail(null);
+      setWeather(null);
     }
   }, [match]);
 
@@ -179,6 +186,14 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
             {live && <span className={styles.livePill}>Live</span>}
             <span className={styles.date}>{formatKickoff(kickoff)}</span>
             {venue && <span className={styles.venue}>{venue}</span>}
+            {weather && (() => {
+              const { label, emoji } = weatherDesc(weather.code);
+              return (
+                <span className={styles.weatherRow}>
+                  {emoji} {label} · {weather.tempC}°C · {weather.precipPct}% Regen
+                </span>
+              );
+            })()}
           </div>
           <div className={`${styles.teamCol} ${styles.teamColRight}`}>
             <TeamLogo code={away} size={48} />

@@ -16,6 +16,8 @@ export default function StandingsTable({ rows, group }: Props) {
     );
   }
 
+  const groupComplete = rows.length >= 4 && rows.every(r => r.played === 3);
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>Gruppe {group}</div>
@@ -41,9 +43,24 @@ export default function StandingsTable({ rows, group }: Props) {
               : i === 2
                 ? styles.rowThird
                 : styles.row;
+
+            const badgeClass = groupComplete
+              ? i < 2 ? styles.badgeQ
+                : i === 2 ? styles.badgeMaybe
+                : styles.badgeOut
+              : null;
+            const badgeLabel = groupComplete
+              ? i < 2 ? 'Q' : i === 2 ? '?' : '-'
+              : null;
+
             return (
               <tr key={row.code} className={rowClass}>
-                <td className={styles.tdRank}>{i + 1}</td>
+                <td className={styles.tdRank}>
+                  {i + 1}
+                  {badgeClass && (
+                    <span className={`${styles.badge} ${badgeClass}`}>{badgeLabel}</span>
+                  )}
+                </td>
                 <td className={styles.tdTeam}>
                   <span className={styles.flag} aria-hidden="true">
                     {nation?.flag ?? ''}
