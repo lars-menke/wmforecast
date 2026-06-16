@@ -48,7 +48,7 @@ export default function App() {
                 onClick={() => { setSimTab(false); setTab('today'); }}
                 type="button"
               >
-                Heute
+                Aktuell
               </button>
               <button
                 className={`${styles.seg}${!simTab && tab === 'group' ? ` ${styles.segActive}` : ''}`}

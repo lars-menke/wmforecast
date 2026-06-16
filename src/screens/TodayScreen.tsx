@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import type { MatchEntry } from '../lib/useMatches';
 import type { WmStage } from '../lib/schedule';
 import MatchCard from '../components/MatchCard';
@@ -23,26 +23,74 @@ function contextLabel(m: MatchEntry): string {
   return m.stage === 'GROUP_STAGE' ? `Gruppe ${m.group}` : STAGE_LABELS[m.stage];
 }
 
+function startOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function addDays(d: Date, n: number): Date {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+
 function isSameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear()
     && a.getMonth() === b.getMonth()
     && a.getDate() === b.getDate();
 }
 
+const MAX_OFFSET = 3;
+
 export default function TodayScreen({ matches, onMatchClick }: Props) {
-  const today = useMemo(() => {
-    const now = new Date();
-    return matches
-      .filter(m => isSameDay(new Date(m.kickoff), now))
-      .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+  const [offset, setOffset] = useState(0);
+
+  // All days that have at least one match (local calendar day)
+  const matchDays = useMemo(() => {
+    const seen = new Set<string>();
+    const days: Date[] = [];
+    for (const m of matches) {
+      const d = startOfDay(new Date(m.kickoff));
+      const key = d.toISOString().slice(0, 10);
+      if (!seen.has(key)) { seen.add(key); days.push(d); }
+    }
+    days.sort((a, b) => a.getTime() - b.getTime());
+    return days;
   }, [matches]);
 
-  const live     = today.filter(m => m.live);
-  const upcoming = today.filter(m => !m.live && !m.finished);
-  const finished = today.filter(m => !m.live && m.finished);
+  const today = useMemo(() => startOfDay(new Date()), []);
 
-  const dateLabel = new Date().toLocaleDateString('de-DE', {
+  // Resolved target day: today + offset, but clamped to days that exist
+  const targetDay = useMemo(() => {
+    const desired = startOfDay(addDays(today, offset));
+    // Find nearest match day within ±MAX_OFFSET
+    return matchDays.find(d => isSameDay(d, desired)) ?? desired;
+  }, [today, offset, matchDays]);
+
+  const dayMatches = useMemo(() => {
+    return matches
+      .filter(m => isSameDay(new Date(m.kickoff), targetDay))
+      .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+  }, [matches, targetDay]);
+
+  const live     = dayMatches.filter(m => m.live);
+  const upcoming = dayMatches.filter(m => !m.live && !m.finished);
+  const finished = dayMatches.filter(m => !m.live && m.finished);
+
+  // Navigation: can go back/forward if there are match days in that direction
+  const earliestDay = matchDays[0];
+  const latestDay   = matchDays[matchDays.length - 1];
+  const canPrev = earliestDay && targetDay > earliestDay && offset > -MAX_OFFSET;
+  const canNext = latestDay  && targetDay < latestDay   && offset < MAX_OFFSET;
+
+  const goBack = useCallback(() => setOffset(o => o - 1), []);
+  const goFwd  = useCallback(() => setOffset(o => o + 1), []);
+
+  const isToday = isSameDay(targetDay, today);
+  const dateLabel = targetDay.toLocaleDateString('de-DE', {
     weekday: 'long', day: 'numeric', month: 'long',
+  });
+  const dateLabelShort = targetDay.toLocaleDateString('de-DE', {
+    weekday: 'short', day: 'numeric', month: 'short',
   });
 
   const sections: Array<{ key: string; label: string; live?: boolean; items: MatchEntry[] }> = [
@@ -55,39 +103,74 @@ export default function TodayScreen({ matches, onMatchClick }: Props) {
 
   return (
     <div className={styles.root}>
-      <div className={styles.head}>
-        <h2 className={styles.date}>{dateLabel}</h2>
-        <span className={styles.count}>
-          {today.length} {today.length === 1 ? 'Spiel' : 'Spiele'}
-        </span>
+      {/* Day navigator */}
+      <div className={styles.nav}>
+        <button
+          className={styles.navArrow}
+          onClick={goBack}
+          disabled={!canPrev}
+          type="button"
+          aria-label="Vorheriger Spieltag"
+        >
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none" aria-hidden="true">
+            <path d="M8 1L1.5 7.5L8 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+
+        <div className={styles.navCenter}>
+          <span className={styles.navDate}>{dateLabelShort}</span>
+          {isToday && <span className={styles.navToday}>Heute</span>}
+        </div>
+
+        <button
+          className={styles.navArrow}
+          onClick={goFwd}
+          disabled={!canNext}
+          type="button"
+          aria-label="Nächster Spieltag"
+        >
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none" aria-hidden="true">
+            <path d="M1 1L7.5 7.5L1 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
       </div>
 
-      {today.length === 0 ? (
-        <div className={styles.empty}>
-          <span className={styles.emptyTitle}>Heute keine Spiele</span>
-          <span className={styles.emptyHint}>Schau in der Gruppenphase oder K.o.-Runde nach den nächsten Partien.</span>
+      {/* Content */}
+      <div className={styles.scroll}>
+        <div className={styles.head}>
+          <h2 className={styles.date}>{dateLabel}</h2>
+          <span className={styles.count}>
+            {dayMatches.length} {dayMatches.length === 1 ? 'Spiel' : 'Spiele'}
+          </span>
         </div>
-      ) : (
-        sections.filter(s => s.items.length > 0).map(s => (
-          <section key={s.key} className={styles.section}>
-            <div className={styles.sectionHeader}>
-              {s.live && <span className={styles.liveDot} aria-hidden="true" />}
-              <h3 className={`${styles.sectionLabel}${s.live ? ` ${styles.sectionLabelLive}` : ''}`}>
-                {s.label}
-              </h3>
-            </div>
-            {s.items.map(m => (
-              <MatchCard
-                key={m.id}
-                match={m}
-                onClick={() => onMatchClick(m)}
-                context={contextLabel(m)}
-                style={{ '--card-index': cardIndex++ } as React.CSSProperties}
-              />
-            ))}
-          </section>
-        ))
-      )}
+
+        {dayMatches.length === 0 ? (
+          <div className={styles.empty}>
+            <span className={styles.emptyTitle}>Keine Spiele an diesem Tag</span>
+            <span className={styles.emptyHint}>Navigiere zu einem anderen Spieltag.</span>
+          </div>
+        ) : (
+          sections.filter(s => s.items.length > 0).map(s => (
+            <section key={s.key} className={styles.section}>
+              <div className={styles.sectionHeader}>
+                {s.live && <span className={styles.liveDot} aria-hidden="true" />}
+                <h3 className={`${styles.sectionLabel}${s.live ? ` ${styles.sectionLabelLive}` : ''}`}>
+                  {s.label}
+                </h3>
+              </div>
+              {s.items.map(m => (
+                <MatchCard
+                  key={m.id}
+                  match={m}
+                  onClick={() => onMatchClick(m)}
+                  context={contextLabel(m)}
+                  style={{ '--card-index': cardIndex++ } as React.CSSProperties}
+                />
+              ))}
+            </section>
+          ))
+        )}
+      </div>
     </div>
   );
 }

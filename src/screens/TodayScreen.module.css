@@ -1,4 +1,72 @@
 .root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Day navigator bar */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-tabbar);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: var(--hairline) solid var(--separator);
+  flex-shrink: 0;
+  gap: var(--space-3);
+}
+
+.navArrow {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-fill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s, opacity 0.15s;
+}
+
+.navArrow:disabled {
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.navArrow:active { transform: scale(0.92); }
+
+@media (hover: hover) {
+  .navArrow:hover { background: var(--bg-fill-strong); }
+}
+
+.navCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.navDate {
+  font-size: var(--size-callout);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  letter-spacing: -0.1px;
+  text-transform: capitalize;
+}
+
+.navToday {
+  font-size: var(--size-caption-1);
+  font-weight: var(--weight-medium);
+  color: var(--system-blue);
+  letter-spacing: 0.1px;
+}
+
+/* Scroll area */
+.scroll {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
