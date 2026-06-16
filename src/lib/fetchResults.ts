@@ -114,8 +114,8 @@ function eventToResult(event: EspnEvent): MatchResult | null {
   const away = comp.competitors.find(c => c.homeAway === 'away');
   if (!home || !away) return null;
 
-  const homeCode = home.team.abbreviation;
-  const awayCode = away.team.abbreviation;
+  const homeCode = resolveTla(home.team.abbreviation);
+  const awayCode = resolveTla(away.team.abbreviation);
   const g1 = parseInt(home.score, 10) || 0;
   const g2 = parseInt(away.score, 10) || 0;
   const goals = parseGoalsFromDetails(comp.details, home.team.id);
