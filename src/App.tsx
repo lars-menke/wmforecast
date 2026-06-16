@@ -69,7 +69,7 @@ export default function App() {
                 onClick={() => setSimTab(true)}
                 type="button"
               >
-                Prognose
+                Tipps
               </button>
             </div>
           )}
