@@ -76,22 +76,11 @@ export function useMatches(): MatchesState {
     return () => { cancelled = true; };
   }, [retryCount]);
 
-  // Live polling: check if any matches are currently live
-  const liveCount = useMemo(() => {
-    const now = Date.now();
-    return WM_SCHEDULE.filter(m => {
-      const kick = new Date(m.kickoff).getTime();
-      return kick <= now && now <= kick + 120 * 60 * 1000;
-    }).length;
-  }, []);
-
-  // Also count matches in resultsMap that are live
-  const liveCountFromResults = useMemo(
+  // Live count: only trust the API (resultsMap), not schedule time estimates
+  const effectiveLiveCount = useMemo(
     () => Object.values(resultsMap).filter(r => r.live).length,
     [resultsMap],
   );
-
-  const effectiveLiveCount = Math.max(liveCount, liveCountFromResults);
 
   useEffect(() => {
     if (effectiveLiveCount <= 0) return;
