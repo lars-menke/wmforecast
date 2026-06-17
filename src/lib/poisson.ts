@@ -1,5 +1,7 @@
 // Poisson-Modell + Dixon-Coles, neutral ground
 
+import { applyCalib, shrinkToMean, type CalibParams } from './calibration';
+
 export type TeamStats = {
   rank: number;
   hGF: number; hGA: number;
@@ -202,6 +204,7 @@ export function calcMatch(
   away: string,
   allStats: Record<string, TeamStats>,
   market: MarketProbs | null = null,
+  calib: CalibParams | null = null,
 ): CalcResult | null {
   const hStats = allStats[home];
   const aStats = allStats[away];
@@ -221,10 +224,26 @@ export function calcMatch(
     mat = buildMatrix(lH, lA);
   }
 
+  // Roh-Wahrscheinlichkeiten aus der Tormatrix (auf Summe 1 normiert)
   let { pH, pD, pA } = rawProbs(mat);
   const sum = pH + pD + pA;
   pH /= sum; pD /= sum; pA /= sum;
 
+  // Kalibrierung (Platt-Scaling). Reicht die Stichprobe nicht, Shrink zum Prior.
+  let calibrated = false;
+  if (calib) {
+    if (calib.n >= 45) {
+      ({ pH, pD, pA } = applyCalib(pH, pD, pA, calib));
+      calibrated = true;
+    } else {
+      ({ pH, pD, pA } = shrinkToMean(pH, pD, pA));
+    }
+  }
+
+  // Alle abgeleiteten Felder aus den FINALEN (ggf. kalibrierten) Werten.
+  // Die Tormatrix/srt bleibt unkalibriert — Platt-Scaling betrifft nur 1X2,
+  // nicht die Ergebnisverteilung. naturalTipp wählt aus srt das zum
+  // kalibrierten Ausgang (wo) passende, wahrscheinlichste Ergebnis.
   const srt = topResults(mat);
   const fp = Math.max(pH, pD, pA);
   const wo: Outcome = pH >= pD && pH >= pA ? 'H' : pD >= pA ? 'D' : 'A';
@@ -241,7 +260,7 @@ export function calcMatch(
     drawBlocked: false,
     lambdaDiff,
     marketApplied,
-    calibrated: false,
+    calibrated,
   };
 }
 
@@ -262,10 +281,11 @@ export function deriveNaturalTipp(srt: Array<[string, number]>, wo: Outcome): st
 export function recalcMatches(
   inputs: MatchInput[],
   allStats: Record<string, TeamStats>,
+  calib: CalibParams | null = null,
 ): Record<string, CalcResult> {
   const out: Record<string, CalcResult> = {};
   for (const m of inputs) {
-    const r = calcMatch(m.home, m.away, allStats, m.p);
+    const r = calcMatch(m.home, m.away, allStats, m.p, calib);
     if (r) out[m.id] = r;
   }
   return out;

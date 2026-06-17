@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { WM_SCHEDULE, WM_GROUPS, type WmStage, type WmGroup } from './schedule';
 import { fetchResults, type MatchResult, type GoalEvent } from './fetchResults';
 import { fetchOdds } from './fetchOdds';
-import { recalcMatches, deriveNaturalTipp, type CalcResult, type MarketProbs } from './poisson';
+import { recalcMatches, type CalcResult, type MarketProbs } from './poisson';
 import { NATION_STATS } from './nations';
-import { applyCalib, shrinkToMean, HARDCODED_CALIB } from './calibration';
+import { HARDCODED_CALIB } from './calibration';
 
 export type MatchEntry = {
   id: string;
@@ -116,27 +116,14 @@ export function useMatches(): MatchesState {
         })(),
       }));
 
-    const raw = recalcMatches(inputs, NATION_STATS);
+    // Kalibrierung passiert jetzt im Modell (single source of truth).
+    const calc = recalcMatches(inputs, NATION_STATS, HARDCODED_CALIB);
 
     return WM_SCHEDULE
       .filter(m => m.home !== 'TBD' && m.away !== 'TBD')
       .flatMap(m => {
-        const rawResult = raw[m.id];
-        if (!rawResult) return [];
-
-        let { pH, pD, pA } = rawResult;
-        let calibrated = false;
-        if (HARDCODED_CALIB.n >= 45) {
-          ({ pH, pD, pA } = applyCalib(pH, pD, pA, HARDCODED_CALIB));
-          calibrated = true;
-        } else {
-          ({ pH, pD, pA } = shrinkToMean(pH, pD, pA));
-        }
-
-        const fp = Math.max(pH, pD, pA);
-        const wo = pH >= pD && pH >= pA ? 'H' as const : pD >= pA ? 'D' as const : 'A' as const;
-        const naturalTipp = deriveNaturalTipp(rawResult.srt, wo);
-        const result: CalcResult = { ...rawResult, pH, pD, pA, fp, wo, naturalTipp, calibrated };
+        const result = calc[m.id];
+        if (!result) return [];
 
         // Look up by "HOME-AWAY" or reversed
         const actual = resultsMap[`${m.home}-${m.away}`]
