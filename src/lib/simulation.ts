@@ -133,6 +133,7 @@ function runTournamentBatch(
   perturbAtt: Record<string, number>,
   perturbDef: Record<string, number>,
   rng: () => number,
+  lambdaMap: Record<string, { lH: number; lA: number }> = {},
 ): { title: Record<string, number>; top4: Record<string, number>; groupAdv: Record<string, number> } {
   const title:    Record<string, number> = {};
   const top4:     Record<string, number> = {};
@@ -151,7 +152,10 @@ function runTournamentBatch(
       if (known) {
         [g1, g2] = known;
       } else {
-        const { lH, lA } = ensembleLambdas(m.home, m.away, perturbAtt, perturbDef);
+        // Prefer market-corrected lambdas when available; ensemble is fallback.
+        // Key is always HOME-AWAY from the schedule — no reversal needed here.
+        const ml = lambdaMap[`${m.home}-${m.away}`];
+        const { lH, lA } = ml ?? ensembleLambdas(m.home, m.away, perturbAtt, perturbDef);
         g1 = poissonRandom(lH, rng);
         g2 = poissonRandom(lA, rng);
       }
@@ -244,6 +248,7 @@ export function simulateWithUncertainty(
   nSimsEach   = 300,
   noise       = 0.08,
   seed        = 42,
+  lambdaMap: Record<string, { lH: number; lA: number }> = {},
 ): SimResultWithBands {
   const rng = mulberry32(seed);
 
@@ -291,7 +296,7 @@ export function simulateWithUncertainty(
     }
 
     const { title, top4, groupAdv } = runTournamentBatch(
-      nSimsEach, groups, groupMatches, getResult, perturbAtt, perturbDef, rng,
+      nSimsEach, groups, groupMatches, getResult, perturbAtt, perturbDef, rng, lambdaMap,
     );
 
     for (const t of teams) {

@@ -4,7 +4,7 @@ import { fetchResults, type MatchResult, type GoalEvent } from './fetchResults';
 import { fetchOdds } from './fetchOdds';
 import { recalcMatches, type CalcResult, type MarketProbs } from './poisson';
 import { NATION_STATS } from './nations';
-import { HARDCODED_CALIB } from './calibration';
+import { HARDCODED_CALIB, updateCalib, type CalibSample } from './calibration';
 
 export type MatchEntry = {
   id: string;
@@ -116,8 +116,24 @@ export function useMatches(): MatchesState {
         })(),
       }));
 
-    // Kalibrierung passiert jetzt im Modell (single source of truth).
-    const calc = recalcMatches(inputs, NATION_STATS, HARDCODED_CALIB);
+    // Live-Kalibrierung: rohe Probs für gespielte Spiele sammeln,
+    // dann HARDCODED_CALIB mit echten Ergebnissen updaten.
+    const rawCalc = recalcMatches(inputs, NATION_STATS, null);
+    const samples: CalibSample[] = [];
+    for (const m of WM_SCHEDULE) {
+      if (m.home === 'TBD' || m.away === 'TBD') continue;
+      const res = resultsMap[`${m.home}-${m.away}`] ?? resultsMap[`${m.away}-${m.home}`];
+      if (!res?.finished) continue;
+      const raw = rawCalc[m.id];
+      if (!raw) continue;
+      const homeIsHome = resultsMap[`${m.home}-${m.away}`] != null;
+      const actual = homeIsHome
+        ? (res.g1 > res.g2 ? 'H' : res.g1 < res.g2 ? 'A' : 'D')
+        : (res.g2 > res.g1 ? 'H' : res.g2 < res.g1 ? 'A' : 'D');
+      samples.push({ pH: raw.pH, pD: raw.pD, pA: raw.pA, actual: actual as 'H'|'D'|'A' });
+    }
+    const liveCalib = updateCalib(HARDCODED_CALIB, samples);
+    const calc = recalcMatches(inputs, NATION_STATS, liveCalib);
 
     return WM_SCHEDULE
       .filter(m => m.home !== 'TBD' && m.away !== 'TBD')

@@ -146,7 +146,7 @@ export default function App() {
             <KnockoutScreen matches={matches} onMatchClick={handleCardClick} />
           )}
           {!showSettings && !loading && !error && simTab && (
-            <SimulationScreen resultsMap={resultsMap} />
+            <SimulationScreen resultsMap={resultsMap} matches={matches} />
           )}
         </main>
       </div>

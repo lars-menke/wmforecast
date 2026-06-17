@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { simulateWithUncertainty, type SimResultWithBands } from '../lib/simulation';
 import { NATIONS } from '../lib/nations';
 import type { MatchResult } from '../lib/fetchResults';
+import type { MatchEntry } from '../lib/useMatches';
 import TeamLogo from '../components/TeamLogo';
 import styles from './SimulationScreen.module.css';
 
 type Props = {
   resultsMap: Record<string, MatchResult>;
+  matches: MatchEntry[];
 };
 
 const N_PARAM_DRAWS = 30;
@@ -23,7 +25,7 @@ type Row = {
   groupAdv: { median: number; low: number; high: number };
 };
 
-export default function SimulationScreen({ resultsMap }: Props) {
+export default function SimulationScreen({ resultsMap, matches }: Props) {
   const [result, setResult] = useState<SimResultWithBands | null>(null);
   const [running, setRunning] = useState(false);
   const [tab, setTab] = useState<'title' | 'top4' | 'advance'>('title');
@@ -32,14 +34,18 @@ export default function SimulationScreen({ resultsMap }: Props) {
   useEffect(() => {
     setRunning(true);
     setResult(null);
-    // Defer to next tick so the loading state renders first
+    // Build lambda map from match model (market-corrected where available, else raw Poisson)
+    const lambdaMap: Record<string, { lH: number; lA: number }> = {};
+    for (const m of matches) {
+      lambdaMap[`${m.home}-${m.away}`] = { lH: m.result.lH, lA: m.result.lA };
+    }
     const id = setTimeout(() => {
-      const r = simulateWithUncertainty(resultsMap, N_PARAM_DRAWS, N_SIMS_EACH);
+      const r = simulateWithUncertainty(resultsMap, N_PARAM_DRAWS, N_SIMS_EACH, 0.08, 42, lambdaMap);
       setResult(r);
       setRunning(false);
     }, 20);
     return () => clearTimeout(id);
-  }, [resultsMap]);
+  }, [resultsMap, matches]);
 
   const rows: Row[] = result
     ? Object.keys(NATIONS)
@@ -91,7 +97,7 @@ export default function SimulationScreen({ resultsMap }: Props) {
         <span className={styles.metaText}>
           Monte-Carlo · {N_PARAM_DRAWS} × {N_SIMS_EACH} = {(N_PARAM_DRAWS * N_SIMS_EACH).toLocaleString('de-DE')} Turniere
         </span>
-        <span className={styles.metaText}>Poisson + Elo-Ensemble</span>
+        <span className={styles.metaText}>Poisson+Markt (mit Elo-Fallback)</span>
       </div>
 
       {/* Sub-tabs */}
