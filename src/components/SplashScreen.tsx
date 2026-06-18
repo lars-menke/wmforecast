@@ -38,9 +38,12 @@ export default function SplashScreen({ onDone }: Props) {
       <img src={mascotsImg} alt="" className={styles.mascots} aria-hidden="true" />
 
       <div className={styles.dots}>
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-        <span className={styles.dot} />
+        <div className={styles.dotsRow}>
+          <span className={styles.dot} />
+          <span className={styles.dot} />
+          <span className={styles.dot} />
+        </div>
+        <span className={styles.dotsLabel}>Logging into Tournament</span>
       </div>
     </div>
   );
