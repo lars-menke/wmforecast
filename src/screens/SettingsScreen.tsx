@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../lib/useTheme';
+import mascotsImg from '../assets/mascots.png';
 import styles from './SettingsScreen.module.css';
 
 const ESPN_TEST_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260719&limit=1';
@@ -233,6 +234,8 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
             </button>
           </div>
         </section>
+
+        <img src={mascotsImg} alt="" className={styles.mascots} aria-hidden="true" />
 
         <p className={styles.footer}>
           Prognosen sind statistisch und stellen keine Wettempfehlung dar.
