@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import trophyImg from '../assets/trophy-new.png';
+import mascotsImg from '../assets/mascots.png';
 import styles from './SplashScreen.module.css';
 
 type Props = {
@@ -47,6 +48,8 @@ export default function SplashScreen({ onDone }: Props) {
       </div>
 
       <p className={styles.worldCup}>FIFA World Cup 2026</p>
+
+      <img src={mascotsImg} alt="" className={styles.mascots} aria-hidden="true" />
 
       <div className={styles.progressSection}>
         <div className={styles.progressTrack}>

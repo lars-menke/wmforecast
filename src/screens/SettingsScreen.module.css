@@ -170,6 +170,15 @@
   margin: 0;
 }
 
+/* Maskottchen */
+.mascots {
+  display: block;
+  width: 160px;
+  height: auto;
+  margin: var(--space-5) auto var(--space-3);
+  object-fit: contain;
+}
+
 /* Footer */
 .footer {
   font-size: var(--size-caption-1);
