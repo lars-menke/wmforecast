@@ -7,7 +7,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: 0;
   transition: opacity 0.4s cubic-bezier(0.4, 0, 1, 1);
 }
 
@@ -20,7 +20,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 24px;
   filter: drop-shadow(0 10px 30px rgba(200, 148, 10, 0.55))
           drop-shadow(0 3px 8px rgba(0, 0, 0, 0.25));
   animation: iconIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both,
@@ -28,8 +28,8 @@
 }
 
 .trophy {
-  width: 140px;
-  height: 140px;
+  width: 132px;
+  height: 132px;
   object-fit: contain;
   display: block;
 }
@@ -50,20 +50,20 @@
   display: flex;
   align-items: baseline;
   gap: 0;
-  letter-spacing: -1px;
-  margin-top: var(--space-1);
+  letter-spacing: -1.2px;
+  margin-top: var(--space-4);
   animation: fadeUp 0.45s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .brandWm {
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1;
 }
 
 .brandForecast {
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 400;
   color: var(--text-secondary);
   line-height: 1;
@@ -71,7 +71,7 @@
 
 /* FIFA World Cup 2026 subtitle */
 .worldCup {
-  margin: 0;
+  margin: var(--space-2) 0 0;
   font-size: var(--size-footnote);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);
@@ -82,10 +82,10 @@
 
 /* Mascots trio */
 .mascots {
-  width: 180px;
+  width: 132px;
   height: auto;
   object-fit: contain;
-  margin-top: var(--space-3);
+  margin-top: var(--space-7);
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18));
   animation: mascotsIn 0.55s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -101,7 +101,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  margin-top: var(--space-5);
+  margin-top: var(--space-7);
   animation: fadeUp 0.45s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
