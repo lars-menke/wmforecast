@@ -7,8 +7,9 @@ type Props = {
   onDone: () => void;
 };
 
-const SPLASH_DURATION = 2400;
-const FADE_START = 1900;
+const SPLASH_DURATION = 2000;
+const HOLD_AFTER_FULL = 200;
+const FADE_DURATION = 400;
 
 export default function SplashScreen({ onDone }: Props) {
   const [fading, setFading] = useState(false);
@@ -17,18 +18,22 @@ export default function SplashScreen({ onDone }: Props) {
   useEffect(() => {
     const start = performance.now();
     let raf: number;
+    let fadeTimer: ReturnType<typeof setTimeout>;
+    let doneTimer: ReturnType<typeof setTimeout>;
 
     function tick(now: number) {
-      const elapsed = now - start;
-      const p = Math.min(elapsed / SPLASH_DURATION, 1);
-      // ease-out: fast start, slows near 100%
-      setProgress(1 - Math.pow(1 - p, 2));
-      if (p < 1) raf = requestAnimationFrame(tick);
+      const p = Math.min((now - start) / SPLASH_DURATION, 1);
+      setProgress(p);
+      if (p < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        // Only fade once the bar has visibly reached 100%
+        fadeTimer = setTimeout(() => setFading(true), HOLD_AFTER_FULL);
+        doneTimer = setTimeout(() => onDone(), HOLD_AFTER_FULL + FADE_DURATION);
+      }
     }
     raf = requestAnimationFrame(tick);
 
-    const fadeTimer = setTimeout(() => setFading(true), FADE_START);
-    const doneTimer = setTimeout(() => onDone(), FADE_START + 400);
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(fadeTimer);
