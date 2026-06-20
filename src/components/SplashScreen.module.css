@@ -14,16 +14,12 @@
 /* Zone 1 — oberes Drittel: Pokal */
 .iconWrap {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  /* oberes Drittel: center = 16.67% von H */
   top: 16.67%;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 10px 30px rgba(200, 148, 10, 0.55))
-          drop-shadow(0 3px 8px rgba(0, 0, 0, 0.25));
   animation: iconIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both,
              iconLand 0.5s 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -33,17 +29,19 @@
   height: 180px;
   object-fit: contain;
   display: block;
+  filter: drop-shadow(0 10px 30px rgba(200, 148, 10, 0.5))
+          drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
 }
 
 @keyframes iconIn {
-  from { opacity: 0; transform: scale(0.82) translateY(10px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from { opacity: 0; transform: translateX(-50%) scale(0.82) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
 }
 
 @keyframes iconLand {
-  0%   { transform: scale(1); }
-  45%  { transform: scale(1.08); }
-  100% { transform: scale(1); }
+  0%   { transform: translateX(-50%) scale(1); }
+  45%  { transform: translateX(-50%) scale(1.08); }
+  100% { transform: translateX(-50%) scale(1); }
 }
 
 /* Zone 2 — Mitte: Name + Subtitle */
@@ -57,7 +55,7 @@
   gap: 0;
   letter-spacing: -1.2px;
   white-space: nowrap;
-  animation: fadeUp 0.45s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: brandIn 0.45s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .brandWm {
@@ -87,7 +85,7 @@
   letter-spacing: 0.6px;
   text-transform: uppercase;
   white-space: nowrap;
-  animation: fadeUp 0.45s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: subIn 0.45s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Zone 3 — unteres Drittel: Maskottchen */
@@ -103,11 +101,6 @@
   animation: mascotsIn 0.55s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes mascotsIn {
-  from { opacity: 0; transform: scale(0.9) translateY(12px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
 /* Dots — unter den Maskottchen im unteren Drittel */
 .dots {
   position: absolute;
@@ -118,7 +111,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  animation: fadeUp 0.45s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: dotsIn 0.45s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .dotsRow {
@@ -149,14 +142,30 @@
   40%           { opacity: 1;    transform: scale(1); }
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Entrance animations — each carries its own centering transform */
+@keyframes brandIn {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+@keyframes subIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes mascotsIn {
+  from { opacity: 0; transform: translateX(-50%) scale(0.9) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+}
+
+@keyframes dotsIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .root     { transition: none; }
-  .iconWrap { animation: none; opacity: 1; transform: translate(-50%, -50%); }
+  .iconWrap { animation: none; opacity: 1; transform: translateX(-50%); }
   .brand    { animation: none; opacity: 1; transform: translate(-50%, -50%); }
   .worldCup { animation: none; opacity: 1; transform: translateX(-50%); }
   .mascots  { animation: none; opacity: 1; transform: translateX(-50%); }
