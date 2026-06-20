@@ -3,11 +3,6 @@
   inset: 0;
   z-index: 100;
   background: var(--bg-page);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0;
   transition: opacity 0.4s cubic-bezier(0.4, 0, 1, 1);
 }
 
@@ -16,12 +11,17 @@
   pointer-events: none;
 }
 
+/* Zone 1 — oberes Drittel: Pokal */
 .iconWrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* oberes Drittel: center = 16.67% von H */
+  top: 16.67%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: calc(env(safe-area-inset-top) + 56px);
-  padding: 12px;
   filter: drop-shadow(0 10px 30px rgba(200, 148, 10, 0.55))
           drop-shadow(0 3px 8px rgba(0, 0, 0, 0.25));
   animation: iconIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both,
@@ -29,8 +29,8 @@
 }
 
 .trophy {
-  width: 172px;
-  height: 172px;
+  width: 180px;
+  height: 180px;
   object-fit: contain;
   display: block;
 }
@@ -46,48 +46,60 @@
   100% { transform: scale(1); }
 }
 
-/* Brand name */
+/* Zone 2 — Mitte: Name + Subtitle */
 .brand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: baseline;
   gap: 0;
   letter-spacing: -1.2px;
-  margin-top: var(--space-4);
+  white-space: nowrap;
   animation: fadeUp 0.45s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .brandWm {
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1;
 }
 
 .brandForecast {
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 400;
   color: var(--text-secondary);
   line-height: 1;
 }
 
-/* FIFA World Cup 2026 subtitle */
+/* FIFA subtitle — anchored below the brand wordmark */
 .worldCup {
-  margin: var(--space-2) 0 0;
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 44px);
+  transform: translateX(-50%);
+  margin: 0;
   font-size: var(--size-footnote);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);
   letter-spacing: 0.6px;
   text-transform: uppercase;
+  white-space: nowrap;
   animation: fadeUp 0.45s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Mascots trio */
+/* Zone 3 — unteres Drittel: Maskottchen */
 .mascots {
-  width: 132px;
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  transform: translateX(-50%);
+  width: 110px;
   height: auto;
   object-fit: contain;
-  margin-top: var(--space-7);
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18));
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
   animation: mascotsIn 0.55s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -96,13 +108,16 @@
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* Loading dots */
+/* Dots — unter den Maskottchen im unteren Drittel */
 .dots {
+  position: absolute;
+  left: 50%;
+  top: 84%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  margin-top: var(--space-7);
   animation: fadeUp 0.45s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -140,11 +155,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .root       { transition: none; }
-  .iconWrap,
-  .brand,
-  .worldCup,
-  .mascots,
-  .dots       { animation: none; opacity: 1; transform: none; }
-  .dot        { animation: none; opacity: 0.6; }
+  .root     { transition: none; }
+  .iconWrap { animation: none; opacity: 1; transform: translate(-50%, -50%); }
+  .brand    { animation: none; opacity: 1; transform: translate(-50%, -50%); }
+  .worldCup { animation: none; opacity: 1; transform: translateX(-50%); }
+  .mascots  { animation: none; opacity: 1; transform: translateX(-50%); }
+  .dots     { animation: none; opacity: 1; transform: translateX(-50%); }
+  .dot      { animation: none; opacity: 0.6; }
 }
