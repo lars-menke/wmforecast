@@ -17,9 +17,9 @@ export type CalibSample = {
 // Auto-generiert von scripts/train-from-statsbomb.mjs
 // Trainiert auf WM 2018 + WM 2022 Gruppenspiele (StatsBomb open data, n=96)
 export const HARDCODED_CALIB: CalibParams = {
-  aH: 1.012, bH: -0.038,
-  aD: 1.021, bD: -0.027,
-  aA: 0.949, bA: 0.061,
+  aH: 1.024, bH: -0.086,
+  aD: 0.975, bD: 0.010,
+  aA: 0.998, bA: 0.062,
   n: 96,
 };
 
