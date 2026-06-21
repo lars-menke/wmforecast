@@ -17,6 +17,7 @@ export type CalcResult = {
   wo: Outcome;
   srt: Array<[string, number]>;
   lH: number; lA: number;
+  lH_model: number; lA_model: number;
   fp: number;
   drawBlocked: boolean;
   lambdaDiff: number;
@@ -28,10 +29,11 @@ export type CalcResult = {
 // Modell-Konstanten
 // ---------------------------------------------------------------------------
 
-const DC_RHO     = -0.13;
-const M          = 7;    // max Tore pro Team in der Matrix
-const LAMBDA_MIN = 0.3;
-const LAMBDA_MAX = 4.5;
+const DC_RHO      = -0.13;
+const M           = 7;    // max Tore pro Team in der Matrix
+const LAMBDA_MIN  = 0.3;
+const LAMBDA_MAX  = 4.5;
+const MARKET_BLEND = 0.5;
 
 // ---------------------------------------------------------------------------
 // Dixon-Coles tau-Korrektur
@@ -169,8 +171,12 @@ function applyMarketCorrection(
 
   const lH_adj = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lH * xH));
   const lA_adj = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lA * xA));
-  // Return the final matrix directly — caller uses it for rawProbs + topResults
-  return { lH: lH_adj, lA: lA_adj, mat: buildMatrix(lH_adj, lA_adj) };
+
+  const lH_blended = lH * (1 - MARKET_BLEND) + lH_adj * MARKET_BLEND;
+  const lA_blended = lA * (1 - MARKET_BLEND) + lA_adj * MARKET_BLEND;
+  const lH_final = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lH_blended));
+  const lA_final = Math.min(LAMBDA_MAX, Math.max(LAMBDA_MIN, lA_blended));
+  return { lH: lH_final, lA: lA_final, mat: buildMatrix(lH_final, lA_final) };
 }
 
 // ---------------------------------------------------------------------------
@@ -211,6 +217,8 @@ export function calcMatch(
   if (!hStats || !aStats) return null;
 
   let { lH, lA } = effectiveLambdas(hStats, aStats);
+  const lH_model = lH;
+  const lA_model = lA;
   let marketApplied = false;
   let mat: number[][];
 
@@ -256,6 +264,7 @@ export function calcMatch(
     wo,
     srt,
     lH, lA,
+    lH_model, lA_model,
     fp,
     drawBlocked: false,
     lambdaDiff,

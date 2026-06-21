@@ -2,7 +2,7 @@ import type { MarketProbs } from './poisson';
 
 const ODDS_KEY  = import.meta.env.VITE_ODDS_API_KEY ?? '';
 const CACHE_KEY = 'wm_odds_v1';
-const CACHE_TTL = 45 * 60 * 1000; // 45 Minuten
+const CACHE_TTL = 20 * 60 * 1000; // 20 Minuten
 
 const ODDS_TEAM_MAP: Record<string, string> = {
   // Group A
@@ -90,31 +90,40 @@ function poissonDrawFallback(h: number, a: number): number {
   return 0.17 + balance * 0.14; // 0.17 bei Favorit, 0.31 bei Gleichstand
 }
 
-export async function fetchOdds(): Promise<Record<string, MarketProbs>> {
+export async function fetchOdds(liveOrFinishedKeys?: Set<string>): Promise<Record<string, MarketProbs>> {
+  // Always load existing cache first
+  let existingCache: Record<string, MarketProbs> = {};
+  let cacheAge = Infinity;
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
       const { ts, data } = JSON.parse(cached) as { ts: number; data: Record<string, MarketProbs> };
-      if (Date.now() - ts < CACHE_TTL) return data;
+      existingCache = data;
+      cacheAge = Date.now() - ts;
     }
   } catch { /* ignore */ }
 
-  if (!ODDS_KEY) return {};
+  // Return cache if still fresh and no API key
+  if (cacheAge < CACHE_TTL && !ODDS_KEY) return existingCache;
+  if (!ODDS_KEY) return existingCache;
+
+  // If cache is still fresh, return it directly
+  if (cacheAge < CACHE_TTL) return existingCache;
 
   try {
     // Discover WM sport key dynamically
     const sportsR = await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${ODDS_KEY}`);
-    if (!sportsR.ok) return {};
+    if (!sportsR.ok) return existingCache;
     const sports = await sportsR.json() as Array<{ key: string; active: boolean }>;
     const wc = sports.find(s => s.key.startsWith('soccer') && (s.key.includes('world') || s.key.includes('cup') || s.key.includes('fifa')));
-    if (!wc) return {};
+    if (!wc) return existingCache;
 
     const url = `https://api.the-odds-api.com/v4/sports/${wc.key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
     const r = await fetch(url);
-    if (!r.ok) return {};
+    if (!r.ok) return existingCache;
 
     const games = (await r.json()) as OddsGame[];
-    const data: Record<string, MarketProbs> = {};
+    const freshData: Record<string, MarketProbs> = {};
 
     for (const g of games) {
       const homeCode = ODDS_TEAM_MAP[g.home_team];
@@ -134,16 +143,26 @@ export async function fetchOdds(): Promise<Record<string, MarketProbs>> {
       }
       if (h && a) {
         const drawFallback = d || poissonDrawFallback(h, a);
-        data[`${homeCode}-${awayCode}`] = normalizeProbs(h, drawFallback, a);
+        freshData[`${homeCode}-${awayCode}`] = normalizeProbs(h, drawFallback, a);
+      }
+    }
+
+    // Merge: keep cached value for live/finished matches, use fresh for others
+    const merged: Record<string, MarketProbs> = { ...freshData };
+    if (liveOrFinishedKeys) {
+      for (const key of liveOrFinishedKeys) {
+        if (existingCache[key] !== undefined) {
+          merged[key] = existingCache[key];
+        }
       }
     }
 
     try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: merged }));
     } catch { /* storage voll */ }
 
-    return data;
+    return merged;
   } catch {
-    return {};
+    return existingCache;
   }
 }

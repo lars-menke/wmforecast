@@ -5,6 +5,7 @@ import { fetchOdds } from './fetchOdds';
 import { recalcMatches, type CalcResult, type MarketProbs } from './poisson';
 import { NATION_STATS } from './nations';
 import { HARDCODED_CALIB, updateCalib, type CalibSample } from './calibration';
+import { logPreMatch, logPostMatch } from './learnLog';
 
 export type MatchEntry = {
   id: string;
@@ -57,10 +58,16 @@ export function useMatches(): MatchesState {
     setError(null);
     async function init() {
       try {
-        const [{ results, venues, kickoffs }, odds] = await Promise.all([
-          fetchResults(),
-          fetchOdds(),
-        ]);
+        const { results, venues, kickoffs } = await fetchResults();
+        const liveOrFinishedKeys = new Set<string>(
+          WM_SCHEDULE
+            .filter(m => results[`${m.home}-${m.away}`] != null || results[`${m.away}-${m.home}`] != null)
+            .map(m => {
+              if (results[`${m.home}-${m.away}`] != null) return `${m.home}-${m.away}`;
+              return `${m.away}-${m.home}`;
+            }),
+        );
+        const odds = await fetchOdds(liveOrFinishedKeys);
         if (cancelled) return;
         setResultsMap(results);
         setVenueMap(venues);
@@ -134,6 +141,42 @@ export function useMatches(): MatchesState {
     }
     const liveCalib = updateCalib(HARDCODED_CALIB, samples);
     const calc = recalcMatches(inputs, NATION_STATS, liveCalib);
+
+    // Learning log: record pre-match and post-match data
+    for (const m of WM_SCHEDULE) {
+      if (m.home === 'TBD' || m.away === 'TBD') continue;
+      const matchId = `${m.home}-${m.away}`;
+      const oddsEntry = oddsMap[matchId] ?? oddsMap[`${m.away}-${m.home}`];
+      const calcEntry = calc[m.id];
+      if (!calcEntry) continue;
+
+      if (oddsEntry) {
+        // Normalize odds direction to HOME-AWAY
+        const normalizedOdds = oddsMap[matchId]
+          ? oddsEntry
+          : { h: oddsEntry.a, d: oddsEntry.d, a: oddsEntry.h };
+        logPreMatch({
+          matchId,
+          kickoff: m.kickoff,
+          lH_model: calcEntry.lH_model,
+          lA_model: calcEntry.lA_model,
+          lH_blend: calcEntry.lH,
+          lA_blend: calcEntry.lA,
+          oddsH: normalizedOdds.h / 100,
+          oddsD: normalizedOdds.d / 100,
+          oddsA: normalizedOdds.a / 100,
+        });
+      }
+
+      const res = resultsMap[matchId] ?? resultsMap[`${m.away}-${m.home}`];
+      if (res?.finished) {
+        const homeIsHome = resultsMap[matchId] != null;
+        const actualOutcome: 'H' | 'D' | 'A' = homeIsHome
+          ? (res.g1 > res.g2 ? 'H' : res.g1 < res.g2 ? 'A' : 'D')
+          : (res.g2 > res.g1 ? 'H' : res.g2 < res.g1 ? 'A' : 'D');
+        logPostMatch(matchId, actualOutcome);
+      }
+    }
 
     return WM_SCHEDULE
       .filter(m => m.home !== 'TBD' && m.away !== 'TBD')

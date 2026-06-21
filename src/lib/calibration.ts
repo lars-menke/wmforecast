@@ -13,12 +13,14 @@ export type CalibSample = {
   actual: 'H' | 'D' | 'A';
 };
 
-// Hardcodierte Kalibrierungsparameter (WM 2014 + 2018 + 2022, n=176 Spiele)
+// Hardcodierte Kalibrierungsparameter
+// Auto-generiert von scripts/train-from-statsbomb.mjs
+// Trainiert auf WM 2018 + WM 2022 Gruppenspiele (StatsBomb open data, n=96)
 export const HARDCODED_CALIB: CalibParams = {
-  aH: 0.763, bH: 0.245,
-  aD: 0.867, bD: -0.131,
-  aA: 0.8,   bA: 0.021,
-  n: 176,
+  aH: 1.012, bH: -0.038,
+  aD: 1.021, bD: -0.027,
+  aA: 0.949, bA: 0.061,
+  n: 96,
 };
 
 function sigmoid(x: number): number {
