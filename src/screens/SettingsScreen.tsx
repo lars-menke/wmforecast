@@ -82,7 +82,7 @@ const PROGNOSE_SECTIONS = [
   {
     id: 'ipf',
     title: 'Teamstärken (IPF-Kalibrierung)',
-    body: 'Die Angriffs- und Defensivwerte aller 48 Teams wurden per Iterative Proportional Fitting (IPF) auf 1.444 historischen Länderspielen ab 2018 trainiert. Walk-Forward-Backtesting über 6 Zeitfenster ergab optimale Zeitgewichtung ξ = 0.',
+    body: 'Die Angriffs- und Defensivwerte aller 48 Teams wurden per Iterative Proportional Fitting (IPF) trainiert. Teams mit WM-Erfahrung (WM 2018 + WM 2022) nutzen 128 Turnierspiele aus dem StatsBomb Open Data Repository. Teams ohne WM-Teilnahme basieren auf 1.444 internationalen Länderspielen ab 2018 (martj42-Datensatz).',
   },
   {
     id: 'bonustipps',
