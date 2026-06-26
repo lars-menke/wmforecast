@@ -23,10 +23,6 @@ function contextLabel(m: MatchEntry): string {
   return m.stage === 'GROUP_STAGE' ? `Gruppe ${m.group}` : STAGE_LABELS[m.stage];
 }
 
-function startOfDay(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
 const MATCHDAY_GAP_MS = 10 * 60 * 60 * 1000; // 10h: Lücke zwischen zwei Spieltagen
 
 type Matchday = {
@@ -51,19 +47,6 @@ function buildMatchdays(matches: MatchEntry[]): Matchday[] {
   return days;
 }
 
-function addDays(d: Date, n: number): Date {
-  const r = new Date(d);
-  r.setDate(r.getDate() + n);
-  return r;
-}
-
-function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear()
-    && a.getMonth() === b.getMonth()
-    && a.getDate() === b.getDate();
-}
-
-const MAX_OFFSET = 3;
 
 export default function TodayScreen({ matches, onMatchClick }: Props) {
   const matchdays = useMemo(() => buildMatchdays(matches), [matches]);
