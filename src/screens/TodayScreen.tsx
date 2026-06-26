@@ -27,6 +27,12 @@ function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
+// Spieltag-Grenze bei 03:00 Uhr lokaler Zeit — Spiele nach Mitternacht gehören noch zum Vorabend
+function startOfMatchday(d: Date): Date {
+  const shifted = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+  return new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate());
+}
+
 function addDays(d: Date, n: number): Date {
   const r = new Date(d);
   r.setDate(r.getDate() + n);
@@ -44,12 +50,12 @@ const MAX_OFFSET = 3;
 export default function TodayScreen({ matches, onMatchClick }: Props) {
   const [offset, setOffset] = useState(0);
 
-  // All days that have at least one match (local calendar day)
+  // All matchdays (shifted boundary at 03:00 local — late-night games belong to the previous evening)
   const matchDays = useMemo(() => {
     const seen = new Set<string>();
     const days: Date[] = [];
     for (const m of matches) {
-      const d = startOfDay(new Date(m.kickoff));
+      const d = startOfMatchday(new Date(m.kickoff));
       const key = d.toISOString().slice(0, 10);
       if (!seen.has(key)) { seen.add(key); days.push(d); }
     }
@@ -57,18 +63,17 @@ export default function TodayScreen({ matches, onMatchClick }: Props) {
     return days;
   }, [matches]);
 
-  const today = useMemo(() => startOfDay(new Date()), []);
+  const today = useMemo(() => startOfMatchday(new Date()), []);
 
-  // Resolved target day: today + offset, but clamped to days that exist
+  // Resolved target matchday: today + offset, clamped to existing matchdays
   const targetDay = useMemo(() => {
     const desired = startOfDay(addDays(today, offset));
-    // Find nearest match day within ±MAX_OFFSET
     return matchDays.find(d => isSameDay(d, desired)) ?? desired;
   }, [today, offset, matchDays]);
 
   const dayMatches = useMemo(() => {
     return matches
-      .filter(m => isSameDay(new Date(m.kickoff), targetDay))
+      .filter(m => isSameDay(startOfMatchday(new Date(m.kickoff)), targetDay))
       .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
   }, [matches, targetDay]);
 
@@ -86,10 +91,14 @@ export default function TodayScreen({ matches, onMatchClick }: Props) {
   const goFwd  = useCallback(() => setOffset(o => o + 1), []);
 
   const isToday = isSameDay(targetDay, today);
-  const dateLabel = targetDay.toLocaleDateString('de-DE', {
+
+  // Display label: use the matchday key date itself (= the main evening date of the block)
+  // For blocks that extend past midnight, targetDay already points to the "evening" date
+  const displayDate = new Date(targetDay.getTime() + 12 * 60 * 60 * 1000); // noon of that day
+  const dateLabel = displayDate.toLocaleDateString('de-DE', {
     weekday: 'long', day: 'numeric', month: 'long',
   });
-  const dateLabelShort = targetDay.toLocaleDateString('de-DE', {
+  const dateLabelShort = displayDate.toLocaleDateString('de-DE', {
     weekday: 'short', day: 'numeric', month: 'short',
   });
 
