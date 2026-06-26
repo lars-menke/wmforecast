@@ -27,10 +27,28 @@ function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-// Spieltag-Grenze bei 03:00 Uhr lokaler Zeit — Spiele nach Mitternacht gehören noch zum Vorabend
-function startOfMatchday(d: Date): Date {
-  const shifted = new Date(d.getTime() - 3 * 60 * 60 * 1000);
-  return new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate());
+const MATCHDAY_GAP_MS = 10 * 60 * 60 * 1000; // 10h: Lücke zwischen zwei Spieltagen
+
+type Matchday = {
+  index: number;
+  matches: MatchEntry[];
+  labelDate: Date; // erster Kick-off des Spieltags (lokale Zeit) als Anzeigedatum
+};
+
+function buildMatchdays(matches: MatchEntry[]): Matchday[] {
+  const sorted = [...matches].sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+  const days: Matchday[] = [];
+  for (const m of sorted) {
+    const t = new Date(m.kickoff).getTime();
+    const last = days[days.length - 1];
+    const prevT = last ? new Date(last.matches[last.matches.length - 1].kickoff).getTime() : -Infinity;
+    if (!last || t - prevT > MATCHDAY_GAP_MS) {
+      days.push({ index: days.length, matches: [m], labelDate: new Date(m.kickoff) });
+    } else {
+      last.matches.push(m);
+    }
+  }
+  return days;
 }
 
 function addDays(d: Date, n: number): Date {
@@ -48,59 +66,50 @@ function isSameDay(a: Date, b: Date): boolean {
 const MAX_OFFSET = 3;
 
 export default function TodayScreen({ matches, onMatchClick }: Props) {
+  const matchdays = useMemo(() => buildMatchdays(matches), [matches]);
+
+  // Active matchday: prefer one with live matches, else nearest upcoming, else last
+  const activeIndex = useMemo(() => {
+    const now = Date.now();
+    // 1. Any live match
+    const liveIdx = matchdays.findIndex(d => d.matches.some(m => m.live));
+    if (liveIdx >= 0) return liveIdx;
+    // 2. First matchday with a future match
+    const upcomingIdx = matchdays.findIndex(d =>
+      d.matches.some(m => !m.finished && new Date(m.kickoff).getTime() > now)
+    );
+    if (upcomingIdx >= 0) return upcomingIdx;
+    // 3. Last matchday
+    return matchdays.length - 1;
+  }, [matchdays]);
+
   const [offset, setOffset] = useState(0);
 
-  // All matchdays (shifted boundary at 03:00 local — late-night games belong to the previous evening)
-  const matchDays = useMemo(() => {
-    const seen = new Set<string>();
-    const days: Date[] = [];
-    for (const m of matches) {
-      const d = startOfMatchday(new Date(m.kickoff));
-      const key = d.toISOString().slice(0, 10);
-      if (!seen.has(key)) { seen.add(key); days.push(d); }
-    }
-    days.sort((a, b) => a.getTime() - b.getTime());
-    return days;
-  }, [matches]);
+  // Resolve offset relative to active index, clamped to valid range
+  const targetIndex = useMemo(() => {
+    return Math.max(0, Math.min(matchdays.length - 1, activeIndex + offset));
+  }, [activeIndex, offset, matchdays.length]);
 
-  const today = useMemo(() => startOfMatchday(new Date()), []);
-
-  // Resolved target matchday: today + offset, clamped to existing matchdays
-  const targetDay = useMemo(() => {
-    const desired = startOfDay(addDays(today, offset));
-    return matchDays.find(d => isSameDay(d, desired)) ?? desired;
-  }, [today, offset, matchDays]);
-
-  const dayMatches = useMemo(() => {
-    return matches
-      .filter(m => isSameDay(startOfMatchday(new Date(m.kickoff)), targetDay))
-      .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
-  }, [matches, targetDay]);
+  const targetMatchday = matchdays[targetIndex];
+  const dayMatches = targetMatchday?.matches ?? [];
 
   const live     = dayMatches.filter(m => m.live);
   const upcoming = dayMatches.filter(m => !m.live && !m.finished);
   const finished = dayMatches.filter(m => !m.live && m.finished);
 
-  // Navigation: can go back/forward if there are match days in that direction
-  const earliestDay = matchDays[0];
-  const latestDay   = matchDays[matchDays.length - 1];
-  const canPrev = earliestDay && targetDay > earliestDay && offset > -MAX_OFFSET;
-  const canNext = latestDay  && targetDay < latestDay   && offset < MAX_OFFSET;
+  const canPrev = targetIndex > 0;
+  const canNext = targetIndex < matchdays.length - 1;
+  const goBack  = useCallback(() => setOffset(o => o - 1), []);
+  const goFwd   = useCallback(() => setOffset(o => o + 1), []);
 
-  const goBack = useCallback(() => setOffset(o => o - 1), []);
-  const goFwd  = useCallback(() => setOffset(o => o + 1), []);
+  const isToday = targetIndex === activeIndex && offset === 0;
 
-  const isToday = isSameDay(targetDay, today);
-
-  // Display label: use the matchday key date itself (= the main evening date of the block)
-  // For blocks that extend past midnight, targetDay already points to the "evening" date
-  const displayDate = new Date(targetDay.getTime() + 12 * 60 * 60 * 1000); // noon of that day
-  const dateLabel = displayDate.toLocaleDateString('de-DE', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  });
-  const dateLabelShort = displayDate.toLocaleDateString('de-DE', {
-    weekday: 'short', day: 'numeric', month: 'short',
-  });
+  const dateLabel = targetMatchday
+    ? targetMatchday.labelDate.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })
+    : '';
+  const dateLabelShort = targetMatchday
+    ? targetMatchday.labelDate.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })
+    : '';
 
   const sections: Array<{ key: string; label: string; live?: boolean; items: MatchEntry[] }> = [
     { key: 'live',     label: 'Live',    live: true, items: live },
