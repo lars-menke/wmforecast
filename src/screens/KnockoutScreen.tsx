@@ -25,8 +25,6 @@ const STAGE_LABELS: Record<WmStage, string> = {
 };
 
 export default function KnockoutScreen({ matches, onMatchClick }: Props) {
-  const [viewMode, setViewMode] = useState<'list' | 'bracket'>('list');
-
   const byStage = useMemo(() => {
     const ko = matches.filter(m => m.stage !== 'GROUP_STAGE');
     const map = new Map<WmStage, MatchEntry[]>();
@@ -43,37 +41,32 @@ export default function KnockoutScreen({ matches, onMatchClick }: Props) {
 
   const hasAny = STAGE_ORDER.some(s => (byStage.get(s)?.length ?? 0) > 0);
 
-  const bracketMatches = matches.filter(m =>
-    m.stage === 'QUARTER_FINALS' ||
-    m.stage === 'SEMI_FINALS' ||
-    m.stage === 'FINAL' ||
-    m.stage === 'THIRD_PLACE',
-  );
-  const hasBracket = bracketMatches.length > 0;
+  // Solange noch keine echten K.o.-Spiele angesetzt sind, direkt den Turnierbaum zeigen
+  const [viewMode, setViewMode] = useState<'list' | 'bracket'>(hasAny ? 'list' : 'bracket');
 
+  // Turnierbaum ist immer verfügbar — Slots kommen aus dem statischen Spielplan,
+  // noch nicht qualifizierte Teams werden als Platzhalter dargestellt.
   return (
     <div className={styles.root}>
-      {hasBracket && (
-        <div className={styles.viewToggle}>
-          <button
-            className={`${styles.togglePill}${viewMode === 'list' ? ` ${styles.togglePillActive}` : ''}`}
-            onClick={() => setViewMode('list')}
-            type="button"
-          >
-            Liste
-          </button>
-          <button
-            className={`${styles.togglePill}${viewMode === 'bracket' ? ` ${styles.togglePillActive}` : ''}`}
-            onClick={() => setViewMode('bracket')}
-            type="button"
-          >
-            Bracket
-          </button>
-        </div>
-      )}
+      <div className={styles.viewToggle}>
+        <button
+          className={`${styles.togglePill}${viewMode === 'list' ? ` ${styles.togglePillActive}` : ''}`}
+          onClick={() => setViewMode('list')}
+          type="button"
+        >
+          Liste
+        </button>
+        <button
+          className={`${styles.togglePill}${viewMode === 'bracket' ? ` ${styles.togglePillActive}` : ''}`}
+          onClick={() => setViewMode('bracket')}
+          type="button"
+        >
+          Turnierbaum
+        </button>
+      </div>
 
       {viewMode === 'bracket' ? (
-        <BracketView matches={bracketMatches} onMatchClick={onMatchClick} />
+        <BracketView matches={matches} onMatchClick={onMatchClick} />
       ) : (
         <>
           {!hasAny && (

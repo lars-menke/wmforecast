@@ -1,4 +1,6 @@
+import React from 'react';
 import type { MatchEntry } from '../lib/useMatches';
+import { WM_SCHEDULE, type WmStage } from '../lib/schedule';
 import { NATIONS } from '../lib/nations';
 import styles from './BracketView.module.css';
 
@@ -7,33 +9,70 @@ type Props = {
   onMatchClick: (m: MatchEntry) => void;
 };
 
-function BracketMatch({ match, onClick }: { match: MatchEntry; onClick: () => void }) {
-  const homeCode = match.home;
-  const awayCode = match.away;
-  const homeNation = NATIONS[homeCode];
-  const awayNation = NATIONS[awayCode];
-  const isTbd = homeCode === 'TBD' || awayCode === 'TBD';
+type BracketSlot = {
+  id: string;
+  home: string;
+  away: string;
+  actual: MatchEntry['actual'];
+  finished: boolean;
+  entry: MatchEntry | null; // real entry for click handling, null = placeholder
+};
 
-  const homeWon = match.actual != null && match.finished && match.actual.g1 > match.actual.g2;
-  const awayWon = match.actual != null && match.finished && match.actual.g2 > match.actual.g1;
+const BRACKET_ROUNDS: Array<{ stage: WmStage; label: string }> = [
+  { stage: 'ROUND_OF_32',    label: 'Letzte 32' },
+  { stage: 'ROUND_OF_16',    label: 'Achtelfinale' },
+  { stage: 'QUARTER_FINALS', label: 'Viertelfinale' },
+  { stage: 'SEMI_FINALS',    label: 'Halbfinale' },
+  { stage: 'FINAL',          label: 'Finale' },
+];
+
+function buildSlots(stage: WmStage, byId: Map<string, MatchEntry>): BracketSlot[] {
+  return WM_SCHEDULE
+    .filter(m => m.stage === stage)
+    .sort((a, b) => a.kickoff.localeCompare(b.kickoff))
+    .map(m => {
+      const entry = byId.get(m.id) ?? null;
+      return {
+        id: m.id,
+        home: entry?.home ?? m.home,
+        away: entry?.away ?? m.away,
+        actual: entry?.actual ?? null,
+        finished: entry?.finished ?? false,
+        entry,
+      };
+    });
+}
+
+function BracketMatch({ slot, onClick }: { slot: BracketSlot; onClick: () => void }) {
+  const homeNation = NATIONS[slot.home];
+  const awayNation = NATIONS[slot.away];
+  const isTbd = slot.home === 'TBD' || slot.away === 'TBD' || slot.entry == null;
+
+  const homeWon = slot.actual != null && slot.finished && slot.actual.g1 > slot.actual.g2;
+  const awayWon = slot.actual != null && slot.finished && slot.actual.g2 > slot.actual.g1;
 
   return (
-    <button className={styles.matchBox} onClick={onClick} type="button" disabled={isTbd}>
+    <button
+      className={`${styles.matchBox}${isTbd ? ` ${styles.matchBoxTbd}` : ''}`}
+      onClick={onClick}
+      type="button"
+      disabled={isTbd}
+    >
       <div className={`${styles.team}${homeWon ? ` ${styles.teamWon}` : ''}`}>
-        <span className={styles.flag}>{homeNation?.flag ?? '🏳️'}</span>
-        <span className={styles.code}>{homeCode === 'TBD' ? '?' : (homeNation?.shortName ?? homeCode)}</span>
-        {match.actual && (
+        <span className={styles.flag}>{slot.home === 'TBD' ? '' : (homeNation?.flag ?? '🏳️')}</span>
+        <span className={styles.code}>{slot.home === 'TBD' ? '—' : (homeNation?.shortName ?? slot.home)}</span>
+        {slot.actual && (
           <span className={styles.score} data-numeric>
-            {match.finished ? match.actual.g1 : (match.actual.g1Live ?? '')}
+            {slot.finished ? slot.actual.g1 : (slot.actual.g1Live ?? '')}
           </span>
         )}
       </div>
       <div className={`${styles.team}${awayWon ? ` ${styles.teamWon}` : ''}`}>
-        <span className={styles.flag}>{awayNation?.flag ?? '🏳️'}</span>
-        <span className={styles.code}>{awayCode === 'TBD' ? '?' : (awayNation?.shortName ?? awayCode)}</span>
-        {match.actual && (
+        <span className={styles.flag}>{slot.away === 'TBD' ? '' : (awayNation?.flag ?? '🏳️')}</span>
+        <span className={styles.code}>{slot.away === 'TBD' ? '—' : (awayNation?.shortName ?? slot.away)}</span>
+        {slot.actual && (
           <span className={styles.score} data-numeric>
-            {match.finished ? match.actual.g2 : (match.actual.g2Live ?? '')}
+            {slot.finished ? slot.actual.g2 : (slot.actual.g2Live ?? '')}
           </span>
         )}
       </div>
@@ -41,92 +80,55 @@ function BracketMatch({ match, onClick }: { match: MatchEntry; onClick: () => vo
   );
 }
 
-function ConnectorPair() {
+function ConnectorColumn({ count }: { count: number }) {
   return (
-    <div className={styles.connectorPair}>
-      <div className={styles.connectorTop} />
-      <div className={styles.connectorBottom} />
+    <div className={styles.connectorCol}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={styles.connectorPair}>
+          <div className={styles.connectorTop} />
+          <div className={styles.connectorBottom} />
+        </div>
+      ))}
     </div>
   );
 }
 
 export default function BracketView({ matches, onMatchClick }: Props) {
-  const qf  = matches.filter(m => m.stage === 'QUARTER_FINALS').sort((a, b) => a.kickoff.localeCompare(b.kickoff));
-  const sf  = matches.filter(m => m.stage === 'SEMI_FINALS').sort((a, b) => a.kickoff.localeCompare(b.kickoff));
-  const fin = matches.filter(m => m.stage === 'FINAL');
-  const trd = matches.filter(m => m.stage === 'THIRD_PLACE');
+  const byId = new Map(matches.map(m => [m.id, m]));
 
-  const hasQF = qf.length > 0;
-  const hasSF = sf.length > 0;
-  const hasFin = fin.length > 0;
+  const rounds = BRACKET_ROUNDS.map(r => ({ ...r, slots: buildSlots(r.stage, byId) }));
+  const trd = buildSlots('THIRD_PLACE', byId);
 
-  if (!hasQF && !hasSF && !hasFin) {
-    return (
-      <div className={styles.root}>
-        <p className={styles.empty}>K.o.-Bracket wird nach dem Achtelfinale verfugbar.</p>
-      </div>
-    );
-  }
+  const handleClick = (slot: BracketSlot) => {
+    if (slot.entry) onMatchClick(slot.entry);
+  };
 
   return (
     <div className={styles.root}>
       <div className={styles.bracket}>
-        {/* QF column */}
-        {hasQF && (
-          <>
+        {rounds.map((round, ri) => (
+          <React.Fragment key={round.stage}>
             <div className={styles.round}>
-              <div className={styles.roundLabel}>Viertelfinale</div>
-              <div className={styles.roundPair}>
-                {qf[0] && <BracketMatch match={qf[0]} onClick={() => onMatchClick(qf[0])} />}
-                {qf[1] && <BracketMatch match={qf[1]} onClick={() => onMatchClick(qf[1])} />}
-              </div>
-              <div className={styles.roundPairGap} />
-              <div className={styles.roundPair}>
-                {qf[2] && <BracketMatch match={qf[2]} onClick={() => onMatchClick(qf[2])} />}
-                {qf[3] && <BracketMatch match={qf[3]} onClick={() => onMatchClick(qf[3])} />}
+              <div className={styles.roundLabel}>{round.label}</div>
+              <div className={styles.roundBody}>
+                {round.slots.map(slot => (
+                  <div key={slot.id} className={styles.slotWrap}>
+                    <BracketMatch slot={slot} onClick={() => handleClick(slot)} />
+                  </div>
+                ))}
               </div>
             </div>
-            <div className={styles.connectorCol}>
-              <ConnectorPair />
-              <div className={styles.connectorMid} />
-              <ConnectorPair />
-            </div>
-          </>
-        )}
-
-        {/* SF column */}
-        {hasSF && (
-          <>
-            <div className={styles.round}>
-              <div className={styles.roundLabel}>Halbfinale</div>
-              <div className={styles.sfSpacer} />
-              {sf[0] && <BracketMatch match={sf[0]} onClick={() => onMatchClick(sf[0])} />}
-              <div className={styles.sfGap} />
-              {sf[1] && <BracketMatch match={sf[1]} onClick={() => onMatchClick(sf[1])} />}
-              <div className={styles.sfSpacer} />
-            </div>
-            <div className={styles.connectorCol}>
-              <ConnectorPair />
-            </div>
-          </>
-        )}
-
-        {/* Final column */}
-        {hasFin && (
-          <div className={styles.round}>
-            <div className={styles.roundLabel}>Finale</div>
-            <div className={styles.finalSpacer} />
-            {fin[0] && <BracketMatch match={fin[0]} onClick={() => onMatchClick(fin[0])} />}
-            <div className={styles.finalSpacer} />
-          </div>
-        )}
+            {ri < rounds.length - 1 && (
+              <ConnectorColumn count={rounds[ri + 1].slots.length} />
+            )}
+          </React.Fragment>
+        ))}
       </div>
 
-      {/* 3rd place */}
       {trd.length > 0 && (
         <div className={styles.thirdSection}>
           <div className={styles.thirdLabel}>Spiel um Platz 3</div>
-          {trd[0] && <BracketMatch match={trd[0]} onClick={() => onMatchClick(trd[0])} />}
+          <BracketMatch slot={trd[0]} onClick={() => handleClick(trd[0])} />
         </div>
       )}
     </div>

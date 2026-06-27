@@ -11,8 +11,9 @@
 .bracket {
   display: flex;
   gap: 0;
-  align-items: center;
+  align-items: stretch;
   min-width: fit-content;
+  min-height: 980px; /* genug Höhe für 16 Slots der ersten K.o.-Runde */
 }
 
 .round {
@@ -29,44 +30,33 @@
   letter-spacing: 0.6px;
   color: var(--text-secondary);
   text-align: center;
+  height: 16px;
   margin-bottom: var(--space-3);
 }
 
-.roundPair {
+/* Slots gleichmäßig über die volle Höhe verteilen — richtet Spalten automatisch
+   an den Mittelpunkten der vorherigen Runde aus (space-around-Prinzip) */
+.roundBody {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  justify-content: space-around;
 }
 
-.roundPairGap {
-  height: var(--space-6);
-}
-
-/* SF layout helpers */
-.sfSpacer {
-  flex: 1;
-  min-height: var(--space-5);
-}
-
-.sfGap {
-  height: var(--space-6);
-}
-
-/* Final layout helpers */
-.finalSpacer {
-  flex: 1;
-  min-height: var(--space-7);
+.slotWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Connectors */
 .connectorCol {
   display: flex;
   flex-direction: column;
-  width: 24px;
+  width: 20px;
   flex-shrink: 0;
   align-self: stretch;
-  padding-top: 28px; /* approx roundLabel height */
-  justify-content: space-around;
+  padding-top: calc(16px + var(--space-3)); /* gleiche Höhe wie roundLabel + margin */
 }
 
 .connectorPair {
@@ -107,7 +97,16 @@
 
 .matchBox:disabled {
   cursor: default;
-  opacity: 0.75;
+}
+
+/* Platzhalter-Slot: noch nicht qualifizierte Mannschaften */
+.matchBoxTbd {
+  background: var(--bg-fill);
+  opacity: 0.6;
+}
+
+.matchBoxTbd .code {
+  color: var(--text-tertiary);
 }
 
 .matchBox:not(:disabled):active {
