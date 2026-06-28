@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { WM_SCHEDULE, WM_GROUPS, type WmStage, type WmGroup } from './schedule';
+import { WM_SCHEDULE, WM_GROUPS, type WmStage, type WmGroup, type WmMatch } from './schedule';
 import { fetchResults, type MatchResult, type GoalEvent } from './fetchResults';
 import { fetchOdds } from './fetchOdds';
 import { recalcMatches, type CalcResult, type MarketProbs } from './poisson';
@@ -39,6 +39,82 @@ export type MatchesState = {
 };
 
 const LIVE_POLL_INTERVAL = 45 * 1000; // 45 seconds
+
+// K.o.-Runden in chronologischer Reihenfolge mit Anzahl Spiele pro Runde
+const KO_ROUND_CAPS: Array<[WmStage, number]> = [
+  ['ROUND_OF_32', 16],
+  ['ROUND_OF_16', 8],
+  ['QUARTER_FINALS', 4],
+  ['SEMI_FINALS', 2],
+  ['THIRD_PLACE', 1],
+  ['FINAL', 1],
+];
+
+// Frühester Kickoff der K.o.-Phase (UTC) — alles davor ist Gruppenphase
+const KO_START_ISO = '2026-06-28T10:00:00Z';
+
+/**
+ * Löst die TBD-Slots der K.o.-Phase auf: Echte Paarungen kommen aus den
+ * ESPN-Kickoff-Daten (alle angesetzten Spiele). Alles, was keine bekannte
+ * Gruppenpaarung ist und nach Gruppenende stattfindet, wird chronologisch
+ * sortiert und runden­weise auf die statischen Slots (R32-M1, R16-M1, …)
+ * verteilt. So bleiben Slot-IDs erhalten (Turnierbaum) und die Spiele
+ * erscheinen wieder in Tagesübersicht und Liste.
+ */
+function resolveSchedule(kickoffMap: Record<string, string>): WmMatch[] {
+  // Bekannte Gruppenpaarungen (beide Richtungen)
+  const groupPairs = new Set<string>();
+  for (const m of WM_SCHEDULE) {
+    if (m.stage === 'GROUP_STAGE') {
+      groupPairs.add(`${m.home}-${m.away}`);
+      groupPairs.add(`${m.away}-${m.home}`);
+    }
+  }
+
+  // K.o.-Begegnungen aus den ESPN-Kickoffs herausfiltern
+  const koFixtures = Object.entries(kickoffMap)
+    .filter(([key]) => !groupPairs.has(key))
+    .map(([key, iso]) => {
+      const dash = key.indexOf('-');
+      return { home: key.slice(0, dash), away: key.slice(dash + 1), kickoff: iso };
+    })
+    .filter(f => f.kickoff >= KO_START_ISO)
+    .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+
+  if (koFixtures.length === 0) return WM_SCHEDULE;
+
+  // Statische K.o.-Slots pro Runde (chronologisch)
+  const slotsByStage = new Map<WmStage, WmMatch[]>();
+  for (const m of WM_SCHEDULE) {
+    if (m.stage === 'GROUP_STAGE') continue;
+    const arr = slotsByStage.get(m.stage) ?? [];
+    arr.push(m);
+    slotsByStage.set(m.stage, arr);
+  }
+  for (const arr of slotsByStage.values()) {
+    arr.sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+  }
+
+  // Runden­weise zuordnen — jede Runde verbraucht genau cap Indizes,
+  // damit die Ausrichtung auch bei noch unvollständigen Runden stimmt.
+  const resolved = new Map<string, { home: string; away: string }>();
+  let idx = 0;
+  for (const [stage, cap] of KO_ROUND_CAPS) {
+    const slots = slotsByStage.get(stage) ?? [];
+    for (let i = 0; i < cap; i++) {
+      const fixture = koFixtures[idx];
+      const slot = slots[i];
+      if (fixture && slot) resolved.set(slot.id, { home: fixture.home, away: fixture.away });
+      idx++;
+    }
+  }
+
+  if (resolved.size === 0) return WM_SCHEDULE;
+  return WM_SCHEDULE.map(m => {
+    const r = resolved.get(m.id);
+    return r ? { ...m, home: r.home, away: r.away } : m;
+  });
+}
 
 export function useMatches(): MatchesState {
   const [loading, setLoading]               = useState(true);
@@ -108,7 +184,8 @@ export function useMatches(): MatchesState {
   }, [effectiveLiveCount]);
 
   const matches = useMemo<MatchEntry[]>(() => {
-    const inputs = WM_SCHEDULE
+    const schedule = resolveSchedule(kickoffMap);
+    const inputs = schedule
       .filter(m => m.home !== 'TBD' && m.away !== 'TBD')
       .map(m => ({
         id: m.id,
@@ -127,7 +204,7 @@ export function useMatches(): MatchesState {
     // dann HARDCODED_CALIB mit echten Ergebnissen updaten.
     const rawCalc = recalcMatches(inputs, NATION_STATS, null);
     const samples: CalibSample[] = [];
-    for (const m of WM_SCHEDULE) {
+    for (const m of schedule) {
       if (m.home === 'TBD' || m.away === 'TBD') continue;
       const res = resultsMap[`${m.home}-${m.away}`] ?? resultsMap[`${m.away}-${m.home}`];
       if (!res?.finished) continue;
@@ -143,7 +220,7 @@ export function useMatches(): MatchesState {
     const calc = recalcMatches(inputs, NATION_STATS, liveCalib);
 
     // Learning log: record pre-match and post-match data
-    for (const m of WM_SCHEDULE) {
+    for (const m of schedule) {
       if (m.home === 'TBD' || m.away === 'TBD') continue;
       const matchId = `${m.home}-${m.away}`;
       const oddsEntry = oddsMap[matchId] ?? oddsMap[`${m.away}-${m.home}`];
@@ -178,7 +255,7 @@ export function useMatches(): MatchesState {
       }
     }
 
-    return WM_SCHEDULE
+    return schedule
       .filter(m => m.home !== 'TBD' && m.away !== 'TBD')
       .flatMap(m => {
         const result = calc[m.id];
