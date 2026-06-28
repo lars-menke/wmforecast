@@ -26,12 +26,28 @@ const BRACKET_ROUNDS: Array<{ stage: WmStage; label: string }> = [
   { stage: 'FINAL',          label: 'Finale' },
 ];
 
-// Planare Baum-Reihenfolge des Achtelfinals (Matches 89–96), abgeleitet aus der
-// offiziellen Topologie: VF97=(89,90), VF98=(93,94), VF99=(91,92), VF100=(95,96),
-// HF101=(97,98), HF102=(99,100). Durch diese Umsortierung richten sich die
-// Verbindungen R16 → VF → HF → Finale mit reiner Nachbar-Paarung korrekt aus.
-// (R32 → R16 bleibt chronologisch, bis die offizielle R32-Vorlage hinterlegt ist.)
+// Offizielle FIFA-2026-Bracket-Topologie (Match-Nummern):
+//   R16-89=(W74,W77)  R16-90=(W73,W75)  R16-91=(W76,W78)  R16-92=(W79,W80)
+//   R16-93=(W83,W84)  R16-94=(W81,W82)  R16-95=(W86,W88)  R16-96=(W85,W87)
+//   VF97=(89,90) VF98=(93,94) VF99=(91,92) VF100=(95,96)
+//   HF101=(97,98) HF102=(99,100)  Finale=(101,102)
+//
+// FIFA nummeriert die Spiele chronologisch, und resolveSchedule() setzt die
+// echten Begegnungen chronologisch in die Slots — daher entspricht Slot-Index k
+// dem offiziellen Match (73+k) bzw. (89+k). Durch Umsortierung der R32- und
+// R16-Spalten in die planare Baum-Reihenfolge (DFS über den Baum) richten sich
+// ALLE Verbindungen R32 → R16 → VF → HF → Finale mit reiner Nachbar-Paarung
+// korrekt aus — ohne Gruppentabellen.
+
+// R32 planar: [74,77,73,75, 83,84,81,82, 76,78,79,80, 86,88,85,87] als Indizes (Match-73)
+const R32_BRACKET_ORDER = [1, 4, 0, 2, 10, 11, 8, 9, 3, 5, 6, 7, 13, 15, 12, 14];
+// R16 planar: [89,90, 93,94, 91,92, 95,96] als Indizes (Match-89)
 const R16_BRACKET_ORDER = [0, 1, 4, 5, 2, 3, 6, 7];
+
+const BRACKET_ORDERS: Partial<Record<WmStage, number[]>> = {
+  ROUND_OF_32: R32_BRACKET_ORDER,
+  ROUND_OF_16: R16_BRACKET_ORDER,
+};
 
 function buildSlots(stage: WmStage, byId: Map<string, MatchEntry>): BracketSlot[] {
   const slots = WM_SCHEDULE
@@ -49,9 +65,10 @@ function buildSlots(stage: WmStage, byId: Map<string, MatchEntry>): BracketSlot[
       };
     });
 
-  // Achtelfinale in planare Baum-Reihenfolge bringen
-  if (stage === 'ROUND_OF_16' && slots.length === R16_BRACKET_ORDER.length) {
-    return R16_BRACKET_ORDER.map(i => slots[i]);
+  // In planare Baum-Reihenfolge bringen, damit benachbarte Paare korrekt verbinden
+  const order = BRACKET_ORDERS[stage];
+  if (order && slots.length === order.length) {
+    return order.map(i => slots[i]);
   }
   return slots;
 }
