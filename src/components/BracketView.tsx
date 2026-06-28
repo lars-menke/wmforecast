@@ -26,8 +26,15 @@ const BRACKET_ROUNDS: Array<{ stage: WmStage; label: string }> = [
   { stage: 'FINAL',          label: 'Finale' },
 ];
 
+// Planare Baum-Reihenfolge des Achtelfinals (Matches 89–96), abgeleitet aus der
+// offiziellen Topologie: VF97=(89,90), VF98=(93,94), VF99=(91,92), VF100=(95,96),
+// HF101=(97,98), HF102=(99,100). Durch diese Umsortierung richten sich die
+// Verbindungen R16 → VF → HF → Finale mit reiner Nachbar-Paarung korrekt aus.
+// (R32 → R16 bleibt chronologisch, bis die offizielle R32-Vorlage hinterlegt ist.)
+const R16_BRACKET_ORDER = [0, 1, 4, 5, 2, 3, 6, 7];
+
 function buildSlots(stage: WmStage, byId: Map<string, MatchEntry>): BracketSlot[] {
-  return WM_SCHEDULE
+  const slots = WM_SCHEDULE
     .filter(m => m.stage === stage)
     .sort((a, b) => a.kickoff.localeCompare(b.kickoff))
     .map(m => {
@@ -41,6 +48,12 @@ function buildSlots(stage: WmStage, byId: Map<string, MatchEntry>): BracketSlot[
         entry,
       };
     });
+
+  // Achtelfinale in planare Baum-Reihenfolge bringen
+  if (stage === 'ROUND_OF_16' && slots.length === R16_BRACKET_ORDER.length) {
+    return R16_BRACKET_ORDER.map(i => slots[i]);
+  }
+  return slots;
 }
 
 function BracketMatch({ slot, onClick }: { slot: BracketSlot; onClick: () => void }) {
