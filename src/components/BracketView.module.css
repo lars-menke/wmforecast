@@ -1,11 +1,14 @@
 .root {
+  --bracket-header-h: 34px;
+  --bracket-col-w: 144px;
+  --bracket-gap: 26px;
   flex: 1;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
 }
 
 .bracket {
@@ -13,7 +16,7 @@
   gap: 0;
   align-items: stretch;
   min-width: fit-content;
-  min-height: 980px; /* genug Höhe für 16 Slots der ersten K.o.-Runde */
+  min-height: 960px; /* genug Höhe für 16 Slots der ersten K.o.-Runde */
 }
 
 .round {
@@ -21,17 +24,30 @@
   flex-direction: column;
   align-items: stretch;
   flex-shrink: 0;
+  width: var(--bracket-col-w);
 }
 
+/* Sticky Pill-Header pro Runde */
 .roundLabel {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: var(--bracket-header-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
   font-size: var(--size-caption-1);
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   color: var(--text-secondary);
-  text-align: center;
-  height: 16px;
-  margin-bottom: var(--space-3);
+}
+
+.roundLabel span {
+  background: var(--bg-fill);
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-pill);
 }
 
 /* Slots gleichmäßig über die volle Höhe verteilen — richtet Spalten automatisch
@@ -49,44 +65,60 @@
   justify-content: center;
 }
 
-/* Connectors */
+/* ---------------------------------------------------------------------------
+   Verbinder — echte Turnierbaum-Klammer: senkrechte Linie verbindet die
+   Mittelpunkte zweier Quell-Boxen (bei 25% / 75%), waagerechte Linie führt
+   zur Ziel-Box (bei 50%).
+--------------------------------------------------------------------------- */
 .connectorCol {
   display: flex;
   flex-direction: column;
-  width: 20px;
+  width: var(--bracket-gap);
   flex-shrink: 0;
   align-self: stretch;
-  padding-top: calc(16px + var(--space-3)); /* gleiche Höhe wie roundLabel + margin */
+  padding-top: calc(var(--bracket-header-h) + var(--space-2));
 }
 
 .connectorPair {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   flex: 1;
 }
 
-.connectorTop {
-  flex: 1;
-  border-top: var(--hairline) solid var(--separator);
-  border-right: var(--hairline) solid var(--separator);
+/* senkrechte Klammer */
+.connectorPair::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 25%;
+  width: 2px;
+  background: var(--separator-opaque);
+  border-radius: 1px;
 }
 
-.connectorBottom {
-  flex: 1;
-  border-bottom: var(--hairline) solid var(--separator);
-  border-right: var(--hairline) solid var(--separator);
+/* waagerechte Linie zur nächsten Runde */
+.connectorPair::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: -1px;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--separator-opaque);
+  border-radius: 1px;
 }
 
-.connectorMid {
-  flex: 1;
-}
-
-/* Match box */
+/* ---------------------------------------------------------------------------
+   Match-Box
+--------------------------------------------------------------------------- */
 .matchBox {
+  position: relative;
   background: var(--bg-card);
-  border-radius: var(--radius-card);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-control);
   overflow: hidden;
-  width: 130px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   text-align: left;
@@ -99,29 +131,39 @@
   cursor: default;
 }
 
+.matchBox:not(:disabled):active {
+  transform: scale(0.97);
+}
+
 /* Platzhalter-Slot: noch nicht qualifizierte Mannschaften */
 .matchBoxTbd {
-  background: var(--bg-fill);
-  opacity: 0.6;
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--separator);
 }
 
 .matchBoxTbd .code {
   color: var(--text-tertiary);
 }
 
-.matchBox:not(:disabled):active {
-  transform: scale(0.97);
+.matchBoxTbd .flag {
+  opacity: 0.4;
 }
 
 .team {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 7px var(--space-3);
+  padding: 8px var(--space-3);
+  min-height: 34px;
 }
 
 .team + .team {
-  border-top: var(--hairline) solid var(--separator);
+  border-top: 1px solid var(--separator);
+}
+
+.teamWon {
+  background: rgba(52, 199, 89, 0.10);
 }
 
 .teamWon .code {
@@ -129,40 +171,49 @@
   font-weight: var(--weight-semibold);
 }
 
-.teamWon {
-  background: rgba(52, 199, 89, 0.06);
+.teamWon .score {
+  color: var(--system-green);
 }
 
 .flag {
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1;
   flex-shrink: 0;
 }
 
 .code {
-  font-size: var(--size-footnote);
-  color: var(--text-secondary);
+  font-size: var(--size-subhead);
+  color: var(--text-primary);
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .score {
-  font-size: var(--size-footnote);
+  font-size: var(--size-subhead);
   font-weight: var(--weight-semibold);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
+  min-width: 12px;
+  text-align: right;
 }
 
-/* 3rd place section */
+/* ---------------------------------------------------------------------------
+   Spiel um Platz 3
+--------------------------------------------------------------------------- */
 .thirdSection {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  max-width: var(--bracket-col-w);
 }
 
 .thirdLabel {
   font-size: var(--size-footnote);
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   color: var(--text-secondary);
   margin-left: var(--space-1);
 }

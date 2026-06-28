@@ -95,12 +95,9 @@ function BracketMatch({ slot, onClick }: { slot: BracketSlot; onClick: () => voi
 
 function ConnectorColumn({ count }: { count: number }) {
   return (
-    <div className={styles.connectorCol}>
+    <div className={styles.connectorCol} aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className={styles.connectorPair}>
-          <div className={styles.connectorTop} />
-          <div className={styles.connectorBottom} />
-        </div>
+        <div key={i} className={styles.connectorPair} />
       ))}
     </div>
   );
@@ -122,7 +119,7 @@ export default function BracketView({ matches, onMatchClick }: Props) {
         {rounds.map((round, ri) => (
           <React.Fragment key={round.stage}>
             <div className={styles.round}>
-              <div className={styles.roundLabel}>{round.label}</div>
+              <div className={styles.roundLabel}><span>{round.label}</span></div>
               <div className={styles.roundBody}>
                 {round.slots.map(slot => (
                   <div key={slot.id} className={styles.slotWrap}>
