@@ -23,6 +23,7 @@ export type CalcResult = {
   lambdaDiff: number;
   marketApplied: boolean;
   calibrated: boolean;
+  knockout: boolean; // K.o.-Spiel: Tipp ist immer entscheidend (inkl. Elfmeterschießen)
 };
 
 // ---------------------------------------------------------------------------
@@ -203,6 +204,7 @@ export type MatchInput = {
   home: string;
   away: string;
   p: MarketProbs | null;
+  knockout?: boolean;
 };
 
 export function calcMatch(
@@ -211,6 +213,7 @@ export function calcMatch(
   allStats: Record<string, TeamStats>,
   market: MarketProbs | null = null,
   calib: CalibParams | null = null,
+  knockout = false,
 ): CalcResult | null {
   const hStats = allStats[home];
   const aStats = allStats[away];
@@ -253,8 +256,16 @@ export function calcMatch(
   // nicht die Ergebnisverteilung. naturalTipp wählt aus srt das zum
   // kalibrierten Ausgang (wo) passende, wahrscheinlichste Ergebnis.
   const srt = topResults(mat);
-  const fp = Math.max(pH, pD, pA);
-  const wo: Outcome = pH >= pD && pH >= pA ? 'H' : pD >= pA ? 'D' : 'A';
+  let fp = Math.max(pH, pD, pA);
+  let wo: Outcome = pH >= pD && pH >= pA ? 'H' : pD >= pA ? 'D' : 'A';
+
+  // K.o.-Spiele enden spätestens im Elfmeterschießen — kein Remis-Tipp.
+  // Weiterkommen = Sieg in 90 Min + halbe Remis-Wahrscheinlichkeit (Shootout 50/50).
+  if (knockout) {
+    wo = pH >= pA ? 'H' : 'A';
+    fp = Math.max(pH, pA) + pD / 2;
+  }
+
   const naturalTipp = deriveNaturalTipp(srt, wo);
   const lambdaDiff = lH - lA;
 
@@ -270,6 +281,7 @@ export function calcMatch(
     lambdaDiff,
     marketApplied,
     calibrated,
+    knockout,
   };
 }
 
@@ -294,7 +306,7 @@ export function recalcMatches(
 ): Record<string, CalcResult> {
   const out: Record<string, CalcResult> = {};
   for (const m of inputs) {
-    const r = calcMatch(m.home, m.away, allStats, m.p, calib);
+    const r = calcMatch(m.home, m.away, allStats, m.p, calib, m.knockout ?? false);
     if (r) out[m.id] = r;
   }
   return out;

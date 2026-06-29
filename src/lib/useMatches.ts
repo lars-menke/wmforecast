@@ -198,6 +198,7 @@ export function useMatches(): MatchesState {
           if (rev) return { h: rev.a, d: rev.d, a: rev.h };
           return null;
         })(),
+        knockout: m.stage !== 'GROUP_STAGE',
       }));
 
     // Live-Kalibrierung: rohe Probs für gespielte Spiele sammeln,
