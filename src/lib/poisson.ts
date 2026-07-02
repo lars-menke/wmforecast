@@ -13,6 +13,8 @@ export type Outcome = 'H' | 'D' | 'A';
 
 export type CalcResult = {
   pH: number; pD: number; pA: number;
+  pH_model: number; pD_model: number; pA_model: number; // reine Modellsicht (ohne Markt/Kalibrierung)
+  market: MarketProbs | null;                            // rohe Marktwahrscheinlichkeiten (0-100) oder null
   naturalTipp: string | null;
   wo: Outcome;
   srt: Array<[string, number]>;
@@ -228,6 +230,14 @@ export function calcMatch(
   let { lH, lA } = effectiveLambdas(hStats, aStats);
   const lH_model = lH;
   const lA_model = lA;
+
+  // Reine Modellsicht (ohne Markt, ohne Kalibrierung) für die Transparenzanzeige
+  const modelRaw = rawProbs(buildMatrix(lH_model, lA_model));
+  const mSum = modelRaw.pH + modelRaw.pD + modelRaw.pA;
+  const pH_model = modelRaw.pH / mSum;
+  const pD_model = modelRaw.pD / mSum;
+  const pA_model = modelRaw.pA / mSum;
+
   let marketApplied = false;
   let mat: number[][];
 
@@ -277,6 +287,8 @@ export function calcMatch(
 
   return {
     pH, pD, pA,
+    pH_model, pD_model, pA_model,
+    market,
     naturalTipp,
     wo,
     srt,

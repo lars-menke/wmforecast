@@ -142,7 +142,9 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
   const { home, away, result, actual, finished, live, kickoff, venue } = match;
   const homeNation = NATIONS[home];
   const awayNation = NATIONS[away];
-  const { pH, pD, pA, lH, lA, naturalTipp, srt, lambdaDiff, marketApplied, calibrated, drawBlocked } = result;
+  const { pH, pD, pA, pH_model, pD_model, pA_model, market, lH, lA, naturalTipp, srt, lambdaDiff, marketApplied, calibrated, drawBlocked } = result;
+  const sh = homeNation?.shortName ?? home;
+  const sa = awayNation?.shortName ?? away;
   const top5 = srt.slice(0, 5);
   const timeline = buildTimeline(detail?.goals ?? [], detail?.cards ?? []);
   const stats    = detail?.stats ?? [];
@@ -318,7 +320,7 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
           <div className={styles.probRow}>
             <div className={styles.probCell}>
               <span className={styles.probVal} data-numeric>{pct(pH)}</span>
-              <span className={styles.probLabel}>Sieg {homeNation?.shortName ?? home}</span>
+              <span className={styles.probLabel}>Sieg {sh}</span>
             </div>
             <div className={styles.probCell}>
               <span className={styles.probVal} data-numeric>{pct(pD)}</span>
@@ -326,9 +328,39 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
             </div>
             <div className={styles.probCell}>
               <span className={styles.probVal} data-numeric>{pct(pA)}</span>
-              <span className={styles.probLabel}>Sieg {awayNation?.shortName ?? away}</span>
+              <span className={styles.probLabel}>Sieg {sa}</span>
             </div>
           </div>
+
+          {/* Quellenvergleich: Modell vs. Markt (nur wenn Marktquoten vorliegen) */}
+          {market && (
+            <div className={styles.compare}>
+              <div className={styles.compareHead}>
+                <span className={styles.compareSrc} />
+                <span className={styles.compareCol}>{sh}</span>
+                <span className={styles.compareCol}>Remis</span>
+                <span className={styles.compareCol}>{sa}</span>
+              </div>
+              <div className={styles.compareRow}>
+                <span className={styles.compareSrc}>Modell</span>
+                <span className={`${styles.compareCol}${pH_model >= pA_model ? ` ${styles.compareFav}` : ''}`} data-numeric>{pct(pH_model)}</span>
+                <span className={styles.compareCol} data-numeric>{pct(pD_model)}</span>
+                <span className={`${styles.compareCol}${pA_model > pH_model ? ` ${styles.compareFav}` : ''}`} data-numeric>{pct(pA_model)}</span>
+              </div>
+              <div className={styles.compareRow}>
+                <span className={styles.compareSrc}>Markt</span>
+                <span className={`${styles.compareCol}${market.h >= market.a ? ` ${styles.compareFav}` : ''}`} data-numeric>{pct(market.h / 100)}</span>
+                <span className={styles.compareCol} data-numeric>{pct(market.d / 100)}</span>
+                <span className={`${styles.compareCol}${market.a > market.h ? ` ${styles.compareFav}` : ''}`} data-numeric>{pct(market.a / 100)}</span>
+              </div>
+              {(pH_model >= pA_model) !== (market.h >= market.a) && (
+                <p className={styles.compareNote}>
+                  Modell und Markt favorisieren unterschiedliche Sieger. Der Tipp folgt dem
+                  50/50-Mittel beider Quellen.
+                </p>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Modell-Parameter */}
