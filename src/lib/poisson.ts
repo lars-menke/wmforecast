@@ -34,6 +34,12 @@ const DC_RHO      = -0.13;
 const M           = 7;    // max Tore pro Team in der Matrix
 const LAMBDA_MIN  = 0.3;
 const LAMBDA_MAX  = 4.5;
+
+// Markt-Gewichtung beim Lambda-Blend (0 = nur Modell, 1 = nur Markt).
+// Empirisch validiert am 02.07.2026 auf 34 gespielten Gruppenspielen
+// (Lernprotokoll): Log-Loss-Minimum bei alpha ~= 0.5–0.52. Der Blend schlägt
+// dabei sowohl das reine Modell (LL 0.7891) als auch den reinen Markt
+// (LL 0.7889) — Optimum LL 0.7813 bei 0.5. Details: docs/calibration-analysis.md
 const MARKET_BLEND = 0.5;
 
 // ---------------------------------------------------------------------------
