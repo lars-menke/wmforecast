@@ -11,6 +11,8 @@ const WM_DATE_RANGE = '20260611-20260719';
 type EspnCompetitor = {
   homeAway: 'home' | 'away';
   score: string;
+  winner?: boolean;          // ESPN markiert den Weiterkommenden (auch nach Elfmeterschießen)
+  shootoutScore?: number;
   team: { abbreviation: string; displayName: string; id: string };
 };
 
@@ -72,6 +74,7 @@ export type MatchResult = {
   goals?: GoalEvent[];
   espnId?: string;
   venue?: string;
+  advancer?: 'H' | 'A';      // K.o.: welches Team weiterkommt (inkl. Elfmeterschießen)
 };
 
 function parseGoalsFromDetails(
@@ -120,6 +123,16 @@ function eventToResult(event: EspnEvent): MatchResult | null {
   const g2 = parseInt(away.score, 10) || 0;
   const goals = parseGoalsFromDetails(comp.details, home.team.id);
 
+  // Weiterkommenden bestimmen (K.o.): ESPN-winner-Flag hat Vorrang (deckt
+  // Elfmeterschießen ab), sonst höheres Ergebnis nach regulärer/Verlängerung.
+  let advancer: 'H' | 'A' | undefined;
+  if (isFinished) {
+    if (home.winner) advancer = 'H';
+    else if (away.winner) advancer = 'A';
+    else if (g1 > g2) advancer = 'H';
+    else if (g2 > g1) advancer = 'A';
+  }
+
   return {
     homeCode,
     awayCode,
@@ -128,6 +141,7 @@ function eventToResult(event: EspnEvent): MatchResult | null {
     finished: isFinished,
     live: isLive,
     ...(isLive ? { g1Live: g1, g2Live: g2 } : {}),
+    ...(advancer ? { advancer } : {}),
     goals,
     espnId: event.id,
     venue: formatVenue(comp),
