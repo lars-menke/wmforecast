@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../lib/useTheme';
+import { exportLogText, logStats } from '../lib/learnLog';
 import mascotsImg from '../assets/mascots.png';
 import styles from './SettingsScreen.module.css';
 
@@ -131,10 +132,34 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
   const isDark = theme === 'dark';
   const firstRender = useRef(true);
   const { espn, odds, run } = useApiTest();
+  const [exportMsg, setExportMsg] = useState('');
 
   useEffect(() => {
     firstRender.current = false;
   }, []);
+
+  async function exportLearnLog() {
+    const text = exportLogText();
+    const { total, withOutcome } = logStats();
+    if (total === 0) {
+      setExportMsg('Noch keine Einträge im Lernprotokoll');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setExportMsg(`${total} Einträge (${withOutcome} mit Ergebnis) kopiert`);
+    } catch {
+      // Fallback: Download als Datei
+      const blob = new Blob([text], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'wm_learnlog.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportMsg(`${total} Einträge als Datei exportiert`);
+    }
+  }
 
   return (
     <div className={styles.root}>
@@ -233,6 +258,25 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
               {espn.state === 'loading' || odds.state === 'loading' ? 'Teste...' : 'APIs testen'}
             </button>
           </div>
+        </section>
+
+        {/* Kalibrierung / Lernprotokoll */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionLabel}>Kalibrierung</h2>
+          <div className={`${styles.cell} ${styles.cellBorder}`}>
+            <span className={styles.cellLabel}>Lernprotokoll</span>
+            <span className={styles.cellValue}>{logStats().withOutcome} Spiele mit Ergebnis</span>
+          </div>
+          <div className={styles.cell}>
+            <button className={styles.testBtn} onClick={exportLearnLog} type="button">
+              Lernprotokoll exportieren
+            </button>
+          </div>
+          {exportMsg && (
+            <div className={styles.cell}>
+              <span className={styles.cellValue} style={{ color: 'var(--system-green)' }}>{exportMsg}</span>
+            </div>
+          )}
         </section>
 
         <img src={mascotsImg} alt="" className={styles.mascots} aria-hidden="true" />

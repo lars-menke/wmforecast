@@ -52,3 +52,17 @@ export function logPostMatch(matchId: string, actual: 'H' | 'D' | 'A'): void {
 export function readLog(): LearnEntry[] {
   return loadLog();
 }
+
+// Pretty-printed JSON for manual export/analysis.
+export function exportLogText(): string {
+  return JSON.stringify(loadLog(), null, 2);
+}
+
+// Number of entries with a recorded outcome (usable for calibration analysis).
+export function logStats(): { total: number; withOutcome: number } {
+  const entries = loadLog();
+  return {
+    total: entries.length,
+    withOutcome: entries.filter(e => e.actual !== null).length,
+  };
+}
