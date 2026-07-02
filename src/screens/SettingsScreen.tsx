@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../lib/useTheme';
 import { exportLogText, logStats } from '../lib/learnLog';
+import { findWorldCupKey } from '../lib/fetchOdds';
 import mascotsImg from '../assets/mascots.png';
 import styles from './SettingsScreen.module.css';
 
@@ -38,7 +39,7 @@ function useApiTest() {
         return;
       }
       const sports = await sportsR.json() as Array<{ key: string; title: string; active: boolean }>;
-      const wc = sports.find(s => s.key.startsWith('soccer') && (s.key.includes('world') || s.key.includes('cup') || s.key.includes('fifa')));
+      const wc = findWorldCupKey(sports);
       if (!wc) {
         const keys = sports.filter(s => s.key.startsWith('soccer')).map(s => s.key).join(', ');
         setOdds({ state: 'error', msg: `WM nicht gefunden. Soccer-Keys: ${keys || 'keine'}` });

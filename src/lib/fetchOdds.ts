@@ -1,7 +1,7 @@
 import type { MarketProbs } from './poisson';
 
 const ODDS_KEY  = import.meta.env.VITE_ODDS_API_KEY ?? '';
-const CACHE_KEY = 'wm_odds_v1';
+const CACHE_KEY = 'wm_odds_v2'; // v2: falscher Sport-Key (EFL Cup) behoben, alten Cache verwerfen
 const CACHE_TTL = 20 * 60 * 1000; // 20 Minuten
 
 const ODDS_TEAM_MAP: Record<string, string> = {
@@ -63,6 +63,25 @@ type OddsGame = {
   bookmakers: Bookmaker[];
 };
 
+// Findet gezielt den FIFA-WM-Turnier-Key. Wichtig: NICHT nach "cup" allein
+// suchen — sonst matcht soccer_england_efl_cup / soccer_fa_cup usw. zuerst.
+// Reihenfolge: exakter WM-Key > WM-Turnier-Key (kein Quali/Winner) > Fallback.
+export function findWorldCupKey<T extends { key: string }>(sports: T[]): T | undefined {
+  const exact = sports.find(s => s.key === 'soccer_fifa_world_cup');
+  if (exact) return exact;
+  const tournament = sports.find(s =>
+    s.key.startsWith('soccer_fifa_world_cup')
+    && !s.key.includes('qualif')
+    && !s.key.includes('winner'),
+  );
+  if (tournament) return tournament;
+  // Letzter Ausweg: muss "world" UND "cup" enthalten (schließt EFL/FA-Cup aus)
+  return sports.find(s =>
+    s.key.startsWith('soccer') && s.key.includes('world') && s.key.includes('cup')
+    && !s.key.includes('qualif') && !s.key.includes('women'),
+  );
+}
+
 function decimalToImplied(dec: number): number {
   return 1 / dec;
 }
@@ -115,7 +134,7 @@ export async function fetchOdds(liveOrFinishedKeys?: Set<string>): Promise<Recor
     const sportsR = await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${ODDS_KEY}`);
     if (!sportsR.ok) return existingCache;
     const sports = await sportsR.json() as Array<{ key: string; active: boolean }>;
-    const wc = sports.find(s => s.key.startsWith('soccer') && (s.key.includes('world') || s.key.includes('cup') || s.key.includes('fifa')));
+    const wc = findWorldCupKey(sports);
     if (!wc) return existingCache;
 
     const url = `https://api.the-odds-api.com/v4/sports/${wc.key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
