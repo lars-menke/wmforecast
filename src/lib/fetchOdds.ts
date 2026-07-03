@@ -2,6 +2,30 @@ import type { MarketProbs } from './poisson';
 
 const ODDS_KEY  = import.meta.env.VITE_ODDS_API_KEY ?? '';
 const CACHE_KEY = 'wm_odds_v2'; // v2: falscher Sport-Key (EFL Cup) behoben, alten Cache verwerfen
+const QUOTA_KEY = 'wm_odds_quota_v1';
+
+export type OddsQuota = { remaining: number; used: number; ts: number };
+
+// Letzter bekannter Request-Kontostand der Odds API (aus Response-Headern).
+export function getOddsQuota(): OddsQuota | null {
+  try {
+    const raw = localStorage.getItem(QUOTA_KEY);
+    return raw ? (JSON.parse(raw) as OddsQuota) : null;
+  } catch { return null; }
+}
+
+function storeQuota(headers: Headers): void {
+  const remaining = parseInt(headers.get('x-requests-remaining') ?? '', 10);
+  const used = parseInt(headers.get('x-requests-used') ?? '', 10);
+  if (Number.isNaN(remaining)) return;
+  try {
+    localStorage.setItem(QUOTA_KEY, JSON.stringify({
+      remaining,
+      used: Number.isNaN(used) ? 0 : used,
+      ts: Date.now(),
+    } satisfies OddsQuota));
+  } catch { /* ignore */ }
+}
 const CACHE_TTL = 20 * 60 * 1000; // 20 Minuten
 
 const ODDS_TEAM_MAP: Record<string, string> = {
@@ -139,6 +163,7 @@ export async function fetchOdds(liveOrFinishedKeys?: Set<string>): Promise<Recor
 
     const url = `https://api.the-odds-api.com/v4/sports/${wc.key}/odds/?apiKey=${ODDS_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
     const r = await fetch(url);
+    storeQuota(r.headers);
     if (!r.ok) return existingCache;
 
     const games = (await r.json()) as OddsGame[];

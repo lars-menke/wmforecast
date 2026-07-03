@@ -35,7 +35,48 @@ Trefferquote). Kleinere Werte sind besser; das Log-Loss-Minimum bestimmt α.
 
 ---
 
+## Dissens-Analyse (Stand Snapshot 1)
+
+Spiele, bei denen Modell und Markt unterschiedliche Sieger favorisieren:
+
+| | Anzahl | davon Remis |
+|---|---|---|
+| Dissens-Spiele | 3 | 3 (**100 %**) |
+| Einigkeit-Spiele | 31 | 5 (16 %) |
+
+**Hypothese:** Modell-Markt-Dissens ist ein Remis-Indikator. Die Stichprobe ist
+klein (n=3), das Signal aber auffällig stark. Nach der K.o.-Runde mit vollem
+Log erneut prüfen — Achtung: In der K.o.-Runde gibt es kein Remis als Endstand,
+dort wäre die analoge Frage, ob Dissens-Spiele überproportional in die
+Verlängerung gehen.
+
+---
+
+## Tooling
+
+- **Analyse-Skript:** `node scripts/analyze-learnlog.mjs <export.json>` fährt
+  Alpha-Sweep und Dissens-Analyse automatisch (liest v1- und v2-Format).
+- **Backup:** `docs/backups/learnlog-2026-07-02-gruppenphase.json` sichert den
+  Gruppenphasen-Export (34 Spiele) im Repo — localStorage ist gerätegebunden.
+
+---
+
 ## Snapshot 2 — (nach K.o.-Runde, ausstehend)
 
-_Noch offen. Gleiche Methodik anwenden und mit Snapshot 1 vergleichen:
-Verschiebt sich das Optimum? Bleibt der Blend besser als beide Extreme?_
+_Noch offen. Lernprotokoll exportieren, dann:_
+`node scripts/analyze-learnlog.mjs <export.json>` _und mit Snapshot 1
+vergleichen: Verschiebt sich das Optimum? Bleibt der Blend besser als beide
+Extreme? Bestätigt sich das Dissens-Signal?_
+
+---
+
+## Offen: Modell-Vereinheitlichung (nach dem Turnier)
+
+Die App führt zwei Modellwelten: Spielprognose (Poisson + Dixon-Coles +
+Markt-Blend + Platt) und Monte-Carlo-Simulation (60 % Poisson + 40 % Elo).
+Seit v2.14.0 nutzt die Simulation für **real angesetzte** Paarungen (Gruppe
+und K.o.) die markt-geblendeten Lambdas der Spielprognose; nur hypothetische
+Zukunftspaarungen laufen noch übers Elo-Ensemble. Vollständige
+Vereinheitlichung (ein Lambda-Modell für alles, Elo ggf. als Blend-Komponente
+statt Parallelmodell) ist für die Zeit nach dem Turnier vorgemerkt —
+mitten im Turnier wäre der Umbau der Titelchancen-Prognose zu riskant.

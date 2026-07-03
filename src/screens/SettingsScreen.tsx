@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../lib/useTheme';
 import { exportLogText, logStats } from '../lib/learnLog';
-import { findWorldCupKey } from '../lib/fetchOdds';
+import { findWorldCupKey, getOddsQuota } from '../lib/fetchOdds';
 import mascotsImg from '../assets/mascots.png';
 import styles from './SettingsScreen.module.css';
 
@@ -249,6 +249,19 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
               {odds.state === 'idle' ? '--' : odds.state === 'loading' ? '...' : odds.msg}
             </span>
           </div>
+          {(() => {
+            const quota = getOddsQuota();
+            if (!quota) return null;
+            const low = quota.remaining < 100;
+            return (
+              <div className={`${styles.cell} ${styles.cellBorder}`}>
+                <span className={styles.cellLabel}>Odds-Kontingent</span>
+                <span className={styles.cellValue} style={{ color: low ? 'var(--system-orange)' : 'var(--text-secondary)' }}>
+                  {quota.remaining} Requests übrig{low ? ' · knapp!' : ''}
+                </span>
+              </div>
+            );
+          })()}
           <div className={styles.cell}>
             <button
               className={styles.testBtn}

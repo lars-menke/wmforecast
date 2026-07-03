@@ -103,10 +103,17 @@ function simKnockout(
   perturbAtt: Record<string, number>,
   perturbDef: Record<string, number>,
   rng: () => number,
+  lambdaMap: Record<string, { lH: number; lA: number }> = {},
 ): string {
   if (home === 'BYE') return away;
   if (away === 'BYE') return home;
-  const { lH, lA } = ensembleLambdas(home, away, perturbAtt, perturbDef);
+  // Vereinheitlichung mit der Spielprognose: Für real angesetzte Paarungen
+  // die markt-geblendeten Lambdas nutzen; nur hypothetische Paarungen
+  // (mögliche zukünftige Duelle in der Simulation) laufen übers Ensemble.
+  const known = lambdaMap[`${home}-${away}`];
+  const knownRev = lambdaMap[`${away}-${home}`];
+  const { lH, lA } = known
+    ?? (knownRev ? { lH: knownRev.lA, lA: knownRev.lH } : ensembleLambdas(home, away, perturbAtt, perturbDef));
   const g1 = poissonRandom(lH, rng);
   const g2 = poissonRandom(lA, rng);
   if (g1 > g2) return home;
@@ -197,7 +204,7 @@ function runTournamentBatch(
         const a = currentRound[i];
         const b = currentRound[i + 1] ?? currentRound[i];
         if (!a || !b) continue;
-        const winner = simKnockout(a, b, perturbAtt, perturbDef, rng);
+        const winner = simKnockout(a, b, perturbAtt, perturbDef, rng, lambdaMap);
         next.push(winner);
         if (currentRound.length === 4) semiFinalLosers.push(winner === a ? b : a);
       }
@@ -206,7 +213,7 @@ function runTournamentBatch(
 
     const [f1, f2] = currentRound;
     if (f1 && f2) {
-      const champion = simKnockout(f1, f2, perturbAtt, perturbDef, rng);
+      const champion = simKnockout(f1, f2, perturbAtt, perturbDef, rng, lambdaMap);
       title[champion] = (title[champion] ?? 0) + 1;
       top4[f1] = (top4[f1] ?? 0) + 1;
       top4[f2] = (top4[f2] ?? 0) + 1;
