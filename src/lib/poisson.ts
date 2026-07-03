@@ -98,6 +98,14 @@ function rawProbs(mat: number[][]): { pH: number; pD: number; pA: number } {
   return { pH, pD, pA };
 }
 
+// Rechnet gespeicherte Lambdas (z.B. aus dem Lernprotokoll) zu normierten
+// 1X2-Wahrscheinlichkeiten zurück — für die Verlaufsansicht.
+export function probsFromLambda(lH: number, lA: number): { pH: number; pD: number; pA: number } {
+  const { pH, pD, pA } = rawProbs(buildMatrix(lH, lA));
+  const sum = pH + pD + pA;
+  return { pH: pH / sum, pD: pD / sum, pA: pA / sum };
+}
+
 // ---------------------------------------------------------------------------
 // Effektive Lambdas (neutral ground: Durchschnitt aus Heim/Auswaerts)
 // ---------------------------------------------------------------------------

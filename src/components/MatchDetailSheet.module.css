@@ -222,6 +222,61 @@
 }
 
 /* Detail-Rows mit Hint */
+/* Verlauf: Modell-/Markt-Snapshots über die Zeit */
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.historyHead {
+  display: grid;
+  grid-template-columns: 88px 1fr 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.historyHead .historyCol {
+  font-size: var(--size-caption-2);
+  color: var(--text-tertiary);
+  font-weight: var(--weight-medium);
+  text-align: center;
+}
+
+.historyRow {
+  display: grid;
+  grid-template-columns: 88px 1fr 1fr 1fr;
+  grid-template-areas:
+    "ts   home draw away"
+    "meta meta meta meta";
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-2) 0;
+  border-top: var(--hairline) solid var(--separator);
+}
+
+.historyTs {
+  grid-area: ts;
+  font-size: var(--size-caption-1);
+  color: var(--text-secondary);
+  align-self: center;
+}
+
+.historyRow .historyCol {
+  text-align: center;
+  font-size: var(--size-subhead);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.historyRow .historyCol:nth-child(2) { grid-area: home; }
+.historyRow .historyCol:nth-child(3) { grid-area: draw; }
+.historyRow .historyCol:nth-child(4) { grid-area: away; }
+
+.historyMeta {
+  grid-area: meta;
+  font-size: var(--size-caption-1);
+  color: var(--text-tertiary);
+}
+
 .detailGrid {
   display: flex;
   flex-direction: column;

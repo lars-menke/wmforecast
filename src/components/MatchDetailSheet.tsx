@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MatchEntry } from '../lib/useMatches';
 import { fetchMatchDetail, type MatchDetail, type GoalEvent, type CardEvent } from '../lib/fetchResults';
 import { fetchWeather, weatherDesc, type WeatherData } from '../lib/fetchWeather';
 import { NATIONS } from '../lib/nations';
+import { getMatchHistory, type LearnSnapshot } from '../lib/learnLog';
+import { probsFromLambda } from '../lib/poisson';
 import TeamLogo from './TeamLogo';
 import ProbabilityBar from './ProbabilityBar';
 import styles from './MatchDetailSheet.module.css';
@@ -80,6 +82,45 @@ function DetailRow({ label, value, hint }: DetailRowProps) {
   );
 }
 
+function formatHistoryTs(ts: number): string {
+  const d = new Date(ts);
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+    + ' · ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+
+function movementArrow(curr: number, prev: number | undefined): string {
+  if (prev === undefined) return '';
+  const diff = curr - prev;
+  if (Math.abs(diff) < 0.01) return '';
+  return diff > 0 ? ' ↑' : ' ↓';
+}
+
+type HistoryRowProps = { snap: LearnSnapshot; prev: LearnSnapshot | undefined };
+function HistoryRow({ snap, prev }: HistoryRowProps) {
+  const blend = probsFromLambda(snap.lH_blend, snap.lA_blend);
+  const prevBlend = prev ? probsFromLambda(prev.lH_blend, prev.lA_blend) : null;
+  const fav = blend.pH >= blend.pA ? 'H' : 'A';
+
+  return (
+    <div className={styles.historyRow}>
+      <span className={styles.historyTs}>{formatHistoryTs(snap.ts)}</span>
+      <span className={`${styles.historyCol}${fav === 'H' ? ` ${styles.compareFav}` : ''}`} data-numeric>
+        {pct(blend.pH)}{prevBlend && movementArrow(blend.pH, prevBlend.pH)}
+      </span>
+      <span className={styles.historyCol} data-numeric>
+        {pct(blend.pD)}{prevBlend && movementArrow(blend.pD, prevBlend.pD)}
+      </span>
+      <span className={`${styles.historyCol}${fav === 'A' ? ` ${styles.compareFav}` : ''}`} data-numeric>
+        {pct(blend.pA)}{prevBlend && movementArrow(blend.pA, prevBlend.pA)}
+      </span>
+      <span className={styles.historyMeta}>
+        Markt: {pct(snap.oddsH)} · {pct(snap.oddsD)} · {pct(snap.oddsA)}
+        {(snap.oddsH >= snap.oddsA) !== (fav === 'H') ? ' (Dissens)' : ''}
+      </span>
+    </div>
+  );
+}
+
 export default function MatchDetailSheet({ match, onClose }: Props) {
   const [visible, setVisible]           = useState(false);
   const [detail, setDetail]             = useState<MatchDetail | null>(null);
@@ -136,6 +177,9 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
   function onTouchEnd(e: React.TouchEvent) {
     if (e.changedTouches[0].clientY - touchStartY.current > 60) handleClose();
   }
+
+  const matchId = match ? `${match.home}-${match.away}` : '';
+  const history = useMemo(() => (matchId ? getMatchHistory(matchId) : []), [matchId, visible]);
 
   if (!match) return null;
 
@@ -362,6 +406,28 @@ export default function MatchDetailSheet({ match, onClose }: Props) {
             </div>
           )}
         </section>
+
+        {/* Verlauf: wie sich Modell/Markt/Blend seit der ersten Quote entwickelt haben */}
+        {history.length > 1 && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>Verlauf</h3>
+            <p className={styles.sectionHint}>
+              Jede Änderung der Marktquoten seit der ersten Erfassung. Zeigt, wann und wodurch
+              sich die Prognose verschoben hat.
+            </p>
+            <div className={styles.history}>
+              <div className={styles.historyHead}>
+                <span />
+                <span className={styles.historyCol}>{sh}</span>
+                <span className={styles.historyCol}>Remis</span>
+                <span className={styles.historyCol}>{sa}</span>
+              </div>
+              {history.map((snap, i) => (
+                <HistoryRow key={snap.ts} snap={snap} prev={history[i - 1]} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Modell-Parameter */}
         <section className={styles.section}>
