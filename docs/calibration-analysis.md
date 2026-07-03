@@ -70,13 +70,32 @@ Extreme? Bestätigt sich das Dissens-Signal?_
 
 ---
 
-## Offen: Modell-Vereinheitlichung (nach dem Turnier)
+## Elo-Validierung & Modell-Vereinheitlichung (v3.0.0)
 
-Die App führt zwei Modellwelten: Spielprognose (Poisson + Dixon-Coles +
-Markt-Blend + Platt) und Monte-Carlo-Simulation (60 % Poisson + 40 % Elo).
-Seit v2.14.0 nutzt die Simulation für **real angesetzte** Paarungen (Gruppe
-und K.o.) die markt-geblendeten Lambdas der Spielprognose; nur hypothetische
-Zukunftspaarungen laufen noch übers Elo-Ensemble. Vollständige
-Vereinheitlichung (ein Lambda-Modell für alles, Elo ggf. als Blend-Komponente
-statt Parallelmodell) ist für die Zeit nach dem Turnier vorgemerkt —
-mitten im Turnier wäre der Umbau der Titelchancen-Prognose zu riskant.
+Vor der Vereinheitlichung wurde am Gruppenphasen-Lernlog (34 Spiele) geprüft,
+ob eine Elo-Beimischung in die Basis-Lambdas die Prognose verbessert
+(λ_basis = (1−w)·Poisson + w·Elo, Elo-λ via 1.35·exp(±0.0032·Δ)):
+
+| Elo-Gewicht w | Log-Loss ohne Markt | Log-Loss mit Markt (α=0.5) |
+|---|---|---|
+| **0.0 (reines Poisson)** | 0.7891 | **0.7813** |
+| 0.2 | 0.7876 | 0.7818 |
+| 0.4 (= v2-Simulation) | 0.7948 | 0.7844 |
+| 0.6 | 0.8096 | 0.7890 |
+
+**Befund:** Elo verschlechtert die Prognose bei jedem Gewicht > 0 (Optimum
+w ≈ 0). Interpretation: Die Elo-Information ist bereits in den Marktquoten
+enthalten — eine zusätzliche Beimischung dupliziert ein vorhandenes Signal.
+
+**Entscheidung (v3.0.0):** Vereinheitlichung auf EIN Modell — die Monte-Carlo-
+Simulation nutzt dasselbe Poisson+Markt-Modell wie die Spielprognose:
+markt-geblendete Lambdas für real angesetzte Paarungen, reines Poisson für
+hypothetische Duelle. Das 60/40-Poisson/Elo-Ensemble entfällt als Standard.
+
+**Fallback-Ebene:** In den Einstellungen ist der Modus „Einheitliches Modell
+(v3)" umschaltbar; ausgeschaltet läuft die Simulation wieder im klassischen
+60/40-Ensemble (Stand v2). Sollte sich v3 im Turnierverlauf nicht bewähren,
+ist die Rückkehr ein Schalter, kein Deployment.
+
+Noch offen (nach dem Turnier): Platt-Kalibrierung auch in der Simulation;
+erneute Elo-Prüfung auf dem vollen Turnier-Log (n≈60+).

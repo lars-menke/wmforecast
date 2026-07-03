@@ -1,5 +1,6 @@
 import { NATION_STATS, ELO_RATINGS } from './nations';
 import { WM_SCHEDULE } from './schedule';
+import { getModelMode, type ModelMode } from './modelConfig';
 import type { MatchResult } from './fetchResults';
 
 // ---------------------------------------------------------------------------
@@ -66,25 +67,31 @@ function poissonLambdas(
 }
 
 // ---------------------------------------------------------------------------
-// Ensemble: Poisson (60%) + Elo (40%) — Spec Abschnitt 7
+// Basis-Lambdas für simulierte Paarungen.
+// 'unified' (v3): reines Poisson — identisch zur Spielprognose. Empirisch
+//   validiert: Elo-Beimischung verschlechtert den Log-Loss bei jedem
+//   Gewicht > 0 (34 Gruppenspiele, siehe docs/calibration-analysis.md).
+// 'classic' (v2-Fallback): 60/40 Poisson/Elo-Ensemble wie vor v3.0.0.
 // ---------------------------------------------------------------------------
 
-const W_POISSON = 0.60;
-const W_ELO     = 1 - W_POISSON;
+const W_ELO_CLASSIC = 0.40;
 
 function ensembleLambdas(
   homeCode: string,
   awayCode: string,
   perturbAtt: Record<string, number>,
   perturbDef: Record<string, number>,
+  mode: ModelMode,
 ): { lH: number; lA: number } {
   const poi = poissonLambdas(homeCode, awayCode, perturbAtt, perturbDef);
+  if (mode === 'unified') return poi;
+
   const eloH = ELO_RATINGS[homeCode] ?? 1600;
   const eloA = ELO_RATINGS[awayCode] ?? 1600;
   const elo  = eloToLambdas(eloH, eloA);
   return {
-    lH: W_POISSON * poi.lH + W_ELO * elo.lH,
-    lA: W_POISSON * poi.lA + W_ELO * elo.lA,
+    lH: (1 - W_ELO_CLASSIC) * poi.lH + W_ELO_CLASSIC * elo.lH,
+    lA: (1 - W_ELO_CLASSIC) * poi.lA + W_ELO_CLASSIC * elo.lA,
   };
 }
 
@@ -103,17 +110,18 @@ function simKnockout(
   perturbAtt: Record<string, number>,
   perturbDef: Record<string, number>,
   rng: () => number,
-  lambdaMap: Record<string, { lH: number; lA: number }> = {},
+  lambdaMap: Record<string, { lH: number; lA: number }>,
+  mode: ModelMode,
 ): string {
   if (home === 'BYE') return away;
   if (away === 'BYE') return home;
   // Vereinheitlichung mit der Spielprognose: Für real angesetzte Paarungen
   // die markt-geblendeten Lambdas nutzen; nur hypothetische Paarungen
-  // (mögliche zukünftige Duelle in der Simulation) laufen übers Ensemble.
+  // (mögliche zukünftige Duelle in der Simulation) laufen über die Basis.
   const known = lambdaMap[`${home}-${away}`];
   const knownRev = lambdaMap[`${away}-${home}`];
   const { lH, lA } = known
-    ?? (knownRev ? { lH: knownRev.lA, lA: knownRev.lH } : ensembleLambdas(home, away, perturbAtt, perturbDef));
+    ?? (knownRev ? { lH: knownRev.lA, lA: knownRev.lH } : ensembleLambdas(home, away, perturbAtt, perturbDef, mode));
   const g1 = poissonRandom(lH, rng);
   const g2 = poissonRandom(lA, rng);
   if (g1 > g2) return home;
@@ -141,6 +149,7 @@ function runTournamentBatch(
   perturbDef: Record<string, number>,
   rng: () => number,
   lambdaMap: Record<string, { lH: number; lA: number }> = {},
+  mode: ModelMode = getModelMode(),
 ): { title: Record<string, number>; top4: Record<string, number>; groupAdv: Record<string, number> } {
   const title:    Record<string, number> = {};
   const top4:     Record<string, number> = {};
@@ -162,7 +171,7 @@ function runTournamentBatch(
         // Prefer market-corrected lambdas when available; ensemble is fallback.
         // Key is always HOME-AWAY from the schedule — no reversal needed here.
         const ml = lambdaMap[`${m.home}-${m.away}`];
-        const { lH, lA } = ml ?? ensembleLambdas(m.home, m.away, perturbAtt, perturbDef);
+        const { lH, lA } = ml ?? ensembleLambdas(m.home, m.away, perturbAtt, perturbDef, mode);
         g1 = poissonRandom(lH, rng);
         g2 = poissonRandom(lA, rng);
       }
@@ -204,7 +213,7 @@ function runTournamentBatch(
         const a = currentRound[i];
         const b = currentRound[i + 1] ?? currentRound[i];
         if (!a || !b) continue;
-        const winner = simKnockout(a, b, perturbAtt, perturbDef, rng, lambdaMap);
+        const winner = simKnockout(a, b, perturbAtt, perturbDef, rng, lambdaMap, mode);
         next.push(winner);
         if (currentRound.length === 4) semiFinalLosers.push(winner === a ? b : a);
       }
@@ -213,7 +222,7 @@ function runTournamentBatch(
 
     const [f1, f2] = currentRound;
     if (f1 && f2) {
-      const champion = simKnockout(f1, f2, perturbAtt, perturbDef, rng, lambdaMap);
+      const champion = simKnockout(f1, f2, perturbAtt, perturbDef, rng, lambdaMap, mode);
       title[champion] = (title[champion] ?? 0) + 1;
       top4[f1] = (top4[f1] ?? 0) + 1;
       top4[f2] = (top4[f2] ?? 0) + 1;
@@ -256,6 +265,7 @@ export function simulateWithUncertainty(
   noise       = 0.08,
   seed        = 42,
   lambdaMap: Record<string, { lH: number; lA: number }> = {},
+  mode: ModelMode = getModelMode(),
 ): SimResultWithBands {
   const rng = mulberry32(seed);
 
@@ -303,7 +313,7 @@ export function simulateWithUncertainty(
     }
 
     const { title, top4, groupAdv } = runTournamentBatch(
-      nSimsEach, groups, groupMatches, getResult, perturbAtt, perturbDef, rng, lambdaMap,
+      nSimsEach, groups, groupMatches, getResult, perturbAtt, perturbDef, rng, lambdaMap, mode,
     );
 
     for (const t of teams) {

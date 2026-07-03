@@ -1,7 +1,7 @@
 {
   "name": "wmforecast",
   "private": true,
-  "version": "2.14.0 (Build 01)",
+  "version": "3.0.0 (Build 01)",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../lib/useTheme';
 import { exportLogText, logStats } from '../lib/learnLog';
 import { findWorldCupKey, getOddsQuota } from '../lib/fetchOdds';
+import { getModelMode, setModelMode } from '../lib/modelConfig';
 import mascotsImg from '../assets/mascots.png';
 import styles from './SettingsScreen.module.css';
 
@@ -73,8 +74,8 @@ const PROGNOSE_SECTIONS = [
   },
   {
     id: 'ensemble',
-    title: 'Poisson + Elo-Ensemble',
-    body: 'Die Siegwahrscheinlichkeit jedes Spiels kombiniert das Poisson-Modell (60 %) mit einem Elo-basierten Modell (40 %). Das Elo-Modell nutzt internationale Elo-Ratings und gleicht Verzerrungen aus historischen Statistiken aus.',
+    title: 'Einheitliches Modell (v3)',
+    body: 'Die Simulation nutzt dasselbe Poisson+Markt-Modell wie die Spielprognose: markt-geblendete Lambdas für real angesetzte Paarungen, reines Poisson für hypothetische Duelle. Empirisch validiert an der Gruppenphase — eine Elo-Beimischung verschlechterte die Prognosegüte. Der klassische 60/40-Poisson/Elo-Modus bleibt als Fallback umschaltbar.',
   },
   {
     id: 'uncertainty',
@@ -134,6 +135,13 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
   const firstRender = useRef(true);
   const { espn, odds, run } = useApiTest();
   const [exportMsg, setExportMsg] = useState('');
+  const [modelMode, setModelModeState] = useState(getModelMode());
+
+  function toggleModelMode() {
+    const next = modelMode === 'unified' ? 'classic' : 'unified';
+    setModelMode(next);
+    setModelModeState(next);
+  }
 
   useEffect(() => {
     firstRender.current = false;
@@ -190,6 +198,30 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
             >
               <span className={styles.toggleThumb} />
             </button>
+          </div>
+        </section>
+
+        {/* Modell-Modus (v3-Vereinheitlichung mit Fallback) */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionLabel}>Modell-Modus</h2>
+          <div className={`${styles.cell} ${styles.cellBorder}`}>
+            <span className={styles.cellLabel}>Einheitliches Modell (v3)</span>
+            <button
+              className={`${styles.toggle} ${modelMode === 'unified' ? styles.toggleOn : ''}`}
+              onClick={toggleModelMode}
+              role="switch"
+              aria-checked={modelMode === 'unified'}
+              type="button"
+            >
+              <span className={styles.toggleThumb} />
+            </button>
+          </div>
+          <div className={styles.cell}>
+            <span className={styles.cellValue} style={{ textAlign: 'left', flex: 1 }}>
+              {modelMode === 'unified'
+                ? 'Turnier-Simulation nutzt dasselbe Poisson+Markt-Modell wie die Spielprognose (empirisch validiert). Wirkt beim nächsten Öffnen des Tipps-Tabs.'
+                : 'Fallback aktiv: Simulation nutzt das klassische 60/40 Poisson/Elo-Ensemble (Stand v2). Wirkt beim nächsten Öffnen des Tipps-Tabs.'}
+            </span>
           </div>
         </section>
 
