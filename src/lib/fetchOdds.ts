@@ -1,7 +1,21 @@
 import type { MarketProbs } from './poisson';
 
 const ODDS_KEY  = import.meta.env.VITE_ODDS_API_KEY ?? '';
-const CACHE_KEY = 'wm_odds_v2'; // v2: falscher Sport-Key (EFL Cup) behoben, alten Cache verwerfen
+const CACHE_KEY = 'wm_odds_v3'; // v3: rohe Dezimalquoten fuer das Wett-Radar zusaetzlich gespeichert
+
+// Rohe Dezimalquoten (inkl. Buchmacher-Marge) — Basis fuer EV-Berechnung.
+// d = 0 bedeutet: kein Remis-Preis verfuegbar (z.B. Zwei-Wege-Markt).
+export type RawOdds = { h: number; d: number; a: number };
+
+// Letzter bekannter Quotenstand je "HOME-AWAY" (aus demselben Cache wie die Probs).
+export function getRawOdds(): Record<string, RawOdds> {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return {};
+    const { raw } = JSON.parse(cached) as { raw?: Record<string, RawOdds> };
+    return raw ?? {};
+  } catch { return {}; }
+}
 const QUOTA_KEY = 'wm_odds_quota_v1';
 
 export type OddsQuota = { remaining: number; used: number; ts: number };
@@ -136,12 +150,16 @@ function poissonDrawFallback(h: number, a: number): number {
 export async function fetchOdds(liveOrFinishedKeys?: Set<string>): Promise<Record<string, MarketProbs>> {
   // Always load existing cache first
   let existingCache: Record<string, MarketProbs> = {};
+  let existingRaw: Record<string, RawOdds> = {};
   let cacheAge = Infinity;
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
-      const { ts, data } = JSON.parse(cached) as { ts: number; data: Record<string, MarketProbs> };
+      const { ts, data, raw } = JSON.parse(cached) as {
+        ts: number; data: Record<string, MarketProbs>; raw?: Record<string, RawOdds>;
+      };
       existingCache = data;
+      existingRaw = raw ?? {};
       cacheAge = Date.now() - ts;
     }
   } catch { /* ignore */ }
@@ -168,6 +186,7 @@ export async function fetchOdds(liveOrFinishedKeys?: Set<string>): Promise<Recor
 
     const games = (await r.json()) as OddsGame[];
     const freshData: Record<string, MarketProbs> = {};
+    const freshRaw: Record<string, RawOdds> = {};
 
     for (const g of games) {
       const homeCode = ODDS_TEAM_MAP[g.home_team];
@@ -180,29 +199,32 @@ export async function fetchOdds(liveOrFinishedKeys?: Set<string>): Promise<Recor
       if (!market) continue;
 
       let h = 0, d = 0, a = 0;
+      let oH = 0, oD = 0, oA = 0;
       for (const o of market.outcomes) {
-        if (o.name === g.home_team) h = decimalToImplied(o.price);
-        else if (o.name === g.away_team) a = decimalToImplied(o.price);
-        else d = decimalToImplied(o.price);
+        if (o.name === g.home_team) { h = decimalToImplied(o.price); oH = o.price; }
+        else if (o.name === g.away_team) { a = decimalToImplied(o.price); oA = o.price; }
+        else { d = decimalToImplied(o.price); oD = o.price; }
       }
       if (h && a) {
         const drawFallback = d || poissonDrawFallback(h, a);
-        freshData[`${homeCode}-${awayCode}`] = normalizeProbs(h, drawFallback, a);
+        const key = `${homeCode}-${awayCode}`;
+        freshData[key] = normalizeProbs(h, drawFallback, a);
+        freshRaw[key] = { h: oH, d: oD, a: oA };
       }
     }
 
     // Merge: keep cached value for live/finished matches, use fresh for others
     const merged: Record<string, MarketProbs> = { ...freshData };
+    const mergedRaw: Record<string, RawOdds> = { ...freshRaw };
     if (liveOrFinishedKeys) {
       for (const key of liveOrFinishedKeys) {
-        if (existingCache[key] !== undefined) {
-          merged[key] = existingCache[key];
-        }
+        if (existingCache[key] !== undefined) merged[key] = existingCache[key];
+        if (existingRaw[key] !== undefined) mergedRaw[key] = existingRaw[key];
       }
     }
 
     try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: merged }));
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: merged, raw: mergedRaw }));
     } catch { /* storage voll */ }
 
     return merged;

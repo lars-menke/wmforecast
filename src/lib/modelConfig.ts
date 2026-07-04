@@ -29,3 +29,25 @@ export function setModelMode(mode: ModelMode): void {
     if (typeof localStorage !== 'undefined') localStorage.setItem(KEY, mode);
   } catch { /* ignore */ }
 }
+
+// ---------------------------------------------------------------------------
+// Wett-Radar: EV-basierte Wettvorschlaege ein-/ausblenden.
+// Ausgeschaltet bleibt die App ein reines Sport-Prognosemodell.
+// ---------------------------------------------------------------------------
+
+const BET_RADAR_KEY = 'wm_betradar_v1';
+
+export function isBetRadarEnabled(): boolean {
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem(BET_RADAR_KEY) === 'off') {
+      return false;
+    }
+  } catch { /* ignore */ }
+  return true;
+}
+
+export function setBetRadarEnabled(on: boolean): void {
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(BET_RADAR_KEY, on ? 'on' : 'off');
+  } catch { /* ignore */ }
+}

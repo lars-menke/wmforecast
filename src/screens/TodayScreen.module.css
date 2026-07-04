@@ -168,3 +168,78 @@
   line-height: 1.4;
   max-width: 280px;
 }
+
+/* Wett-Radar */
+.radarCard {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: var(--space-2) var(--space-4);
+}
+
+.radarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: var(--hairline) solid var(--separator);
+}
+
+.radarRow:last-of-type {
+  border-bottom: none;
+}
+
+.radarMatch {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.radarTeams {
+  font-size: var(--size-caption-1);
+  color: var(--text-secondary);
+}
+
+.radarPick {
+  font-size: var(--size-body);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.radarNums {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.radarEv {
+  font-size: var(--size-subhead);
+  font-weight: var(--weight-semibold);
+  color: var(--system-green);
+  font-variant-numeric: tabular-nums;
+}
+
+.radarStake {
+  font-size: var(--size-caption-1);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.radarPaper {
+  padding: var(--space-3) 0 var(--space-1);
+  border-top: var(--hairline) solid var(--separator);
+  font-size: var(--size-subhead);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.radarDisclaimer {
+  margin: var(--space-2) 0 var(--space-1);
+  font-size: var(--size-caption-2);
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}

@@ -1,6 +1,10 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import type { MatchEntry } from '../lib/useMatches';
 import type { WmStage } from '../lib/schedule';
+import { NATIONS } from '../lib/nations';
+import { getRawOdds } from '../lib/fetchOdds';
+import { isBetRadarEnabled } from '../lib/modelConfig';
+import { computeValueBets, updatePaperLog, paperSummary, type ValueBet } from '../lib/betRadar';
 import MatchCard from '../components/MatchCard';
 import styles from './TodayScreen.module.css';
 
@@ -100,6 +104,22 @@ export default function TodayScreen({ matches, onMatchClick }: Props) {
     { key: 'finished', label: 'Beendet',             items: finished },
   ];
 
+  // Wett-Radar: Value-Wetten fuer die kommenden Spiele des angezeigten Spieltags
+  const radarEnabled = isBetRadarEnabled();
+  const valueBets: ValueBet[] = useMemo(() => {
+    if (!radarEnabled) return [];
+    return computeValueBets(upcoming, getRawOdds());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [radarEnabled, dayMatches]);
+
+  // Paper-Konto pflegen: Empfehlungen protokollieren, fertige Spiele abrechnen
+  useEffect(() => {
+    if (!radarEnabled) return;
+    updatePaperLog(valueBets, matches);
+  }, [radarEnabled, valueBets, matches]);
+
+  const paper = radarEnabled ? paperSummary() : null;
+
   let cardIndex = 0;
 
   return (
@@ -170,6 +190,53 @@ export default function TodayScreen({ matches, onMatchClick }: Props) {
               ))}
             </section>
           ))
+        )}
+
+        {/* Wett-Radar: Value-Wetten des Spieltags (abschaltbar in den Einstellungen) */}
+        {radarEnabled && valueBets.length > 0 && (
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionLabel}>Wett-Radar</h3>
+            </div>
+            <div className={styles.radarCard}>
+              {valueBets.map(b => {
+                const teamName = b.side === 'H'
+                  ? (NATIONS[b.home]?.shortName ?? b.home)
+                  : b.side === 'A'
+                    ? (NATIONS[b.away]?.shortName ?? b.away)
+                    : 'Remis';
+                const label = b.side === 'D' ? 'Remis' : `Sieg ${teamName}`;
+                return (
+                  <div key={`${b.matchId}-${b.side}`} className={styles.radarRow}>
+                    <div className={styles.radarMatch}>
+                      <span className={styles.radarTeams}>
+                        {NATIONS[b.home]?.shortName ?? b.home} – {NATIONS[b.away]?.shortName ?? b.away}
+                      </span>
+                      <span className={styles.radarPick}>{label} @ {b.odds.toFixed(2)}</span>
+                    </div>
+                    <div className={styles.radarNums}>
+                      <span className={styles.radarEv} data-numeric>+{(b.ev * 100).toFixed(1)}% EV</span>
+                      <span className={styles.radarStake} data-numeric>
+                        Einsatz {(b.kelly * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+              {paper && paper.settled > 0 && (
+                <div className={styles.radarPaper} data-numeric>
+                  Papier-Konto: {paper.won}/{paper.settled} gewonnen ·
+                  ROI {paper.roi >= 0 ? '+' : ''}{(paper.roi * 100).toFixed(1)}%
+                  {paper.open > 0 ? ` · ${paper.open} offen` : ''}
+                </div>
+              )}
+              <p className={styles.radarDisclaimer}>
+                Erwartungswerte aus Modell vs. Buchmacherquote, Einsatz = Quarter-Kelly.
+                Der Gruppenphasen-Backtest zeigte keinen robusten Vorteil — das
+                Papier-Konto prüft die Strategie an kommenden Spielen. Keine Wettempfehlung.
+              </p>
+            </div>
+          </section>
         )}
       </div>
     </div>
