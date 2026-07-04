@@ -52,6 +52,14 @@
   line-height: 1;
 }
 
+/* Schmale Screens: Wortmarke kollabiert auf Pokal + "WM",
+   damit sie nie unter die Tab-Leiste läuft */
+@media (max-width: 480px) {
+  .wordmarkForecast {
+    display: none;
+  }
+}
+
 /* Segmented Control */
 .segmented {
   flex: 1;

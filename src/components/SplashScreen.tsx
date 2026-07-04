@@ -24,18 +24,20 @@ export default function SplashScreen({ onDone }: Props) {
 
   return (
     <div className={`${styles.root}${fading ? ` ${styles.fadeOut}` : ''}`}>
-      <div className={styles.iconWrap}>
-        <img src={trophyImg} alt="WM-Pokal" className={styles.trophy} />
+      <div className={styles.centerGroup}>
+        <div className={styles.iconWrap}>
+          <img src={trophyImg} alt="WM-Pokal" className={styles.trophy} />
+        </div>
+
+        <div className={styles.brand}>
+          <span className={styles.brandWm}>WM</span>
+          <span className={styles.brandForecast}>Forecast</span>
+        </div>
+
+        <p className={styles.worldCup}>FIFA World Cup 2026</p>
+
+        <img src={mascotsImg} alt="" className={styles.mascots} aria-hidden="true" />
       </div>
-
-      <div className={styles.brand}>
-        <span className={styles.brandWm}>WM</span>
-        <span className={styles.brandForecast}>Forecast</span>
-      </div>
-
-      <p className={styles.worldCup}>FIFA World Cup 2026</p>
-
-      <img src={mascotsImg} alt="" className={styles.mascots} aria-hidden="true" />
 
       <div className={styles.dots}>
         <div className={styles.dotsRow}>

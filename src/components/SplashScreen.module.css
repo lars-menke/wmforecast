@@ -11,100 +11,89 @@
   pointer-events: none;
 }
 
-/* Zone 1 — oberes Drittel: Pokal */
-.iconWrap {
+/* Zentrierte Gruppe: Pokal, Name, Subtitle, Maskottchen als ein Block.
+   Kinder liegen im normalen Flex-Fluss — Entrance-Animationen brauchen
+   keine eigenen Zentrierungs-Transforms mehr. */
+.centerGroup {
   position: absolute;
-  top: 16.67%;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 0 0 14% 0; /* optischer Mittelpunkt leicht oberhalb der Mitte, Platz fuer Dots */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: iconIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both,
+  animation: riseIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both,
              iconLand 0.5s 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .trophy {
-  width: 180px;
-  height: 180px;
+  width: 210px;
+  height: 210px;
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 6px 12px rgba(180, 130, 10, 0.3));
 }
 
-@keyframes iconIn {
-  from { opacity: 0; transform: translateX(-50%) scale(0.82) translateY(10px); }
-  to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
-}
-
 @keyframes iconLand {
-  0%   { transform: translateX(-50%) scale(1); }
-  45%  { transform: translateX(-50%) scale(1.08); }
-  100% { transform: translateX(-50%) scale(1); }
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
 
-/* Zone 2 — Mitte: Name + Subtitle */
 .brand {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  margin-top: var(--space-5);
   display: flex;
   align-items: baseline;
   gap: 0;
-  letter-spacing: -1.2px;
+  letter-spacing: -1.4px;
   white-space: nowrap;
-  animation: brandIn 0.45s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: riseIn 0.45s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .brandWm {
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1;
 }
 
 .brandForecast {
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 400;
   color: var(--text-secondary);
   line-height: 1;
 }
 
-/* FIFA subtitle — anchored below the brand wordmark */
 .worldCup {
-  position: absolute;
-  left: 50%;
-  top: calc(50% + 44px);
-  transform: translateX(-50%);
-  margin: 0;
+  margin: var(--space-2) 0 0;
   font-size: var(--size-footnote);
   font-weight: var(--weight-medium);
   color: var(--text-tertiary);
   letter-spacing: 0.6px;
   text-transform: uppercase;
   white-space: nowrap;
-  animation: subIn 0.45s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: riseIn 0.45s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Zone 3 — unteres Drittel: Maskottchen */
 .mascots {
-  position: absolute;
-  left: 50%;
-  top: 68%;
-  transform: translateX(-50%);
-  width: 110px;
+  margin-top: var(--space-6);
+  width: 116px;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
   animation: mascotsIn 0.55s 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Dots — unter den Maskottchen im unteren Drittel */
+/* Dots — bleiben unten, unabhaengig von der Gruppe */
 .dots {
   position: absolute;
   left: 50%;
-  top: 84%;
+  bottom: 9%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
@@ -141,20 +130,15 @@
   40%           { opacity: 1;    transform: scale(1); }
 }
 
-/* Entrance animations — each carries its own centering transform */
-@keyframes brandIn {
-  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); }
-  to   { opacity: 1; transform: translate(-50%, -50%); }
-}
-
-@keyframes subIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* Entrance-Animationen — Kinder im Flex-Fluss, keine Zentrierungs-Transforms noetig */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes mascotsIn {
-  from { opacity: 0; transform: translateX(-50%) scale(0.9) translateY(12px); }
-  to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+  from { opacity: 0; transform: scale(0.9) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 @keyframes dotsIn {
@@ -163,11 +147,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .root     { transition: none; }
-  .iconWrap { animation: none; opacity: 1; transform: translateX(-50%); }
-  .brand    { animation: none; opacity: 1; transform: translate(-50%, -50%); }
-  .worldCup { animation: none; opacity: 1; transform: translateX(-50%); }
-  .mascots  { animation: none; opacity: 1; transform: translateX(-50%); }
-  .dots     { animation: none; opacity: 1; transform: translateX(-50%); }
-  .dot      { animation: none; opacity: 0.6; }
+  .root      { transition: none; }
+  .iconWrap,
+  .brand,
+  .worldCup,
+  .mascots   { animation: none; opacity: 1; transform: none; }
+  .dots      { animation: none; opacity: 1; transform: translateX(-50%); }
+  .dot       { animation: none; opacity: 0.6; }
 }
