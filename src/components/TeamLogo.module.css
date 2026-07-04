@@ -1,8 +1,20 @@
+.flagImg {
+  display: inline-block;
+  object-fit: cover;
+  border-radius: var(--radius-logo);
+  box-shadow: 0 0 0 var(--hairline) var(--separator);
+  user-select: none;
+  flex-shrink: 0;
+}
+
 .logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-logo);
+  background: var(--bg-fill);
+  color: var(--text-secondary);
+  font-weight: var(--weight-semibold);
   line-height: 1;
   user-select: none;
   flex-shrink: 0;

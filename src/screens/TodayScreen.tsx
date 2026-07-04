@@ -13,9 +13,10 @@ type Props = {
   onMatchClick: (m: MatchEntry) => void;
 };
 
+// Kompakte Labels: Karten-Header hat nur eine Zeile fuer Kontext + Kickoff
 const STAGE_LABELS: Record<WmStage, string> = {
   GROUP_STAGE:    'Gruppenphase',
-  ROUND_OF_32:    'Runde der letzten 32',
+  ROUND_OF_32:    'Letzte 32',
   ROUND_OF_16:    'Achtelfinale',
   QUARTER_FINALS: 'Viertelfinale',
   SEMI_FINALS:    'Halbfinale',
@@ -122,6 +123,75 @@ export default function TodayScreen({ matches, onMatchClick }: Props) {
 
   let cardIndex = 0;
 
+  function renderMatchSection(s: { key: string; label: string; live?: boolean; items: MatchEntry[] }) {
+    if (s.items.length === 0) return null;
+    return (
+      <section key={s.key} className={styles.section}>
+        <div className={styles.sectionHeader}>
+          {s.live && <span className={styles.liveDot} aria-hidden="true" />}
+          <h3 className={`${styles.sectionLabel}${s.live ? ` ${styles.sectionLabelLive}` : ''}`}>
+            {s.label}
+          </h3>
+        </div>
+        {s.items.map(m => (
+          <MatchCard
+            key={m.id}
+            match={m}
+            onClick={() => onMatchClick(m)}
+            context={contextLabel(m)}
+            style={{ '--card-index': cardIndex++ } as React.CSSProperties}
+          />
+        ))}
+      </section>
+    );
+  }
+
+  const radarSection = radarEnabled && valueBets.length > 0 ? (
+    <section key="radar" className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <h3 className={styles.sectionLabel}>Wett-Radar</h3>
+      </div>
+      <div className={styles.radarCard}>
+        {valueBets.map(b => {
+          const teamName = b.side === 'H'
+            ? (NATIONS[b.home]?.shortName ?? b.home)
+            : b.side === 'A'
+              ? (NATIONS[b.away]?.shortName ?? b.away)
+              : 'Remis';
+          const label = b.side === 'D' ? 'Remis' : `Sieg ${teamName}`;
+          return (
+            <div key={`${b.matchId}-${b.side}`} className={styles.radarRow}>
+              <div className={styles.radarMatch}>
+                <span className={styles.radarTeams}>
+                  {NATIONS[b.home]?.shortName ?? b.home} – {NATIONS[b.away]?.shortName ?? b.away}
+                </span>
+                <span className={styles.radarPick}>{label} @ {b.odds.toFixed(2)}</span>
+              </div>
+              <div className={styles.radarNums}>
+                <span className={styles.radarEv} data-numeric>+{(b.ev * 100).toFixed(1)}% EV</span>
+                <span className={styles.radarStake} data-numeric>
+                  Einsatz {(b.kelly * 100).toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          );
+        })}
+        {paper && paper.settled > 0 && (
+          <div className={styles.radarPaper} data-numeric>
+            Papier-Konto: {paper.won}/{paper.settled} gewonnen ·
+            ROI {paper.roi >= 0 ? '+' : ''}{(paper.roi * 100).toFixed(1)}%
+            {paper.open > 0 ? ` · ${paper.open} offen` : ''}
+          </div>
+        )}
+        <p className={styles.radarDisclaimer}>
+          Erwartungswerte aus Modell vs. Buchmacherquote, Einsatz = Quarter-Kelly.
+          Der Gruppenphasen-Backtest zeigte keinen robusten Vorteil — das
+          Papier-Konto prüft die Strategie an kommenden Spielen. Keine Wettempfehlung.
+        </p>
+      </div>
+    </section>
+  ) : null;
+
   return (
     <div className={styles.root}>
       {/* Day navigator */}
@@ -171,72 +241,13 @@ export default function TodayScreen({ matches, onMatchClick }: Props) {
             <span className={styles.emptyHint}>Navigiere zu einem anderen Spieltag.</span>
           </div>
         ) : (
-          sections.filter(s => s.items.length > 0).map(s => (
-            <section key={s.key} className={styles.section}>
-              <div className={styles.sectionHeader}>
-                {s.live && <span className={styles.liveDot} aria-hidden="true" />}
-                <h3 className={`${styles.sectionLabel}${s.live ? ` ${styles.sectionLabelLive}` : ''}`}>
-                  {s.label}
-                </h3>
-              </div>
-              {s.items.map(m => (
-                <MatchCard
-                  key={m.id}
-                  match={m}
-                  onClick={() => onMatchClick(m)}
-                  context={contextLabel(m)}
-                  style={{ '--card-index': cardIndex++ } as React.CSSProperties}
-                />
-              ))}
-            </section>
-          ))
-        )}
-
-        {/* Wett-Radar: Value-Wetten des Spieltags (abschaltbar in den Einstellungen) */}
-        {radarEnabled && valueBets.length > 0 && (
-          <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h3 className={styles.sectionLabel}>Wett-Radar</h3>
-            </div>
-            <div className={styles.radarCard}>
-              {valueBets.map(b => {
-                const teamName = b.side === 'H'
-                  ? (NATIONS[b.home]?.shortName ?? b.home)
-                  : b.side === 'A'
-                    ? (NATIONS[b.away]?.shortName ?? b.away)
-                    : 'Remis';
-                const label = b.side === 'D' ? 'Remis' : `Sieg ${teamName}`;
-                return (
-                  <div key={`${b.matchId}-${b.side}`} className={styles.radarRow}>
-                    <div className={styles.radarMatch}>
-                      <span className={styles.radarTeams}>
-                        {NATIONS[b.home]?.shortName ?? b.home} – {NATIONS[b.away]?.shortName ?? b.away}
-                      </span>
-                      <span className={styles.radarPick}>{label} @ {b.odds.toFixed(2)}</span>
-                    </div>
-                    <div className={styles.radarNums}>
-                      <span className={styles.radarEv} data-numeric>+{(b.ev * 100).toFixed(1)}% EV</span>
-                      <span className={styles.radarStake} data-numeric>
-                        Einsatz {(b.kelly * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-              {paper && paper.settled > 0 && (
-                <div className={styles.radarPaper} data-numeric>
-                  Papier-Konto: {paper.won}/{paper.settled} gewonnen ·
-                  ROI {paper.roi >= 0 ? '+' : ''}{(paper.roi * 100).toFixed(1)}%
-                  {paper.open > 0 ? ` · ${paper.open} offen` : ''}
-                </div>
-              )}
-              <p className={styles.radarDisclaimer}>
-                Erwartungswerte aus Modell vs. Buchmacherquote, Einsatz = Quarter-Kelly.
-                Der Gruppenphasen-Backtest zeigte keinen robusten Vorteil — das
-                Papier-Konto prüft die Strategie an kommenden Spielen. Keine Wettempfehlung.
-              </p>
-            </div>
-          </section>
+          <>
+            {renderMatchSection(sections[0])}
+            {renderMatchSection(sections[1])}
+            {/* Wett-Radar direkt unter den kommenden Spielen (abschaltbar) */}
+            {radarSection}
+            {renderMatchSection(sections[2])}
+          </>
         )}
       </div>
     </div>

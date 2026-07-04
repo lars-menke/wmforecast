@@ -4,6 +4,7 @@ import { WM_SCHEDULE, WM_GROUPS, type WmGroup } from '../lib/schedule';
 import type { GroupStandings } from '../lib/fetchGroups';
 import { NATIONS } from '../lib/nations';
 import MatchCard from '../components/MatchCard';
+import { Flag } from '../components/TeamLogo';
 import StandingsTable from '../components/StandingsTable';
 import styles from './GroupScreen.module.css';
 
@@ -90,7 +91,7 @@ export default function GroupScreen({
                 <div className={styles.groupTeams}>
                   {groupTeams.map(code => (
                     <span key={code} className={styles.groupTeam}>
-                      <span aria-hidden="true">{NATIONS[code]?.flag ?? ''}</span>
+                      <Flag code={code} size={14} />
                       <span>{NATIONS[code]?.shortName ?? code}</span>
                     </span>
                   ))}

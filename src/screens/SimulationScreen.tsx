@@ -150,7 +150,7 @@ export default function SimulationScreen({ resultsMap, matches }: Props) {
                   <span className={styles.bonusLabel}>Weltmeister</span>
                   <span className={styles.bonusValue}>
                     {bonusWeltmeister
-                      ? `${NATIONS[bonusWeltmeister]?.flag ?? ''} ${NATIONS[bonusWeltmeister]?.name ?? bonusWeltmeister}`
+                      ? `${NATIONS[bonusWeltmeister]?.name ?? bonusWeltmeister}`
                       : '—'}
                   </span>
                 </div>

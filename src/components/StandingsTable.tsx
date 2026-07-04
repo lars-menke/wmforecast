@@ -1,5 +1,6 @@
 import { NATIONS } from '../lib/nations';
 import type { StandingRow } from '../lib/fetchGroups';
+import { Flag } from './TeamLogo';
 import styles from './StandingsTable.module.css';
 
 type Props = {
@@ -63,7 +64,7 @@ export default function StandingsTable({ rows, group }: Props) {
                 </td>
                 <td className={styles.tdTeam}>
                   <span className={styles.flag} aria-hidden="true">
-                    {nation?.flag ?? ''}
+                    <Flag code={row.code} size={16} />
                   </span>
                   <span className={styles.teamName}>
                     {nation?.shortName ?? row.code}

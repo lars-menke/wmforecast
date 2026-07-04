@@ -191,9 +191,9 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
 
       <div className={styles.scroll}>
 
+        <h2 className={styles.clusterLabel} style={{ marginTop: 0 }}>Darstellung</h2>
         {/* Darstellung */}
         <section className={styles.section}>
-          <h2 className={styles.sectionLabel}>Darstellung</h2>
           <div className={styles.cell}>
             <span className={styles.cellLabel}>Dark Mode</span>
             <button
@@ -208,6 +208,7 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
           </div>
         </section>
 
+        <h2 className={styles.clusterLabel}>Modell</h2>
         {/* Modell-Modus (v3-Vereinheitlichung mit Fallback) */}
         <section className={styles.section}>
           <h2 className={styles.sectionLabel}>Modell-Modus</h2>
@@ -228,30 +229,6 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
               {modelMode === 'unified'
                 ? 'Turnier-Simulation nutzt dasselbe Poisson+Markt-Modell wie die Spielprognose (empirisch validiert). Wirkt beim nächsten Öffnen des Tipps-Tabs.'
                 : 'Fallback aktiv: Simulation nutzt das klassische 60/40 Poisson/Elo-Ensemble (Stand v2). Wirkt beim nächsten Öffnen des Tipps-Tabs.'}
-            </span>
-          </div>
-        </section>
-
-        {/* Wett-Radar */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionLabel}>Wett-Radar</h2>
-          <div className={`${styles.cell} ${styles.cellBorder}`}>
-            <span className={styles.cellLabel}>Wettvorschläge anzeigen</span>
-            <button
-              className={`${styles.toggle} ${betRadar ? styles.toggleOn : ''}`}
-              onClick={toggleBetRadar}
-              role="switch"
-              aria-checked={betRadar}
-              type="button"
-            >
-              <span className={styles.toggleThumb} />
-            </button>
-          </div>
-          <div className={styles.cell}>
-            <span className={styles.cellValue} style={{ textAlign: 'left', flex: 1 }}>
-              {betRadar
-                ? 'Der Aktuell-Tab zeigt Ausgänge mit positivem Erwartungswert (Modell vs. Buchmacherquote) inkl. Paper-Trading-Konto. Keine Wettempfehlung.'
-                : 'Ausgeblendet — die App ist ein reines Sport-Prognosemodell ohne Wettvorschläge.'}
             </span>
           </div>
         </section>
@@ -278,6 +255,32 @@ export default function SettingsScreen({ onClose, hasMarket }: Props) {
           ))}
         </section>
 
+        <h2 className={styles.clusterLabel}>Wetten</h2>
+        {/* Wett-Radar */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionLabel}>Wett-Radar</h2>
+          <div className={`${styles.cell} ${styles.cellBorder}`}>
+            <span className={styles.cellLabel}>Wettvorschläge anzeigen</span>
+            <button
+              className={`${styles.toggle} ${betRadar ? styles.toggleOn : ''}`}
+              onClick={toggleBetRadar}
+              role="switch"
+              aria-checked={betRadar}
+              type="button"
+            >
+              <span className={styles.toggleThumb} />
+            </button>
+          </div>
+          <div className={styles.cell}>
+            <span className={styles.cellValue} style={{ textAlign: 'left', flex: 1 }}>
+              {betRadar
+                ? 'Der Aktuell-Tab zeigt Ausgänge mit positivem Erwartungswert (Modell vs. Buchmacherquote) inkl. Paper-Trading-Konto. Keine Wettempfehlung.'
+                : 'Ausgeblendet — die App ist ein reines Sport-Prognosemodell ohne Wettvorschläge.'}
+            </span>
+          </div>
+        </section>
+
+        <h2 className={styles.clusterLabel}>Daten &amp; Diagnose</h2>
         {/* App-Info */}
         <section className={styles.section}>
           <h2 className={styles.sectionLabel}>App</h2>

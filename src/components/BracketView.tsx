@@ -2,6 +2,7 @@ import React from 'react';
 import type { MatchEntry } from '../lib/useMatches';
 import { WM_SCHEDULE, type WmStage } from '../lib/schedule';
 import { NATIONS } from '../lib/nations';
+import { Flag } from './TeamLogo';
 import styles from './BracketView.module.css';
 
 type Props = {
@@ -89,7 +90,7 @@ function BracketMatch({ slot, onClick }: { slot: BracketSlot; onClick: () => voi
       disabled={isTbd}
     >
       <div className={`${styles.team}${homeWon ? ` ${styles.teamWon}` : ''}`}>
-        <span className={styles.flag}>{slot.home === 'TBD' ? '' : (homeNation?.flag ?? '🏳️')}</span>
+        <span className={styles.flag}>{slot.home !== 'TBD' && <Flag code={slot.home} size={16} />}</span>
         <span className={styles.code}>{slot.home === 'TBD' ? '—' : (homeNation?.shortName ?? slot.home)}</span>
         {slot.actual && (
           <span className={styles.score} data-numeric>
@@ -98,7 +99,7 @@ function BracketMatch({ slot, onClick }: { slot: BracketSlot; onClick: () => voi
         )}
       </div>
       <div className={`${styles.team}${awayWon ? ` ${styles.teamWon}` : ''}`}>
-        <span className={styles.flag}>{slot.away === 'TBD' ? '' : (awayNation?.flag ?? '🏳️')}</span>
+        <span className={styles.flag}>{slot.away !== 'TBD' && <Flag code={slot.away} size={16} />}</span>
         <span className={styles.code}>{slot.away === 'TBD' ? '—' : (awayNation?.shortName ?? slot.away)}</span>
         {slot.actual && (
           <span className={styles.score} data-numeric>

@@ -204,3 +204,12 @@
 .testBtn:disabled {
   opacity: 0.5;
 }
+
+/* Cluster-Überschriften: gruppieren die gewachsenen Sektionen */
+.clusterLabel {
+  margin: var(--space-7) var(--space-1) var(--space-1);
+  font-size: var(--size-title-2);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
