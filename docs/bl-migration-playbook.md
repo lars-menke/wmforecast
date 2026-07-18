@@ -17,10 +17,20 @@ Fassung des Plans, damit die Umsetzung nicht am Chatverlauf hängt.
 
 ## Phase 0 — vor dem Start (WM-Abschluss)
 
-- [ ] Lernlog nach dem Finale exportieren -> `docs/backups/` in wmforecast
-- [ ] `node scripts/analyze-learnlog.mjs <export>` -> Snapshot 2 in
-      docs/calibration-analysis.md (alpha, Dissens-Signal, Elo-Nachpruefung)
-- [ ] Die dort bestaetigten Parameter sind die Startwerte fuer die BL.
+- [x] Lernlog exportiert -> `docs/backups/learnlog-2026-07-18-ko-runde.json`
+- [x] Snapshot 2 in docs/calibration-analysis.md (Stand vor Platz 3 + Finale)
+- [ ] Nach dem Finale: die letzten 2 Spiele nachtragen (kleiner Effekt)
+
+**Ergebnis-Startwerte fuer die BL (aus n=51):**
+- **alpha = 0.4** starten (LogLoss-Optimum 0.26-0.3, Acc-Optimum 0.5;
+  0.4 = Mitte des flachen Tals). Nach 5 Spieltagen re-validieren —
+  Liga-Maerkte sind effizienter, Optimum kann niedriger liegen.
+- **Ratings-Beimischung** (Elo-Aequivalent, w~0.2-0.3) als Kandidat frueh
+  out-of-sample testen — auf WM-Gesamtdaten half sie beim LogLoss,
+  senkte aber die Trefferquote (Details: calibration-analysis.md).
+- **Dissens=Remis-Signal** (Modell vs. Markt uneinig -> erhoehte
+  Remis-Quote, WM: 57 % vs. 14 %) als Feature-Kandidat fuer die Liga,
+  wo Remis-Tipps zaehlen.
 
 ## Phase 1 — Repo & Rumpf
 

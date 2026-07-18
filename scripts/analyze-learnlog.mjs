@@ -18,12 +18,37 @@ if (!file) {
 
 const raw = JSON.parse(readFileSync(file, 'utf8'));
 
-// Normalisieren: v2-Einträge (mit snapshots[]) auf letzten Snapshot reduzieren
+// Normalisieren: v2-Einträge (mit snapshots[]) auf den letzten SAUBEREN
+// Pre-Match-Snapshot reduzieren. Zwei Filter gegen Look-ahead-Bias:
+//   1. ts < kickoff (statische Planzeit; echte Anstoßzeit kann abweichen)
+//   2. Live-Verdacht: Snapshot, dessen Quoten gegenüber dem Vorgänger in
+//      einer Kategorie um > 0.12 springen, wird verworfen (typisch für
+//      In-Play-Quoten, die vor dem Odds-Freeze durchgerutscht sind).
+const LIVE_JUMP = 0.12;
+
+function lastCleanSnapshot(e) {
+  const ko = Date.parse(e.kickoff ?? '') || Infinity;
+  const pre = e.snapshots.filter(s => s.ts < ko);
+  const pool = pre.length > 0 ? pre : e.snapshots;
+  for (let i = pool.length - 1; i >= 0; i--) {
+    const s = pool[i];
+    const prev = pool[i - 1];
+    if (!prev) return s; // erster Snapshot gilt immer als sauber
+    const jump = Math.max(
+      Math.abs(s.oddsH - prev.oddsH),
+      Math.abs(s.oddsD - prev.oddsD),
+      Math.abs(s.oddsA - prev.oddsA),
+    );
+    if (jump <= LIVE_JUMP) return s;
+  }
+  return pool[0];
+}
+
 const entries = raw
   .map(e => {
     if (Array.isArray(e.snapshots)) {
-      const last = e.snapshots[e.snapshots.length - 1];
-      return last ? { matchId: e.matchId, actual: e.actual, ...last } : null;
+      const s = lastCleanSnapshot(e);
+      return s ? { matchId: e.matchId, actual: e.actual, ...s } : null;
     }
     return e;
   })

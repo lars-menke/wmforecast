@@ -61,12 +61,55 @@ Verlängerung gehen.
 
 ---
 
-## Snapshot 2 — (nach K.o.-Runde, ausstehend)
+## Snapshot 2 — 18.07.2026 (nach K.o.-Runde, vor Platz 3 + Finale)
 
-_Noch offen. Lernprotokoll exportieren, dann:_
-`node scripts/analyze-learnlog.mjs <export.json>` _und mit Snapshot 1
-vergleichen: Verschiebt sich das Optimum? Bleibt der Blend besser als beide
-Extreme? Bestätigt sich das Dissens-Signal?_
+- **Datenbasis:** 17 K.o.-Spiele (R32 bis Halbfinale) mit Ergebnis; kombiniert
+  mit Snapshot 1: **51 Spiele**. Backup:
+  `docs/backups/learnlog-2026-07-18-ko-runde.json` (v2, volle Zeitreihen).
+- **Methodik-Fix:** analyze-learnlog.mjs nutzt jetzt den letzten SAUBEREN
+  Pre-Match-Snapshot (ts < Kickoff, Live-Verdachtsfilter bei Quotensprung
+  > 0.12) — einige Log-Eintraege enthielten In-Play-Quoten (z.B. AUS-EGY
+  mit 71 % Remis-Quote beim Stand-Remis), die Look-ahead-Bias erzeugt haetten.
+
+### Alpha-Sweep
+
+| alpha | LL nur K.o. (17) | LL kombiniert (51) | Acc kombiniert |
+|---|---|---|---|
+| 0.0 | **0.7174** | 0.7652 | 72,5 % |
+| 0.3 | 0.7240 | **0.7631** | 72,5 % |
+| 0.5 (aktuell) | 0.7323 | 0.7650 | **76,5 %** |
+| 1.0 (nur Markt) | 0.7676 | 0.7817 | 68,6 % |
+
+- K.o.-Runde allein: **reines Modell schlaegt den Markt deutlich** —
+  Umkehrung der Gruppenphase. Kombiniert: flaches Optimum bei alpha ~0.26-0.3,
+  alpha=0.5 nur ~0.002 LL schlechter, aber **Trefferquoten-Optimum**
+  (76,5 % gesamt, 88,2 % in der K.o.-Runde).
+
+### Dissens-Analyse (gesamtes Turnier, 7 Faelle)
+
+Modell richtig **3** · Markt richtig **0** · Remis **4** (57 % vs. 14 %
+Remis-Basisrate bei Einigkeit). Der Markt hat im gesamten Turnier keinen
+einzigen Sieger-Dissens gewonnen (USA-BEL, FRA-ESP, ENG-ARG gingen alle ans
+Modell). Das Dissens=Remis-Signal aus Snapshot 1 bestaetigt sich.
+
+### Elo-Revision (n=51)
+
+Auf dem vollen Turnier verbessert eine kleine Elo-Beimischung den LogLoss
+(w=0.3, alpha=0: LL 0.7540) — **Umkehrung des n=34-Befunds** aus v3.0.0.
+Treiber: die Elo-Top-4 (ARG, FRA, ESP, ENG) stellten die Halbfinalisten.
+ABER: Trefferquote sinkt dort auf 72,5 %, und das Optimum ist mit zwei
+Freiheitsgraden in-sample gefittet (Overfitting-Risiko bei n=51).
+Kein hartes Urteil moeglich; der classic-Fallback-Schalter bleibt der
+richtige Umgang damit.
+
+### Entscheidung
+
+**Keine Aenderung fuer die letzten 2 WM-Spiele.** Die aktuelle Konfiguration
+(w=0, alpha=0.5) ist Trefferquoten-optimal — die Zielgroesse der App —
+und eine Umstellung fuer 2 Restspiele hat keinen erwartbaren Nutzen.
+Fuer die Bundesliga (siehe bl-migration-playbook.md): Start alpha=0.4
+(Mitte des flachen Tals, Richtung Gesamt-Evidenz), Ratings-Beimischung
+frueh out-of-sample testen, Dissens=Remis als Feature-Kandidat.
 
 ---
 
