@@ -24,16 +24,30 @@ Fassung des Plans, damit die Umsetzung nicht am Chatverlauf hängt.
       Nachtragen mit kleinem Effekt auf n=53 statt n=51, kein Blocker
       fuer den BL-Start.
 
-**Ergebnis-Startwerte fuer die BL (aus n=51):**
-- **alpha = 0.4** starten (LogLoss-Optimum 0.26-0.3, Acc-Optimum 0.5;
+**Finale Ergebnis-Startwerte fuer die BL (aus n=53, komplettes Turnier —
+Snapshot 3 in calibration-analysis.md):**
+- **alpha = 0.4** starten (LogLoss-Optimum 0.22, Acc-Optimum 0.5;
   0.4 = Mitte des flachen Tals). Nach 5 Spieltagen re-validieren —
   Liga-Maerkte sind effizienter, Optimum kann niedriger liegen.
-- **Ratings-Beimischung** (Elo-Aequivalent, w~0.2-0.3) als Kandidat frueh
-  out-of-sample testen — auf WM-Gesamtdaten half sie beim LogLoss,
-  senkte aber die Trefferquote (Details: calibration-analysis.md).
-- **Dissens=Remis-Signal** (Modell vs. Markt uneinig -> erhoehte
-  Remis-Quote, WM: 57 % vs. 14 %) als Feature-Kandidat fuer die Liga,
-  wo Remis-Tipps zaehlen.
+- **Dissens=Remis-Signal (Prio 1 fuer die BL):** 9 Dissens-Faelle im
+  gesamten Turnier, 44 % davon Remis vs. 14 % bei Einigkeit — deutlich
+  mehr als ein Zufallsmuster. Konkreter Bauvorschlag: bei erkanntem
+  Vorzeichen-Dissens (Modell und Markt favorisieren unterschiedliche
+  Seiten) den Remis-Prior gezielt anheben, statt nur linear zu blenden.
+  In der Liga ist Remis ein haeufiger reguleaerer Ausgang (nicht wie beim
+  K.o.-Modus gesperrt) — dort zahlt sich das Signal direkt aus.
+- **Blend-Schwaeche erkannt:** Das Spiel um Platz 3 (FRA-ENG) zeigte den
+  staerksten Markt-Dissens des Turniers (+19,4 % Uebergewicht); das
+  Modell behielt trotzdem recht (England gewann). Reine 50/50-Lambda-
+  Mittelung kann bei starkem Markt-Uebergewicht "kippen", obwohl die
+  Dissens-Historie fuers Modell spricht (Bilanz gesamt: Modell 4, Markt 1,
+  Remis 4). Fuer die BL pruefen: Gewichtung nach Dissens-Staerke statt
+  fixem alpha, oder ein Cap fuer den Markt-Einfluss bei sehr hoher
+  eigener Modell-Sicherheit.
+- **Ratings-Beimischung (Elo-Aequivalent) bleibt ungeklaert** — kippte
+  zwischen n=34 und n=51 mehrfach die Richtung. Auf WM-Daten nicht robust
+  entscheidbar; in der BL mit 306 Spielen/Saison sauber neu validieren,
+  nicht ungeprueft uebernehmen.
 
 ## Phase 1 — Repo & Rumpf
 

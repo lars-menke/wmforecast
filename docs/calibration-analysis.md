@@ -113,6 +113,77 @@ frueh out-of-sample testen, Dissens=Remis als Feature-Kandidat.
 
 ---
 
+## Snapshot 3 — 19.07.2026 (WM-Turnier komplett, final)
+
+- **Datenbasis:** alle 53 gespielten WM-Spiele (34 Gruppe + 19 K.o.,
+  inkl. Spiel um Platz 3 und Finale). Backups:
+  `docs/backups/learnlog-2026-07-19-final.json` (K.o.-Runde, 19 Spiele,
+  volle Zeitreihen) + `learnlog-2026-07-02-gruppenphase.json` (Gruppe).
+- Dies ist die **abschliessende Auswertung** der WM 2026. wmforecast wird
+  ab jetzt eingefroren; die Ergebnisse sind die Startwerte fuer
+  BLforecast 26/27 (siehe bl-migration-playbook.md).
+
+### Finale + Platz 3: der staerkste Dissens des Turniers
+
+- **FRA-ENG (Platz 3):** groesster Markt-Uebergewicht-Fall des gesamten
+  Turniers (Markt-Sicherheit 25,5 % fuer Frankreich vs. Modell-Sicherheit
+  nur 6,1 % fuer England — Uebergewicht +19,4 %, mehr als jeder vorherige
+  Fall). Tatsaechliches Ergebnis: **England gewinnt** — das Modell (das
+  England knapp favorisierte) behielt recht, der Markt (klar fuer
+  Frankreich) lag falsch. Bemerkenswert: die App erfasste sogar eine
+  In-Play-Quote kurz vor Spielende (England 94 % Siegquote) — der
+  Live-Filter des Analyse-Skripts hat diesen Ausreisser korrekt verworfen
+  und den letzten echten Pre-Match-Snapshot verwendet.
+- **ESP-ARG (Finale):** knapper Dissens (Modell leicht fuer Argentinien,
+  Markt klar fuer Spanien). Tatsaechliches Ergebnis: **Spanien gewinnt** —
+  hier hatte der **Markt** recht, das Modell lag falsch. Der erste
+  Markt-Sieg in einem echten Vorzeichen-Dissens im gesamten Turnier.
+
+### Finale Alpha-Sweep (n=53)
+
+| alpha | Log-Loss | Trefferquote |
+|---|---|---|
+| 0.0 (nur Modell) | 0.7766 | 71,7 % |
+| **0.22 (Optimum)** | **0.7749** | 69,8 % |
+| 0.5 (genutzter Wert) | 0.7773 | **75,5 %** |
+| 1.0 (nur Markt) | 0.7951 | 67,9 % |
+
+Bestaetigt das Bild aus Snapshot 1/2: sehr flaches Tal um alpha=0,2–0,5,
+alpha=0.5 bleibt **Trefferquoten-Optimum** und liegt beim Log-Loss nur
+0,0024 hinter dem rechnerischen Minimum — kein Grund, die ueber das ganze
+Turnier gültige Einstellung nachtraeglich zu revidieren.
+
+### Finale Dissens-Bilanz (9 Faelle im gesamten Turnier)
+
+**Modell 4 · Markt 1 · Remis 4** (44 % Remis-Quote bei Dissens vs. 14 %
+bei Einigkeit — das Dissens=Remis-Signal haelt bis zum Schluss). Der Markt
+hat seinen ersten Dissens-Sieg im allerletzten Spiel geholt (ESP-ARG) —
+das relativiert die vorherige "Markt gewinnt nie"-Beobachtung leicht,
+aendert aber nichts am Gesamtbild: Bei Uneinigkeit war das Modell mehr als
+viermal so oft richtig wie der Markt, und ein Remis war fast so
+wahrscheinlich wie beide Sieger-Varianten zusammen.
+
+### Abschliessendes Fazit fuer die Bundesliga-Migration
+
+1. **alpha=0.4 als Startwert bestaetigt** (Mitte des Tals, robuste Wahl).
+2. **Dissens=Remis-Signal ist das staerkste neue Erkenntnis-Element** aus
+   der WM — mit 9 Faellen und 44 % vs. 14 % Remis-Quote ist das jetzt
+   mehr als eine Anekdote. Fuer die Liga (wo Remis ein regulaerer,
+   haeufiger Ausgang ist, nicht nur Vorrunden-Kuriosum) sollte das ein
+   fruehes Feature sein: bei erkanntem Vorzeichen-Dissens den
+   Remis-Prior anheben, statt nur linear zu blenden.
+3. **Reine Lambda-Mittelung hat eine Schwaeche**, die FRA-ENG deutlich
+   zeigte: Bei starkem Markt-Uebergewicht kann der Blend dem Markt folgen,
+   obwohl die historische Bilanz bei Dissens fuers Modell spricht. Siehe
+   die vertiefte Diskussion im Chatverlauf vom 18.07. — ein konkreter
+   Kandidat fuer eine bessere Blend-Regel in der BL-App (z.B. Gewichtung
+   nach erkanntem Dissens statt fix 50/50).
+4. **Elo-Frage bleibt ungeklärt** (kippte zwischen n=34 und n=51 mehrfach) —
+   in der BL mit 306 Spielen/Saison und mehr Freiheitsgraden sauber neu
+   validieren, nicht aus der WM uebernehmen.
+
+---
+
 ## Elo-Validierung & Modell-Vereinheitlichung (v3.0.0)
 
 Vor der Vereinheitlichung wurde am Gruppenphasen-Lernlog (34 Spiele) geprüft,
