@@ -19,7 +19,10 @@ Fassung des Plans, damit die Umsetzung nicht am Chatverlauf hängt.
 
 - [x] Lernlog exportiert -> `docs/backups/learnlog-2026-07-18-ko-runde.json`
 - [x] Snapshot 2 in docs/calibration-analysis.md (Stand vor Platz 3 + Finale)
-- [ ] Nach dem Finale: die letzten 2 Spiele nachtragen (kleiner Effekt)
+- [x] Turnier beendet — WM 2026 abgeschlossen, wmforecast eingefroren.
+      Die letzten 2 Ergebnisse (Platz 3, Finale) sind ein optionales
+      Nachtragen mit kleinem Effekt auf n=53 statt n=51, kein Blocker
+      fuer den BL-Start.
 
 **Ergebnis-Startwerte fuer die BL (aus n=51):**
 - **alpha = 0.4** starten (LogLoss-Optimum 0.26-0.3, Acc-Optimum 0.5;
